@@ -12,13 +12,17 @@ export interface BodyConfig {
   shoulder: [number, number];
   /** o desenho olha para a direita? */
   facesRight: boolean;
+  /** inclinação natural das pernas na imagem (graus: trás, frente). Usada para endireitar ao sentar/deitar. */
+  legTilt: [number, number];
+  /** onde fica a junta do quadril dentro de cada pedaço de perna (fração da largura: trás, frente) */
+  legPivot: [number, number];
 }
 
-export const DEFAULT_BODY: BodyConfig = { legTop: 0.64, legSplit: 0.52, hand: [0.86, 0.58], shoulder: [0.55, 0.2], facesRight: true };
+export const DEFAULT_BODY: BodyConfig = { legTop: 0.64, legSplit: 0.52, hand: [0.86, 0.58], shoulder: [0.55, 0.2], facesRight: true, legTilt: [0, 0], legPivot: [0.5, 0.5] };
 
 /** Ajustes por imagem (quando o corpo é muito diferente do padrão). */
 export const BODY_CONFIG: Record<string, Partial<BodyConfig>> = {
-  toguro: { legTop: 0.6, legSplit: 0.45, hand: [0.92, 0.53], shoulder: [0.45, 0.25] },
+  toguro: { legTop: 0.6, legSplit: 0.45, hand: [0.92, 0.53], shoulder: [0.45, 0.25], legTilt: [13, -30] },
 };
 
 export interface BodySprite {
@@ -105,13 +109,16 @@ export function buildSprite(img: HTMLImageElement, cfg: BodyConfig): BodySprite 
 }
 
 export interface RigState {
-  legB: number; // graus
+  legB: number; // graus (em pé: em volta da pose da imagem; montado: 0 = perna reta para baixo)
   legF: number;
   lean: number; // inclinação do corpo (graus, + = para frente)
   dy: number; // deslocamento vertical (cena)
   squash: number; // 1 = normal
-  lie: number; // 0 em pé, 90 deitado (cabeça para trás)
+  lie: number; // giro do corpo: 90 = deitado de costas (cabeça para trás), -75 = de bruços
+  /** "montado": quadril num ponto fixo (banco, selim, chão). Pernas viram ângulos absolutos. */
+  mount?: { x: number; y: number } | null;
   prop?: { kind: 'barbell' | 'dumbbell'; at: [number, number] } | null; // em frações do corpo
+  props2?: { kind: 'barbell' | 'dumbbell'; at: [number, number] } | null;
 }
 
 const rad = (d: number) => (d * Math.PI) / 180;
@@ -126,35 +133,42 @@ export function rigFor(action: string, phase: number, time: number, cfg: BodyCon
   const [sx, sy] = cfg.shoulder;
   switch (action) {
     case 'walk':
-      return { ...base, legB: -16 * s, legF: 16 * s, dy: -Math.abs(s) * 1.2, lean: 3 };
+      return { ...base, legB: -12 * s, legF: 12 * s, dy: -Math.abs(s) * 1.5, lean: 2 * s };
     case 'run':
-      return { ...base, legB: -30 * s, legF: 30 * s, dy: -Math.abs(s) * 3 - 4, lean: 10 };
+      return { ...base, legB: -24 * s, legF: 24 * s, dy: -Math.abs(s) * 3 - 5, lean: 8 };
     case 'bike':
-      return { ...base, legB: -22 * s, legF: 22 * s, lean: 12, dy: -3 };
+      // sentado no selim, pedalando
+      return { ...base, mount: { x: -4, y: -24 }, legB: -30 + 16 * s, legF: -30 - 16 * s, lean: 12 };
     case 'squat':
-      return { ...base, squash: 1 - 0.22 * e, legB: -8 * e, legF: 8 * e, prop: { kind: 'barbell', at: [sx, sy - 0.02] } };
+      return { ...base, squash: 1 - 0.2 * e, legB: -6 * e, legF: 6 * e, dy: 0, prop: { kind: 'barbell', at: [sx - 0.15, sy + 0.02] } };
     case 'deadlift':
-      return { ...base, lean: 38 * (1 - e), prop: { kind: 'barbell', at: [hx - 0.05, hy + 0.12 * (1 - e)] } };
+      return { ...base, lean: 35 * (1 - e), prop: { kind: 'barbell', at: [hx - 0.04, hy + 0.14 * (1 - e)] } };
     case 'row':
-      return { ...base, lean: 35, prop: { kind: 'barbell', at: [hx - 0.08, hy + 0.12 - 0.12 * e] } };
+      return { ...base, lean: 32, prop: { kind: 'barbell', at: [hx - 0.06, hy + 0.12 - 0.12 * e] } };
     case 'curl':
       return { ...base, lean: -3 * e, prop: { kind: 'dumbbell', at: [hx, hy - 0.2 * e] } };
     case 'press':
-      return { ...base, prop: { kind: 'dumbbell', at: [sx + 0.2, sy + 0.02 - 0.28 * e] } };
+      return { ...base, prop: { kind: 'dumbbell', at: [sx + 0.25, sy + 0.05 - 0.3 * e] } };
+    case 'fly':
+      // voador: os dois braços da máquina se fecham na frente do peito
+      return { ...base, lean: -2 * e, prop: { kind: 'dumbbell', at: [0.95 - 0.12 * e, sy + 0.1] }, props2: { kind: 'dumbbell', at: [0.2 + 0.5 * e, sy + 0.1] } };
     case 'pull':
-      return { ...base, dy: -14 - 10 * e, legB: 4 * Math.sin(time * 3), legF: -4 * Math.sin(time * 3) };
+      return { ...base, dy: -8 - 10 * e, legB: 6 * Math.sin(time * 3), legF: -6 * Math.sin(time * 3) };
     case 'bench':
-      return { ...base, lie: 90, dy: -10, prop: { kind: 'barbell', at: [0.8 + 0.3 * e, 0.36] } };
+      // deitado de costas no banco, pés no chão, barra sobe e desce acima do peito
+      return { ...base, mount: { x: 10, y: -15 }, lie: 55, legB: -10, legF: -22, prop: { kind: 'barbell', at: [0.8 + 0.3 * e, 0.48] } };
     case 'abs':
-      return { ...base, lie: 90 - 30 * e, dy: -1 };
+      // no colchonete: pernas esticadas no chão, tronco sobe
+      return { ...base, mount: { x: 8, y: -6 }, lie: 75 - 40 * e, legB: -80, legF: -80 };
     case 'pushup':
-      return { ...base, lie: -90, dy: -2 - 5 * e };
+      // de bruços: corpo reto, sobe e desce
+      return { ...base, mount: { x: -6, y: -7 - 6 * e }, lie: -78 + 10 * e, legB: 80 - 10 * e, legF: 80 - 10 * e };
     case 'stretch':
-      return { ...base, lean: 70 * e };
+      return { ...base, lean: 65 * e };
     case 'flex':
       return { ...base, dy: -Math.abs(Math.sin(time * 6)) * 5, squash: 1 + Math.sin(time * 12) * 0.02 };
     case 'sleep':
-      return { ...base, lie: 90, dy: -10 + Math.sin(time * 2) * 0.4 };
+      return { ...base, mount: { x: 10, y: -15 }, lie: 70, legB: -10, legF: -22, dy: Math.sin(time * 2) * 0.4 };
     default: // idle e descanso: respiração
       return { ...base, squash: 1 + Math.sin(time * 2.5) * 0.012 };
   }
@@ -164,50 +178,58 @@ export function rigFor(action: string, phase: number, time: number, cfg: BodyCon
 export function drawSprite(ctx: CanvasRenderingContext2D, sp: BodySprite, x: number, y: number, facing: 1 | -1, height: number, r: RigState, drawProp: (kind: 'barbell' | 'dumbbell', px: number, py: number) => void) {
   const k = height / sp.h;
   const legH = sp.h * (1 - sp.cfg.legTop) * k;
-  const legY = sp.h * sp.cfg.legTop * k; // altura (de cima) onde começam as pernas
-  const split = sp.w * sp.cfg.legSplit * k;
+  const legY = sp.h * sp.cfg.legTop * k; // distância do topo da cabeça até o quadril
   const W = sp.w * k;
+  const split = sp.w * sp.cfg.legSplit * k;
   const flip = (sp.cfg.facesRight ? 1 : -1) * facing;
+  const [tiltB, tiltF] = sp.cfg.legTilt;
+  const wB = (sp.legB.width / sp.w) * W;
+  const wF = (sp.legF.width / sp.w) * W;
+  // junta do quadril de cada perna (x em relação ao centro do corpo)
+  const [pB, pF] = sp.cfg.legPivot;
+  const cB = -W / 2 + wB * pB;
+  const cF = -W / 2 + split + wF * pF;
 
-  ctx.save();
-  ctx.translate(x, y + r.dy);
-  ctx.scale(flip, 1);
-  // sombra
-  if (!r.lie) {
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(0, -r.dy, W * 0.42, 2.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  if (r.lie) {
-    // deitado: gira o corpo inteiro em volta do quadril
-    ctx.translate(0, -legH * 0.4);
-    ctx.rotate(rad(-r.lie));
-    ctx.translate(0, legH * 0.4);
-  }
-  ctx.scale(1, r.squash);
-  // pernas: giram no quadril (topo de cada pedaço)
-  const top = -height; // topo da cabeça
-  const hipY = top + legY;
-  const leg = (cv: HTMLCanvasElement, left: number, ang: number) => {
-    const w2 = (cv.width / sp.w) * W;
-    const cx = left + w2 / 2;
+  const leg = (cv: HTMLCanvasElement, cx: number, w: number, piv: number, ang: number) => {
     ctx.save();
-    ctx.translate(cx, hipY);
+    ctx.translate(cx, 0);
     ctx.rotate(rad(ang));
-    ctx.drawImage(cv, -w2 / 2, 0, w2, legH);
+    ctx.drawImage(cv, -w * piv, 0, w, legH);
     ctx.restore();
   };
-  leg(sp.legB, -W / 2, r.legB);
-  leg(sp.legF, -W / 2 + split, r.legF);
-  // corpo: inclina em volta do quadril
+  const upper = () => {
+    const upperH = (sp.upper.height / sp.h) * height;
+    ctx.drawImage(sp.upper, -W / 2, -legY, W, upperH);
+    const P = (p: RigState['prop']) => p && drawProp(p.kind, -W / 2 + p.at[0] * W, -legY + p.at[1] * height);
+    P(r.prop);
+    P(r.props2);
+  };
+
   ctx.save();
-  ctx.translate(0, hipY);
+  if (r.mount) {
+    // quadril preso num ponto: pernas em ângulo absoluto (0 = para baixo), corpo gira
+    ctx.translate(x + r.mount.x * facing, y + r.mount.y + r.dy);
+    ctx.scale(flip, 1);
+    const mid = (cB + cF) / 2;
+    leg(sp.legB, (cB - mid) * 0.6, wB, pB, r.legB - tiltB);
+    leg(sp.legF, (cF - mid) * 0.6, wF, pF, r.legF - tiltF);
+    ctx.translate(-mid, 0);
+    ctx.rotate(rad(-r.lie + r.lean));
+    upper();
+    ctx.restore();
+    return;
+  }
+  ctx.translate(x, y + r.dy);
+  ctx.scale(flip, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(0, -r.dy, W * 0.42, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.scale(1, r.squash);
+  ctx.translate(0, -legH); // origem no quadril
+  leg(sp.legB, cB, wB, pB, r.legB);
+  leg(sp.legF, cF, wF, pF, r.legF);
   ctx.rotate(rad(r.lean));
-  ctx.translate(0, -hipY);
-  const upperH = (sp.upper.height / sp.h) * height;
-  ctx.drawImage(sp.upper, -W / 2, top, W, upperH);
-  if (r.prop) drawProp(r.prop.kind, -W / 2 + r.prop.at[0] * W, top + r.prop.at[1] * height);
-  ctx.restore();
+  upper();
   ctx.restore();
 }

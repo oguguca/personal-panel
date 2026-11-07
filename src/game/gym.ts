@@ -7,7 +7,7 @@ import type { Data, DayKey, Exercise, WorkoutItem } from '../store/types';
 
 export type Anim =
   | 'bench' | 'squat' | 'deadlift' | 'curl' | 'press' | 'pull' | 'row'
-  | 'abs' | 'pushup' | 'stretch' | 'run' | 'bike';
+  | 'abs' | 'pushup' | 'stretch' | 'run' | 'bike' | 'fly';
 
 export type StationId = 'treadmill' | 'bike' | 'bench' | 'rack' | 'platform' | 'pullup' | 'dumbbells' | 'mat';
 
@@ -36,21 +36,23 @@ export const STATION_OF: Record<Anim, StationId> = {
   abs: 'mat',
   pushup: 'mat',
   stretch: 'mat',
+  fly: 'dumbbells',
 };
 
 // Palavras do nome (sem acento) -> movimento. A ordem importa.
 const BY_NAME: [RegExp, Anim][] = [
+  [/abdominal|prancha|crunch|infra|obliquo|canivete/, 'abs'],
   [/bicicleta|bike|pedal|ergometr|spinning/, 'bike'],
   [/esteira|corrida|correr|caminhada|trote|eliptic|escada|remo ergo|pular corda/, 'run'],
   [/flexao de braco|flexoes|push.?up/, 'pushup'],
-  [/supino|crucifixo|voador|peck|chest press|crossover/, 'bench'],
+  [/voador|peck|crucifixo|crossover/, 'fly'],
+  [/supino|chest press/, 'bench'],
   [/terra|stiff|deadlift|good morning|bom dia/, 'deadlift'],
   [/agacha|leg press|hack|afundo|passada|bulgar|extensora|flexora|panturrilha|elevacao pelvica|gluteo|cadeira|mesa/, 'squat'],
   [/barra fixa|puxada|pulldown|pull.?up|chin.?up/, 'pull'],
   [/remada|serrote/, 'row'],
   [/rosca|curl/, 'curl'],
   [/desenvolvimento|militar|elevacao lateral|elevacao frontal|triceps|frances|testa|mergulho|encolhimento|arnold/, 'press'],
-  [/abdominal|prancha|crunch|infra|obliquo|canivete/, 'abs'],
   [/alongamento|mobilidade|rolo/, 'stretch'],
 ];
 

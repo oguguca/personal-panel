@@ -275,9 +275,9 @@ export function drawStations(ctx: CanvasRenderingContext2D, busy: StationId | nu
   // supino
   {
     const x = S.bench;
-    rect(ctx, x - 14, G - 12, 30, 4, '#7f1d1d');
-    rect(ctx, x - 14, G - 12, 30, 1, '#b91c1c');
-    rect(ctx, x - 10, G - 8, 2, 8, '#3c4152');
+    rect(ctx, x - 30, G - 12, 46, 4, '#7f1d1d');
+    rect(ctx, x - 30, G - 12, 46, 1, '#b91c1c');
+    rect(ctx, x - 24, G - 8, 2, 8, '#3c4152');
     rect(ctx, x + 10, G - 8, 2, 8, '#3c4152');
     rect(ctx, x - 20, G - 34, 2, 34, '#3c4152');
     if (busy !== 'bench') {
