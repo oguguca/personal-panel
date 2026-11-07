@@ -9,6 +9,7 @@ import Metas from './pages/Metas.jsx';
 import Alimentacao from './pages/Alimentacao.jsx';
 import Gravacao from './pages/Gravacao.jsx';
 import Treino from './pages/Treino.jsx';
+import Evolucao from './pages/Evolucao.jsx';
 import Historico from './pages/Historico.jsx';
 import Configuracoes from './pages/Configuracoes.jsx';
 
@@ -20,6 +21,7 @@ export const PAGES = [
   { id: 'agua', label: 'Água', hidden: true, parent: 'alimentacao', Comp: (props) => <Alimentacao {...props} tab="agua" /> },
   { id: 'alimentacao', label: 'Alimentação', short: 'Refeições', icon: 'alimentacao', Comp: Alimentacao },
   { id: 'treino', label: 'Treino', icon: 'treino', Comp: Treino },
+  { id: 'evolucao', label: 'Evolução', icon: 'evolucao', Comp: Evolucao },
   { id: 'gravacao', label: 'Renda', img: './renda.png', Comp: Gravacao },
   { id: 'historico', label: 'Histórico', icon: 'historico', Comp: Historico },
   { id: 'config', label: 'Configurações', short: 'Ajustes', icon: 'config', Comp: Configuracoes },

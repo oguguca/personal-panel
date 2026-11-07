@@ -4,6 +4,7 @@ import { Check, Empty, Progress } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import { WEEKDAYS_NAME, WEEKDAYS_SHORT, addDays, weekday } from '../store/dates.js';
 import { getDay, uid } from '../store/model.js';
+import { ATTRS, ATTR_BY_ID, XP, guessAttr } from '../store/game.js';
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -30,6 +31,21 @@ export function DayPicker({ value, onChange }) {
   );
 }
 
+/** Atributo de desenvolvimento pessoal da tarefa (aba Evolução). */
+function AttrSelect({ value, onChange }) {
+  return (
+    <select
+      className={`attr-select ${value ? 'set' : ''}`}
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value || null)}
+      title="Atributo que esta tarefa desenvolve (aba Evolução)"
+    >
+      <option value="">+ atributo</option>
+      {ATTRS.map((a) => <option key={a.id} value={a.id}>{a.emoji} {a.name}</option>)}
+    </select>
+  );
+}
+
 export function describeDays(days) {
   if (days.length === 7) return 'Todo dia';
   if (days.join() === '1,2,3,4,5') return 'Dias úteis';
@@ -45,6 +61,10 @@ export default function Tarefas() {
   const [editing, setEditing] = useState(null); // { id, title, days? , kind }
   const [dragId, setDragId] = useState(null);
   const [overId, setOverId] = useState(null);
+  const [attr, setAttr] = useState(null); // escolhido à mão
+  const [attrManual, setAttrManual] = useState(false);
+  const [toast, setToast] = useState(null);
+  const autoAttr = attrManual ? attr : guessAttr(title); // sem escolha: adivinha pelo título
 
   const tomorrow = addDays(today, 1);
   const tasks = day.tasks.filter((t) => !t.movedTo);
@@ -57,22 +77,39 @@ export default function Tarefas() {
     e.preventDefault();
     const t = title.trim();
     if (!t) return;
+    const a = autoAttr || null;
     if (recurring) {
       if (!days.length) return;
       update((d) => {
-        const r = { id: uid(), title: t, days };
+        const r = { id: uid(), title: t, days, attr: a };
         d.recurring.push(r);
         if (days.includes(weekday(today))) {
-          d.days[today].tasks.push({ id: uid(), title: t, done: false, recurringId: r.id });
+          d.days[today].tasks.push({ id: uid(), title: t, done: false, recurringId: r.id, attr: a });
         }
       });
     } else {
-      mutTasks((list) => list.push({ id: uid(), title: t, done: false }));
+      mutTasks((list) => list.push({ id: uid(), title: t, done: false, attr: a }));
     }
     setTitle('');
+    setAttr(null);
+    setAttrManual(false);
   };
 
-  const toggle = (id) => mutTasks((list) => { const t = list.find((x) => x.id === id); t.done = !t.done; });
+  const toggle = (id) => {
+    const cur = tasks.find((x) => x.id === id);
+    if (cur && !cur.done) {
+      const a = ATTR_BY_ID[cur.attr];
+      setToast({ key: Date.now(), text: a ? `+${XP.task} XP ${a.emoji} ${a.name}` : `+${XP.taskPlain} XP 🎯 Disciplina` });
+    }
+    mutTasks((list) => { const t = list.find((x) => x.id === id); t.done = !t.done; });
+  };
+  const setTaskAttr = (id, a) => mutTasks((list) => { list.find((x) => x.id === id).attr = a; });
+  const setRecurringAttr = (id, a) =>
+    update((d) => {
+      d.recurring.find((r) => r.id === id).attr = a;
+      const inst = d.days[today].tasks.find((x) => x.recurringId === id);
+      if (inst) inst.attr = a;
+    });
   const remove = (id) => mutTasks((list) => list.splice(list.findIndex((x) => x.id === id), 1));
 
   // Reordena considerando só as tarefas visíveis (as "movidas" ficam onde estão).
@@ -95,7 +132,7 @@ export default function Tarefas() {
       const list = d.days[today].tasks;
       const i = list.findIndex((x) => x.id === id);
       const [t] = list.splice(i, 1);
-      getDay(d, tomorrow).tasks.push({ id: uid(), title: t.title, done: false, carried: true });
+      getDay(d, tomorrow).tasks.push({ id: uid(), title: t.title, done: false, carried: true, attr: t.attr || null });
     });
   const bringBack = (id) =>
     update((d) => {
@@ -175,6 +212,20 @@ export default function Tarefas() {
           <Icon name="repeat" size={16} /> Repetir
         </label>
         {recurring && <DayPicker value={days} onChange={setDays} />}
+        <div className="chips" aria-label="Desenvolvimento pessoal">
+          <span className="muted small" style={{ alignSelf: 'center' }}>Evolução:</span>
+          {ATTRS.map((a) => (
+            <button
+              type="button"
+              key={a.id}
+              className={`chip ${autoAttr === a.id ? 'on' : ''}`}
+              onClick={() => { setAttrManual(true); setAttr(autoAttr === a.id ? null : a.id); }}
+              title={a.how}
+            >
+              {a.emoji} {a.name}
+            </button>
+          ))}
+        </div>
       </form>
 
       <section className="card">
@@ -203,6 +254,7 @@ export default function Tarefas() {
                       {t.recurringId && <span className="badge primary"><Icon name="repeat" size={12} /> recorrente</span>}
                       {t.carried && <span className="badge warning">adiada</span>}
                     </span>
+                    <AttrSelect value={t.attr} onChange={(a) => setTaskAttr(t.id, a)} />
                     <div className="item-actions">
                       <button className="icon-btn" title="Subir" disabled={i === 0} onClick={() => move(t.id, -1)}><Icon name="up" size={18} /></button>
                       <button className="icon-btn" title="Descer" disabled={i === tasks.length - 1} onClick={() => move(t.id, 1)}><Icon name="down" size={18} /></button>
@@ -256,6 +308,7 @@ export default function Tarefas() {
                 ) : (
                   <>
                     <span className="item-title">{r.title}</span>
+                    <AttrSelect value={r.attr} onChange={(a) => setRecurringAttr(r.id, a)} />
                     <span className="badge">{describeDays(r.days)}</span>
                     <div className="item-actions">
                       <button className="icon-btn" title="Editar" onClick={() => setEditing({ id: r.id, title: r.title, days: r.days, kind: 'recurring' })}><Icon name="edit" size={18} /></button>
@@ -270,6 +323,7 @@ export default function Tarefas() {
           <Empty>Nenhuma tarefa recorrente.</Empty>
         )}
       </section>
+      {toast && <div key={toast.key} className="xp-toast" onAnimationEnd={() => setToast(null)}>{toast.text}</div>}
     </div>
   );
 }

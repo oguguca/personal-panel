@@ -21,6 +21,10 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
   (traduções em `scripts/translations/`). Também há aba de **ciclo e descanso**: sequência de 1 a 7 treinos,
   dias de descanso e previsão que segue o último treino feito. Para baixar/atualizar a lista e as fotos:
   `npm run exercises`.
+- **Evolução** (desenvolvimento pessoal em modo jogo): personagem holográfico com 6 atributos (Intelecto, Idiomas,
+  Vitalidade, Força, Disciplina, Resistência). Cada tarefa pode ter um atributo (o app sugere pelo título: "ler", "inglês"…).
+  Tarefas, água, refeições, metas, renda e treinos dão XP; o personagem sobe de nível, ganha rank (E a S) e brilha mais.
+  Rank da academia (Ferro a Lenda) usa os treinos feitos e a evolução das cargas.
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

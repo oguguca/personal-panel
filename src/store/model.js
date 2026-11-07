@@ -34,7 +34,7 @@ export function defaultData() {
   return {
     version: 1,
     settings: defaultSettings(),
-    recurring: [], // { id, title, days: [0..6] }
+    recurring: [], // { id, title, days: [0..6], attr? }
     dailyGoals: [], // { id, title, type: 'check' | 'count', target, unit, step }
     longGoals: [], // { id, title, current, target, unit }
     days: {}, // 'AAAA-MM-DD' -> Day
@@ -76,7 +76,7 @@ export function ensureDay(data, key) {
   const wd = weekday(key);
   for (const r of data.recurring) {
     if (r.days.includes(wd) && !day.tasks.some((t) => t.recurringId === r.id)) {
-      fresh.push({ id: uid(), title: r.title, done: false, recurringId: r.id });
+      fresh.push({ id: uid(), title: r.title, done: false, recurringId: r.id, attr: r.attr || null });
     }
   }
 
@@ -86,7 +86,7 @@ export function ensureDay(data, key) {
     for (const t of data.days[prevKey].tasks) {
       if (!t.done && !t.recurringId && !t.movedTo) {
         t.movedTo = key;
-        fresh.push({ id: uid(), title: t.title, done: false, carried: true });
+        fresh.push({ id: uid(), title: t.title, done: false, carried: true, attr: t.attr || null });
       }
     }
   }

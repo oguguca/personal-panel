@@ -11,7 +11,12 @@ export function useTrainingActions() {
   const nameOf = (id) => data.workouts.find((w) => w.id === id)?.name || 'Treino';
   return {
     done: (workoutId) =>
-      update((d) => { d.days[today].training = { type: 'workout', workoutId, name: nameOf(workoutId), at: Date.now() }; }),
+      update((d) => {
+        // guarda as cargas do dia: é assim que a aba Evolução mede a força ao longo do tempo
+        const w = d.workouts.find((x) => x.id === workoutId);
+        const items = (w?.items || []).map(({ exId, sets, reps, weight, minutes }) => ({ exId, sets, reps, weight, minutes }));
+        d.days[today].training = { type: 'workout', workoutId, name: nameOf(workoutId), at: Date.now(), items };
+      }),
     rest: () => update((d) => { d.days[today].training = { type: 'rest', at: Date.now() }; }),
     undo: () => update((d) => { delete d.days[today].training; }),
   };
