@@ -7,7 +7,7 @@ import { getDay, uid } from '../store/model.js';
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
-function DayPicker({ value, onChange }) {
+export function DayPicker({ value, onChange }) {
   const all = value.length === 7;
   const toggle = (d) => onChange(value.includes(d) ? value.filter((x) => x !== d) : [...value, d].sort());
   return (

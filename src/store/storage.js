@@ -19,6 +19,7 @@ function normalize(raw) {
     longGoals: Array.isArray(raw.longGoals) ? raw.longGoals : [],
     days: raw.days && typeof raw.days === 'object' ? raw.days : {},
     customFoods: Array.isArray(raw.customFoods) ? raw.customFoods : [],
+    workouts: Array.isArray(raw.workouts) ? raw.workouts : [],
     foodUsage: raw.foodUsage && typeof raw.foodUsage === 'object' ? raw.foodUsage : {},
   };
 }

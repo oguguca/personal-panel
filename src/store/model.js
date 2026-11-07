@@ -40,6 +40,7 @@ export function defaultData() {
     lastDay: null,
     customFoods: [], // { id, name, kcal (por 100 g) }
     foodUsage: {}, // chave do alimento -> { count, grams, last }
+    workouts: [], // { id, name, days: [0..6], items: [{ id, exId, sets, reps, weight, note }] }
   };
 }
 

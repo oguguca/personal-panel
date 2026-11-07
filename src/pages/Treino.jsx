@@ -1,21 +1,289 @@
+import { useMemo, useState } from 'react';
+import BodyMap from '../components/BodyMap.jsx';
 import Icon from '../components/Icon.jsx';
+import { Empty } from '../components/ui.jsx';
+import { EQUIPMENT, EXERCISES, EXERCISE_BY_ID, MUSCLES } from '../data/exercises.js';
+import { useStore } from '../store/StoreContext.jsx';
+import { weekday } from '../store/dates.js';
+import { norm } from '../store/foods.js';
+import { uid } from '../store/model.js';
+import { DayPicker, describeDays } from './Tarefas.jsx';
 
-// Aba reservada para os treinos (conteúdo a definir).
+const LETTERS = 'ABCDEFGHIJ';
+
+/** Músculos trabalhados por um treino (principais). */
+function musclesOf(w) {
+  const set = new Set();
+  for (const it of w.items) EXERCISE_BY_ID[it.exId]?.m.forEach((m) => set.add(m));
+  return [...set];
+}
+
+// ---------------------------------------------------------------------------
+// Biblioteca: mapa do corpo + filtros + lista de exercícios
+// ---------------------------------------------------------------------------
+function Library({ workouts, target, setTarget, onAdd, onCreate }) {
+  const [muscles, setMuscles] = useState([]);
+  const [equip, setEquip] = useState([]);
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(null);
+
+  const toggle = (list, set) => (v) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  const toggleMuscle = toggle(muscles, setMuscles);
+  const toggleEquip = toggle(equip, setEquip);
+
+  const list = useMemo(() => {
+    const words = norm(q).split(' ').filter(Boolean);
+    return EXERCISES.filter((e) => {
+      if (muscles.length && !muscles.some((m) => e.m.includes(m) || e.s.includes(m))) return false;
+      if (equip.length && !equip.includes(e.eq)) return false;
+      if (words.length && !words.every((w) => norm(e.name).includes(w))) return false;
+      return true;
+    }).sort((a, b) => {
+      // quem tem o músculo escolhido como PRINCIPAL vem antes
+      const pa = muscles.some((m) => a.m.includes(m)) ? 0 : 1;
+      const pb = muscles.some((m) => b.m.includes(m)) ? 0 : 1;
+      return pa - pb;
+    });
+  }, [muscles, equip, q]);
+
+  const targetW = workouts.find((w) => w.id === target);
+  const inTarget = new Set(targetW?.items.map((i) => i.exId) || []);
+
+  return (
+    <div className="treino-layout">
+      <div className="card">
+        <div className="card-head">
+          <h2>Grupos musculares</h2>
+          {muscles.length > 0 && <button className="link small" onClick={() => setMuscles([])}>Limpar</button>}
+        </div>
+        <BodyMap selected={muscles} onToggle={toggleMuscle} />
+        <div className="chips">
+          {Object.entries(MUSCLES).map(([id, name]) => (
+            <button key={id} className={`chip ${muscles.includes(id) ? 'on' : ''}`} onClick={() => toggleMuscle(id)}>{name}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="row">
+          <input className="input" placeholder="Buscar exercício…" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        <div className="chips">
+          {EQUIPMENT.map((eq) => (
+            <button key={eq} className={`chip ${equip.includes(eq) ? 'on' : ''}`} onClick={() => toggleEquip(eq)}>{eq}</button>
+          ))}
+        </div>
+        <div className="row small" style={{ justifyContent: 'space-between' }}>
+          <span className="muted">{list.length} exercício(s)</span>
+          {workouts.length ? (
+            <label className="row" style={{ gap: 6 }}>
+              <span className="muted">Adicionar em:</span>
+              <select className="input" style={{ width: 'auto' }} value={target || ''} onChange={(e) => setTarget(e.target.value)}>
+                {workouts.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+              </select>
+            </label>
+          ) : (
+            <button className="btn sm" onClick={onCreate}><Icon name="plus" size={14} /> Criar treino</button>
+          )}
+        </div>
+
+        {list.length ? (
+          <div className="list" style={{ gap: 8 }}>
+            {list.map((e) => (
+              <div key={e.id} className="ex-item">
+                <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+                  <button className="link" style={{ color: 'var(--text)', textAlign: 'left' }} onClick={() => setOpen(open === e.id ? null : e.id)}>
+                    {e.name}
+                  </button>
+                  {inTarget.has(e.id) ? (
+                    <span className="badge success"><Icon name="check" size={12} /> no {targetW.name}</span>
+                  ) : (
+                    <button className="btn sm primary" onClick={() => onAdd(e.id)} title={workouts.length ? `Adicionar ao ${targetW?.name}` : 'Cria um treino e adiciona'}>
+                      <Icon name="plus" size={14} /> Adicionar
+                    </button>
+                  )}
+                </div>
+                <div className="chips">
+                  {e.m.map((m) => <span key={m} className="badge primary">{MUSCLES[m]}</span>)}
+                  {e.s.map((m) => <span key={m} className="badge">{MUSCLES[m]}</span>)}
+                  <span className="badge warning">{e.eq}</span>
+                </div>
+                {open === e.id ? (
+                  <ol>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                ) : (
+                  <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(e.id)}>Como fazer</button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Empty>Nenhum exercício com esses filtros.</Empty>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Um treino montado (Treino A, B…)
+// ---------------------------------------------------------------------------
+function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
+  const [renaming, setRenaming] = useState(false);
+  const [showDays, setShowDays] = useState(false);
+  const muscles = musclesOf(w);
+
+  const setItem = (id, k, v) => onChange((x) => { x.items.find((i) => i.id === id)[k] = v; });
+  const move = (idx, dir) =>
+    onChange((x) => {
+      const j = idx + dir;
+      if (j < 0 || j >= x.items.length) return;
+      [x.items[idx], x.items[j]] = [x.items[j], x.items[idx]];
+    });
+
+  return (
+    <div className="card">
+      <div className="card-head">
+        {renaming ? (
+          <form className="inline-edit" onSubmit={(e) => { e.preventDefault(); setRenaming(false); }}>
+            <input className="input" autoFocus value={w.name} onChange={(e) => onChange((x) => { x.name = e.target.value; })} onBlur={() => setRenaming(false)} />
+          </form>
+        ) : (
+          <h2 onDoubleClick={() => setRenaming(true)}>
+            {w.name} {isToday && <span className="badge success">hoje</span>}
+          </h2>
+        )}
+        <div className="row" style={{ gap: 2, flexWrap: 'nowrap' }}>
+          <button className="icon-btn" title="Renomear" onClick={() => setRenaming(true)}><Icon name="edit" size={18} /></button>
+          <button className="icon-btn danger" title="Apagar treino" onClick={onRemove}><Icon name="trash" size={18} /></button>
+        </div>
+      </div>
+
+      <div className="row small" style={{ justifyContent: 'space-between' }}>
+        <span className="muted">
+          <Icon name="clock" size={14} /> {w.days.length ? describeDays(w.days) : 'Sem dia fixo'}
+        </span>
+        <button className="link small" onClick={() => setShowDays(!showDays)}>{showDays ? 'Pronto' : 'Escolher dias'}</button>
+      </div>
+      {showDays && <DayPicker value={w.days} onChange={(v) => onChange((x) => { x.days = v; })} />}
+
+      {muscles.length > 0 && (
+        <div className="chips">{muscles.map((m) => <span key={m} className="badge primary">{MUSCLES[m]}</span>)}</div>
+      )}
+
+      {w.items.length ? (
+        <ul className="list">
+          {w.items.map((it, i) => {
+            const e = EXERCISE_BY_ID[it.exId];
+            return (
+              <li key={it.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
+                <div className="ex-row">
+                  <span className="muted small">{i + 1}.</span>
+                  <span className="item-title">{e?.name || 'Exercício removido'}</span>
+                  <div className="item-actions">
+                    <button className="icon-btn" title="Subir" disabled={i === 0} onClick={() => move(i, -1)}><Icon name="up" size={16} /></button>
+                    <button className="icon-btn" title="Descer" disabled={i === w.items.length - 1} onClick={() => move(i, 1)}><Icon name="down" size={16} /></button>
+                    <button className="icon-btn danger" title="Remover" onClick={() => onChange((x) => { x.items = x.items.filter((y) => y.id !== it.id); })}><Icon name="trash" size={16} /></button>
+                  </div>
+                </div>
+                <div className="ex-sets" style={{ paddingLeft: 32 }}>
+                  <input className="input" type="number" min="1" value={it.sets} onChange={(ev) => setItem(it.id, 'sets', ev.target.value)} aria-label="Séries" />
+                  <span>séries ×</span>
+                  <input className="input" value={it.reps} onChange={(ev) => setItem(it.id, 'reps', ev.target.value)} aria-label="Repetições" placeholder="10-12" />
+                  <span>reps</span>
+                  <input className="input" type="number" min="0" step="0.5" value={it.weight} onChange={(ev) => setItem(it.id, 'weight', ev.target.value)} aria-label="Carga em kg" placeholder="—" />
+                  <span>kg</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <Empty>Nenhum exercício ainda.</Empty>
+      )}
+      <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={onAddExercises}>
+        <Icon name="plus" size={16} /> Adicionar exercícios
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 export default function Treino() {
+  const { data, today, update } = useStore();
+  const workouts = data.workouts;
+  const [tab, setTab] = useState('treinos');
+  const [target, setTarget] = useState(workouts[0]?.id || null);
+  const wd = weekday(today);
+
+  const createWorkout = () => {
+    const w = { id: uid(), name: `Treino ${LETTERS[workouts.length] || workouts.length + 1}`, days: [], items: [] };
+    update((d) => d.workouts.push(w));
+    setTarget(w.id);
+    return w.id;
+  };
+  const changeWorkout = (id) => (fn) => update((d) => fn(d.workouts.find((w) => w.id === id)));
+  const removeWorkout = (w) => {
+    if (!confirm(`Apagar o ${w.name}?`)) return;
+    update((d) => { d.workouts = d.workouts.filter((x) => x.id !== w.id); });
+    if (target === w.id) setTarget(workouts.find((x) => x.id !== w.id)?.id || null);
+  };
+  const addExercise = (exId) => {
+    const id = target && workouts.some((w) => w.id === target) ? target : createWorkout();
+    update((d) => {
+      d.workouts.find((w) => w.id === id).items.push({ id: uid(), exId, sets: 3, reps: '10-12', weight: '' });
+    });
+  };
+
   return (
     <div className="page">
       <header className="page-header">
         <div>
           <h1>Treino</h1>
-          <p className="muted">Em breve</p>
+          <p className="muted">Monte seus treinos escolhendo músculos e exercícios.</p>
+        </div>
+        <div className="segmented">
+          <button className={tab === 'treinos' ? 'on' : ''} onClick={() => setTab('treinos')}>Meus treinos</button>
+          <button className={tab === 'exercicios' ? 'on' : ''} onClick={() => setTab('exercicios')}>Exercícios</button>
         </div>
       </header>
-      <div className="card">
-        <div className="empty">
-          <Icon name="treino" size={40} />
-          <p>Esta aba ainda está vazia.</p>
-        </div>
-      </div>
+
+      {tab === 'exercicios' ? (
+        <Library workouts={workouts} target={target} setTarget={setTarget} onAdd={addExercise} onCreate={createWorkout} />
+      ) : (
+        <>
+          <div className="row">
+            <button className="btn primary" onClick={createWorkout}><Icon name="plus" size={18} /> Novo treino</button>
+          </div>
+          {workouts.length ? (
+            <section className="grid">
+              {workouts.map((w) => (
+                <WorkoutCard
+                  key={w.id}
+                  w={w}
+                  isToday={w.days.includes(wd)}
+                  onChange={changeWorkout(w.id)}
+                  onRemove={() => removeWorkout(w)}
+                  onAddExercises={() => { setTarget(w.id); setTab('exercicios'); }}
+                />
+              ))}
+            </section>
+          ) : (
+            <div className="card">
+              <Empty>
+                Você ainda não montou nenhum treino.
+                <div style={{ marginTop: 8 }}>
+                  <button className="btn primary" onClick={() => { createWorkout(); setTab('exercicios'); }}>
+                    <Icon name="plus" size={16} /> Montar meu primeiro treino
+                  </button>
+                </div>
+              </Empty>
+            </div>
+          )}
+          <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>
+            Dicas gerais de execução. Em caso de dor ou dúvida, procure um profissional de educação física.
+          </p>
+        </>
+      )}
     </div>
   );
 }
