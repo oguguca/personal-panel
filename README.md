@@ -1,7 +1,7 @@
 # Painel Pessoal
 
 App pessoal para Windows que organiza o dia: tarefas, metas, água, refeições e histórico.
-Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no seu computador.
+Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados ficam salvos só no seu computador.
 
 ## Funcionalidades
 
@@ -75,7 +75,7 @@ electron/         Tudo que é específico do Windows (janela, bandeja, notifica�
   preload.js
   icons/
 src/
-  platform.js     Único ponto da interface que fala com o Electron (no navegador usa APIs web)
+  platform.ts     Único ponto da interface que fala com o Electron (no navegador usa APIs web)
   store/          Dados, localStorage, virada do dia e resumo para o histórico
   hooks/          Lembretes de água e refeições
   components/     Copo d'água, gráfico, ícones e peças de UI
