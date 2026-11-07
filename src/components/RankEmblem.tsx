@@ -1,11 +1,38 @@
 // Emblema do rank (SVG próprio). Fica mais elaborado a cada rank:
 // escudo → asas (Jorlan) → coroa (Stronda) → joia (Brandão) → raios (CBum) → fogo (Ganley).
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { TIERS, tierSlug } from '../store/tiers';
 
-// Imagem opcional por rank em public/ranks/<slug>.<ext>. Lembra quais não existem.
+// Imagem opcional por rank em public/ranks/<slug>.<ext>.
+// Testa uma vez por rank (png, jpg, webp) e guarda o resultado: null = sem imagem.
 const EXTS = ['png', 'jpg', 'webp'];
-const missing = new Map<string, number>();
+const found = new Map<string, Promise<string | null>>();
+function findPortrait(slug: string): Promise<string | null> {
+  if (!found.has(slug)) {
+    const tryExt = (i: number): Promise<string | null> =>
+      i >= EXTS.length
+        ? Promise.resolve(null)
+        : new Promise((ok) => {
+            const url = `./ranks/${slug}.${EXTS[i]}`;
+            const img = new Image();
+            img.onload = () => ok(url);
+            img.onerror = () => ok(tryExt(i + 1));
+            img.src = url;
+          });
+    found.set(slug, tryExt(0));
+  }
+  return found.get(slug)!;
+}
+
+function usePortrait(slug: string) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    findPortrait(slug).then((u) => alive && setUrl(u));
+    return () => { alive = false; };
+  }, [slug]);
+  return url;
+}
 
 const ROMAN = ['★', 'I', 'II', 'III'];
 const SHIELD = 'M0,-40 L31,-29 L29,6 C26,25 12,35 0,42 C-12,35 -26,25 -29,6 L-31,-29 Z';
@@ -32,12 +59,7 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
   const gem = tier >= 6;
   const legend = tier === TIERS.length - 1;
   const slug = tierSlug(TIERS[tier].name);
-  const [ext, setExt] = useState(() => missing.get(slug) ?? 0);
-  const photo = !locked && ext < EXTS.length;
-  const nextExt = () => {
-    missing.set(slug, ext + 1);
-    setExt(ext + 1);
-  };
+  const photo = usePortrait(slug);
 
   return (
     <svg
@@ -103,11 +125,10 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
         <>
           <circle cy="-4" r="24" fill={dark} stroke={light} strokeWidth="2.5" />
           <image
-            href={`./ranks/${slug}.${EXTS[ext]}`}
+            href={photo}
             x="-22" y="-26" width="44" height="44"
             preserveAspectRatio="xMidYMid slice"
             clipPath={`url(#p${id})`}
-            onError={nextExt}
           />
           <rect x="-15" y="21" width="30" height="15" rx="4" fill={dark} stroke={light} strokeWidth="1.2" />
           <text y="32.5" textAnchor="middle" fontSize="11" fontWeight="900" fill="#fff" style={{ fontFamily: 'Georgia, serif' }}>{ROMAN[div]}</text>

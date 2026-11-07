@@ -1,8 +1,9 @@
 // Painel do rank da temporada: emblema, pontos, sequência, partidas, escada e temporadas passadas.
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import RankEmblem from './RankEmblem';
 import { formatShort, parseKey } from '../store/dates';
-import { RANK, TIERS, comboOf, type Match, type Ranked } from '../store/rank';
+import { GYM_TIERS } from '../store/game';
+import { RANK, TIERS, TOP, comboOf, type Match, type Ranked } from '../store/rank';
 
 const RESULT: Record<Match['result'], { label: string; cls: string }> = {
   win: { label: 'Vitória', cls: 'win' },
@@ -25,6 +26,7 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
   const todayXp = todayMatch?.result === 'live' ? todayMatch.xp : 0;
   const toWin = Math.max(0, RANK.activeXp - todayXp);
   const recent = season.matches.slice(-14);
+  const [showAll, setShowAll] = useState(false);
 
   return (
     <section className="card ranked" style={tierStyle(r.tier)}>
@@ -81,7 +83,10 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
       </div>
 
       <div className="ranked-section">
-        <h3>Escada de ranks</h3>
+        <div className="ranked-section-head">
+          <h3>Escada de ranks</h3>
+          <button className="ranked-all-btn" onClick={() => setShowAll(true)}>Ver todos os ranks</button>
+        </div>
         <div className="ladder">
           {TIERS.map((t, i) => (
             <div key={t.name} className={`ladder-step ${i === r.tier ? 'on' : ''} ${i > r.tier ? 'off' : ''}`}>
@@ -108,6 +113,8 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
           </div>
         </div>
       )}
+
+      {showAll && <AllRanks current={r.tier} onClose={() => setShowAll(false)} />}
 
       <details className="ranked-rules">
         <summary>Como funciona o rank</summary>
@@ -143,6 +150,38 @@ export function RankChange({ ranked, kind, onClose }: { ranked: Ranked; kind: 'u
         <b className="rank-change-name">{r.label}</b>
         <p>{text}</p>
         <button className="btn primary" onClick={onClose} autoFocus>Bora!</button>
+      </div>
+    </div>
+  );
+}
+
+/** Todos os ranks, do primeiro ao topo, com quanto PR precisa. */
+function AllRanks({ current, onClose }: { current: number; onClose: () => void }) {
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, [onClose]);
+  const perTier = RANK.divisions * RANK.divPR;
+  return (
+    <div className="all-ranks" role="dialog" aria-modal="true" aria-label="Todos os ranks" onClick={onClose}>
+      <div className="all-ranks-box" onClick={(e) => e.stopPropagation()}>
+        <div className="all-ranks-head">
+          <h2>Todos os ranks</h2>
+          <button className="ranked-all-btn" onClick={onClose} autoFocus>Fechar</button>
+        </div>
+        <div className="all-ranks-grid">
+          {TIERS.map((t, i) => (
+            <div key={t.name} className={`all-rank ${i === current ? 'on' : ''} ${i === TOP ? 'top' : ''}`} style={tierStyle(i)}>
+              <RankEmblem tier={i} div={i === TOP ? 0 : 1} size={i === TOP ? 150 : 110} animate={i === current || i === TOP} />
+              <b>{t.name}</b>
+              <span>{i === 0 ? 'Começo' : `${(i * perTier).toLocaleString('pt-BR')} PR`}</span>
+              <span className="all-rank-gym">Academia: {GYM_TIERS[i].min.toLocaleString('pt-BR')} XP de Força</span>
+              {i === current && <span className="all-rank-you">Você está aqui</span>}
+              {i === TOP && i !== current && <span className="all-rank-you top">Topo</span>}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

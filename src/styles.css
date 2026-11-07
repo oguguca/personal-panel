@@ -657,3 +657,31 @@ button.meta-item:hover { color: var(--text); }
   .ranked-chips { justify-content: center; }
   .ranked-name { font-size: 1.9rem; }
 }
+
+/* todos os ranks */
+.ranked-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.ranked-section-head h3 { margin: 0; }
+.ranked-all-btn {
+  font: inherit; font-size: 0.78rem; font-weight: 700; color: #fff; cursor: pointer; padding: 6px 12px; border-radius: 99px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+}
+.ranked-all-btn:hover { background: rgba(255,255,255,.18); }
+.all-ranks { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.85); animation: rc-fade .2s ease-out; }
+.all-ranks-box {
+  width: min(980px, 100%); max-height: 100%; overflow: auto; padding: 20px; border-radius: 20px; color: #eef1ff;
+  background: linear-gradient(160deg, #0d1024, #151a3a 55%, #0b0e1f); border: 1px solid rgba(255,255,255,.12);
+}
+.all-ranks-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.all-ranks-head h2 { margin: 0; }
+.all-ranks-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.all-rank {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 8px; border-radius: 16px; text-align: center;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--t-base) 22%, transparent), rgba(255,255,255,.03) 70%);
+  border: 1px solid rgba(255,255,255,.08); font-size: 0.8rem; color: #c8cdee;
+}
+.all-rank b { font-size: 1.05rem; color: #fff; margin-top: 4px; }
+.all-rank-gym { font-size: 0.7rem; opacity: 0.7; }
+.all-rank.on { border-color: var(--t-base); box-shadow: 0 0 18px color-mix(in srgb, var(--t-base) 50%, transparent); }
+.all-rank.top { grid-column: 1 / -1; }
+.all-rank.top b { font-size: 1.4rem; }
+.all-rank-you { margin-top: 4px; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: var(--t-base); color: #0b0e1f; }
