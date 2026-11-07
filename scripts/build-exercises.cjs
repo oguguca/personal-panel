@@ -233,6 +233,23 @@ app.whenReady().then(async () => {
     const withImg = [];
     await pool(jobs, 12, async (j) => { if (await saveImages(j.id, j.folder)) withImg.push(j.id); });
 
+    // Traduções feitas à mão (scripts/translations/*.json): { id: { n?: nome, s: [passos] } }
+    const trDir = path.join(__dirname, 'translations');
+    const tr = {};
+    if (fs.existsSync(trDir)) {
+      for (const f of fs.readdirSync(trDir).filter((f) => f.endsWith('.json')).sort()) {
+        Object.assign(tr, JSON.parse(fs.readFileSync(path.join(trDir, f), 'utf8')));
+      }
+    }
+    let translated = 0;
+    for (const e of extra) {
+      const t = tr[e.id];
+      if (!t) continue;
+      if (t.n) e.name = t.n;
+      if (Array.isArray(t.s) && t.s.length) { e.steps = t.s; e.lang = 'pt'; translated++; }
+    }
+    console.log(`Passo a passo em português: ${translated}/${extra.length}`);
+
     fs.writeFileSync(path.join(ROOT, 'src', 'data', 'exercises-extra.json'), JSON.stringify(extra.map(({ src, ...e }) => e)));
     fs.writeFileSync(path.join(ROOT, 'src', 'data', 'exercise-images.json'), JSON.stringify(withImg.sort()));
     console.log(`Pronto: ${extra.length} exercícios importados, ${withImg.length} com foto.`);
