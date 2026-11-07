@@ -28,6 +28,7 @@ export function allFoods(customFoods = []) {
     cat: 'Meus alimentos',
     n: norm(f.name),
     custom: true,
+    unit: f.unit || null, // { label, plural, g } quando cadastrado por unidade
   }));
   return [...mine, ...TACO_FOODS];
 }
@@ -64,19 +65,70 @@ export function frequentFoods(foods, usage = {}, limit = 8) {
 
 const r1 = (n) => Math.round(n * 10) / 10;
 
-/** Item de refeição já calculado para a porção (valores congelados). */
-export function makeItem(food, grams, id) {
+// Peso aproximado de 1 unidade (g) para alimentos que se contam. [regex no nome normalizado, singular, plural, gramas]
+// Valores médios de medidas caseiras; o usuário pode ajustar ("1 ovo ≈ 50 g") e o app lembra.
+const UNIT_RULES = [
+  [/^ovo de galinha inteiro/, 'ovo', 'ovos', 50],
+  [/^ovo de galinha clara/, 'clara', 'claras', 30],
+  [/^ovo de galinha gema/, 'gema', 'gemas', 17],
+  [/^ovo de codorna/, 'ovo', 'ovos', 10],
+  [/^pao trigo frances/, 'pão', 'pães', 50],
+  [/^pao trigo sovado/, 'pão', 'pães', 50],
+  [/^pao .*forma|^pao de soja/, 'fatia', 'fatias', 25],
+  [/^torrada/, 'torrada', 'torradas', 15],
+  [/^pao de queijo/, 'pão de queijo', 'pães de queijo', 25],
+  [/^biscoito salgado cream cracker/, 'biscoito', 'biscoitos', 6],
+  [/^biscoito doce maisena/, 'biscoito', 'biscoitos', 5],
+  [/^biscoito doce recheado/, 'biscoito', 'biscoitos', 12],
+  [/^banana ouro/, 'banana', 'bananas', 40],
+  [/^banana da terra/, 'banana', 'bananas', 150],
+  [/^banana (figo|maca|nanica|pacova|prata)/, 'banana', 'bananas', 80],
+  [/^maca .*crua/, 'maçã', 'maçãs', 130],
+  [/^laranja .*crua/, 'laranja', 'laranjas', 150],
+  [/^mexerica .*crua/, 'mexerica', 'mexericas', 110],
+  [/^tangerina .*crua/, 'tangerina', 'tangerinas', 110],
+  [/^kiwi/, 'kiwi', 'kiwis', 70],
+  [/^pessego aurora/, 'pêssego', 'pêssegos', 110],
+  [/^goiaba .*crua/, 'goiaba', 'goiabas', 150],
+  [/^ameixa crua/, 'ameixa', 'ameixas', 40],
+  [/^figo cru/, 'figo', 'figos', 50],
+  [/^caqui/, 'caqui', 'caquis', 150],
+  [/^coxinha/, 'coxinha', 'coxinhas', 80],
+  [/^empada/, 'empada', 'empadas', 50],
+  [/^pastel de (carne|queijo) frito/, 'pastel', 'pastéis', 80],
+  [/^quibe (assado|frito)/, 'quibe', 'quibes', 70],
+  [/^hamburguer/, 'hambúrguer', 'hambúrgueres', 90],
+  [/^tapioca/, 'tapioca', 'tapiocas', 80],
+];
+
+/** Unidade sugerida para o alimento: { label, plural, g } ou null. */
+export function defaultUnit(food) {
+  if (food.unit) return food.unit; // alimento próprio com unidade
+  for (const [re, label, plural, g] of UNIT_RULES) if (re.test(food.n)) return { label, plural, g };
+  return null;
+}
+
+/** Item de refeição já calculado para a porção (valores congelados). amount = { qty, unit } opcional. */
+export function makeItem(food, grams, id, amount) {
   const f = grams / 100;
   return {
     id,
     key: food.key,
     name: food.name,
-    grams,
+    grams: Math.round(grams),
     kcal: Math.round(food.kcal * f),
     p: r1(food.p * f),
     c: r1(food.c * f),
     g: r1(food.g * f),
+    ...(amount ? { qty: amount.qty, unit: amount.unit.label, unitPl: amount.unit.plural } : {}),
   };
+}
+
+/** Texto da quantidade: "3 ovos (150 g)" ou "100 g". */
+export function itemAmount(it) {
+  if (!it.qty) return `${it.grams} g`;
+  const q = String(it.qty).replace('.', ',');
+  return `${q} ${it.qty > 1 ? it.unitPl || it.unit : it.unit} (${it.grams} g)`;
 }
 
 export function sumItems(items = []) {

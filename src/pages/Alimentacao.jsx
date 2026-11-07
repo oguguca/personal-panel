@@ -5,7 +5,7 @@ import { Check, Empty, Progress } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import BarChart from '../components/BarChart.jsx';
 import { addDays, formatMedium, formatShort, nowMinutes, parseKey, toMinutes } from '../store/dates.js';
-import { dayNutrition, fmtKcal, sumItems } from '../store/foods.js';
+import { dayNutrition, fmtKcal, itemAmount, sumItems } from '../store/foods.js';
 import { mealList, uid } from '../store/model.js';
 import { energy } from '../store/body.js';
 
@@ -241,7 +241,7 @@ export default function Alimentacao({ go }) {
                   <ul className="list">
                     {items.map((it) => (
                       <li key={it.id} className="item food-item">
-                        <span className="item-title small">{it.name} <span className="muted">· {it.grams} g</span></span>
+                        <span className="item-title small">{it.name} <span className="muted">· {itemAmount(it)}</span></span>
                         <span className="small"><strong>{it.kcal}</strong> kcal</span>
                         <div className="item-actions">
                           <button className="icon-btn danger" title="Remover" onClick={() => removeItem(m.id, it.id)}><Icon name="trash" size={16} /></button>

@@ -13,6 +13,43 @@ import { DayPicker, describeDays } from './Tarefas.jsx';
 const LETTERS = 'ABCDEFGHIJ';
 const PAGE = 40; // exercícios por página na biblioteca
 
+/** Cardio é registrado por tempo (e distância opcional), não por séries/repetições. */
+export const isTimed = (exId) => EXERCISE_BY_ID[exId]?.cat === 'Cardio';
+
+function CardioPills({ it, setItem }) {
+  const noDist = String(it.distance ?? '').trim() === '';
+  const noMin = String(it.minutes ?? '').trim() === '';
+  return (
+    <div className="pills">
+      <label className={`pill ${noMin ? 'pill-empty' : 'pill-strong'}`}>
+        <input
+          type="number"
+          min="1"
+          value={it.minutes ?? ''}
+          onChange={(ev) => setItem(it.id, 'minutes', ev.target.value)}
+          aria-label="Minutos"
+          placeholder="20"
+          style={{ width: `${Math.max(2, String(it.minutes ?? '').length + 0.6)}ch` }}
+        />
+        <span>min</span>
+      </label>
+      <label className={`pill ${noDist ? 'pill-empty' : ''}`} title="Distância (opcional)">
+        {noDist && <span>+</span>}
+        <input
+          type="number"
+          min="0"
+          step="0.1"
+          value={it.distance ?? ''}
+          onChange={(ev) => setItem(it.id, 'distance', ev.target.value)}
+          aria-label="Distância em km"
+          style={{ width: `${Math.max(noDist ? 0.5 : 1.6, String(it.distance ?? '').length + 0.6)}ch` }}
+        />
+        <span>km</span>
+      </label>
+    </div>
+  );
+}
+
 /** Músculos trabalhados por um treino (principais). */
 function musclesOf(w) {
   const set = new Set();
@@ -170,8 +207,10 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
   const [renaming, setRenaming] = useState(false);
   const [showDays, setShowDays] = useState(false);
   const muscles = musclesOf(w);
-  const totalSets = w.items.reduce((a, it) => a + (parseInt(it.sets, 10) || 0), 0);
-  const missing = w.items.filter((it) => String(it.weight ?? '').trim() === '').length;
+  const strength = w.items.filter((it) => !isTimed(it.exId));
+  const totalSets = strength.reduce((a, it) => a + (parseInt(it.sets, 10) || 0), 0);
+  const missing = strength.filter((it) => String(it.weight ?? '').trim() === '').length;
+  const cardioMin = w.items.filter((it) => isTimed(it.exId)).reduce((a, it) => a + (parseFloat(it.minutes) || 0), 0);
 
   const setItem = (id, k, v) => onChange((x) => { x.items.find((i) => i.id === id)[k] = v; });
   const move = (idx, dir) =>
@@ -205,7 +244,8 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
           <span className="link small">{showDays ? 'pronto' : 'alterar'}</span>
         </button>
         <span className="meta-item"><Icon name="treino" size={14} /> {w.items.length} exercício(s)</span>
-        <span className="meta-item"><Icon name="repeat" size={14} /> {totalSets} séries</span>
+        {totalSets > 0 && <span className="meta-item"><Icon name="repeat" size={14} /> {totalSets} séries</span>}
+        {cardioMin > 0 && <span className="meta-item"><Icon name="clock" size={14} /> {cardioMin} min de cardio</span>}
         {missing > 0 && <span className="meta-item warn">{missing} sem carga</span>}
       </div>
       {showDays && <DayPicker value={w.days} onChange={(v) => onChange((x) => { x.days = v; })} />}
@@ -241,6 +281,9 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
                       <button className="icon-btn danger" title="Remover" onClick={() => onChange((x) => { x.items = x.items.filter((y) => y.id !== it.id); })}><Icon name="trash" size={16} /></button>
                     </div>
                   </div>
+                  {isTimed(it.exId) ? (
+                    <CardioPills it={it} setItem={setItem} />
+                  ) : (
                   <div className="pills">
                     <label className="pill">
                       <input type="number" min="1" value={it.sets} onChange={(ev) => setItem(it.id, 'sets', ev.target.value)} aria-label="Séries" style={{ width: `${String(it.sets).length + 0.6}ch` }} />
@@ -264,6 +307,7 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
                       <span>kg</span>
                     </label>
                   </div>
+                  )}
                 </div>
               </div>
             );
@@ -302,7 +346,11 @@ export default function Treino() {
   const addExercise = (exId) => {
     const id = target && workouts.some((w) => w.id === target) ? target : createWorkout();
     update((d) => {
-      d.workouts.find((w) => w.id === id).items.push({ id: uid(), exId, sets: 3, reps: '10-12', weight: '' });
+      d.workouts.find((w) => w.id === id).items.push(
+        isTimed(exId)
+          ? { id: uid(), exId, minutes: 20, distance: '' } // cardio: por tempo
+          : { id: uid(), exId, sets: 3, reps: '10-12', weight: '' }
+      );
     });
   };
 

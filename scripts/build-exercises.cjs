@@ -121,8 +121,27 @@ const STOP = new Set([
   'one', 'over', 'up', 'out', 'into', 'at', 'point', 'multiple', 'response', 'bent', 'bent-', 'arm', 'leg',
 ]);
 
+// Nomes traduzidos à mão (cardio e casos que o glossário não resolve bem).
+const OVERRIDES = {
+  'Bicycling': 'Bicicleta (ao ar livre)',
+  'Bicycling, Stationary': 'Bicicleta ergométrica',
+  'Elliptical Trainer': 'Elíptico (transport)',
+  'Jogging, Treadmill': 'Trote na esteira',
+  'Prowler Sprint': 'Tiro empurrando trenó (prowler)',
+  'Recumbent Bike': 'Bicicleta horizontal',
+  'Rope Jumping': 'Pular corda',
+  'Rowing, Stationary': 'Remo ergômetro',
+  'Running, Treadmill': 'Corrida na esteira',
+  'Skating': 'Patinação',
+  'Stairmaster': 'Escada ergométrica (stairmaster)',
+  'Step Mill': 'Escada rolante ergométrica (step mill)',
+  'Trail Running/Walking': 'Corrida/caminhada em trilha',
+  'Walking, Treadmill': 'Caminhada na esteira',
+};
+
 function translate(en) {
-  let s = ` ${en.toLowerCase().replace(/[()]/g, ' ').replace(/\s+-\s+/g, ' ').replace(/\s+/g, ' ')} `;
+  if (OVERRIDES[en]) return OVERRIDES[en];
+  let s = ` ${en.toLowerCase().replace(/[(),/]/g, ' ').replace(/\s+-\s+/g, ' ').replace(/\s+/g, ' ')} `;
   const take = (rules, many) => {
     const out = [];
     for (const [re, pt] of rules) {

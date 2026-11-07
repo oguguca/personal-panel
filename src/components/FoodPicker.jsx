@@ -1,11 +1,12 @@
-// Busca um alimento, escolhe a porção em gramas e devolve o item calculado.
+// Busca um alimento, escolhe a porção (em unidades ou gramas) e devolve o item calculado.
 import { useMemo, useState } from 'react';
 import Icon from './Icon.jsx';
 import { useStore } from '../store/StoreContext.jsx';
-import { allFoods, fmtKcal, frequentFoods, makeItem, searchFoods } from '../store/foods.js';
+import { allFoods, defaultUnit, fmtKcal, frequentFoods, makeItem, searchFoods } from '../store/foods.js';
 import { uid } from '../store/model.js';
 
 const PORTIONS = [50, 100, 150, 200, 300];
+const QTYS = [1, 2, 3, 4, 5];
 const num = (v) => {
   const n = parseFloat(String(v).replace(',', '.'));
   return Number.isFinite(n) ? n : 0;
@@ -15,28 +16,52 @@ export default function FoodPicker({ onAdd, onClose }) {
   const { data, update } = useStore();
   const [q, setQ] = useState('');
   const [sel, setSel] = useState(null);
+  const [mode, setMode] = useState('g'); // 'g' | 'un'
   const [grams, setGrams] = useState('100');
-  const [creating, setCreating] = useState(null); // { name, portion, kcal }
+  const [qty, setQty] = useState('1');
+  const [unitG, setUnitG] = useState('50');
+  const [editUnit, setEditUnit] = useState(false);
+  const [creating, setCreating] = useState(null); // { name, portion, kcal, unit }
 
   const foods = useMemo(() => allFoods(data.customFoods), [data.customFoods]);
   const results = useMemo(() => searchFoods(q, foods, data.foodUsage), [q, foods, data.foodUsage]);
   const frequent = useMemo(() => frequentFoods(foods, data.foodUsage), [foods, data.foodUsage]);
 
-  const pick = (f) => {
-    setSel(f);
-    setGrams(String(data.foodUsage[f.key]?.grams || 100));
+  const unitOf = (f) => {
+    const u = data.foodUsage[f.key];
+    const base = defaultUnit(f) || { label: 'unidade', plural: 'unidades', g: 100 };
+    return u?.unitG ? { ...base, g: u.unitG } : base;
   };
 
-  const g = num(grams);
-  const preview = sel && g > 0 ? makeItem(sel, g) : null;
+  const pick = (f) => {
+    const u = data.foodUsage[f.key] || {};
+    const unit = unitOf(f);
+    setSel(f);
+    setMode(u.mode || (defaultUnit(f) ? 'un' : 'g'));
+    setGrams(String(u.grams || 100));
+    setQty(String(u.qty || 1));
+    setUnitG(String(unit.g));
+    setEditUnit(false);
+  };
+
+  const unit = sel ? { ...unitOf(sel), g: num(unitG) || unitOf(sel).g } : null;
+  const totalG = sel ? (mode === 'un' ? num(qty) * unit.g : num(grams)) : 0;
+  const preview = sel && totalG > 0 ? makeItem(sel, totalG) : null;
 
   const add = (e) => {
     e.preventDefault();
     if (!preview) return;
-    onAdd(makeItem(sel, g, uid()));
+    const amount = mode === 'un' ? { qty: num(qty), unit } : null;
+    onAdd(makeItem(sel, totalG, uid(), amount));
     update((d) => {
       const u = d.foodUsage[sel.key] || { count: 0 };
-      d.foodUsage[sel.key] = { count: u.count + 1, grams: g, last: Date.now() };
+      d.foodUsage[sel.key] = {
+        ...u,
+        count: (u.count || 0) + 1,
+        last: Date.now(),
+        mode,
+        ...(mode === 'un' ? { qty: num(qty), unitG: unit.g } : { grams: num(grams) }),
+      };
     });
     setSel(null);
     setQ('');
@@ -48,11 +73,21 @@ export default function FoodPicker({ onAdd, onClose }) {
     const portion = num(creating.portion);
     const kcal = num(creating.kcal);
     if (!name || portion <= 0 || kcal < 0) return;
-    const food = { id: uid(), name, kcal: Math.round((kcal / portion) * 1000) / 10 };
+    const label = creating.unit.trim();
+    const food = {
+      id: uid(),
+      name,
+      kcal: Math.round((kcal / portion) * 1000) / 10,
+      ...(label ? { unit: { label, plural: label.endsWith('s') ? label : `${label}s`, g: portion } } : {}),
+    };
     update((d) => d.customFoods.push(food));
     setCreating(null);
-    setSel({ key: `c${food.id}`, name, kcal: food.kcal, p: 0, c: 0, g: 0, custom: true });
+    const f = { key: `c${food.id}`, name, kcal: food.kcal, p: 0, c: 0, g: 0, custom: true, unit: food.unit || null };
+    setSel(f);
+    setMode(food.unit ? 'un' : 'g');
+    setQty('1');
     setGrams(String(portion));
+    setUnitG(String(portion));
   };
 
   // ---------- cadastrar alimento próprio ----------
@@ -63,12 +98,14 @@ export default function FoodPicker({ onAdd, onClose }) {
           <h3>Cadastrar alimento</h3>
           <button type="button" className="icon-btn" title="Voltar" onClick={() => setCreating(null)}><Icon name="back" size={18} /></button>
         </div>
-        <p className="muted small" style={{ margin: 0 }}>Use os dados do rótulo (ex.: porção 30 g = 120 kcal).</p>
+        <p className="muted small" style={{ margin: 0 }}>Use os dados do rótulo (ex.: 1 barra de 25 g = 95 kcal).</p>
         <input className="input" autoFocus placeholder="Nome (ex.: Barra de cereal X)" value={creating.name} onChange={(e) => setCreating({ ...creating, name: e.target.value })} />
         <div className="row">
           <label className="field"><span>Porção (g ou ml)</span><input className="input w-num" inputMode="decimal" value={creating.portion} onChange={(e) => setCreating({ ...creating, portion: e.target.value })} /></label>
           <label className="field"><span>kcal da porção</span><input className="input w-num" inputMode="decimal" value={creating.kcal} onChange={(e) => setCreating({ ...creating, kcal: e.target.value })} /></label>
+          <label className="field"><span>Contar por (opcional)</span><input className="input w-num" placeholder="barra, unidade…" value={creating.unit} onChange={(e) => setCreating({ ...creating, unit: e.target.value })} /></label>
         </div>
+        <span className="muted small">Se preencher “contar por”, a porção vale 1 unidade (ex.: 1 barra = 25 g).</span>
         <button className="btn primary" type="submit" style={{ alignSelf: 'flex-start' }}><Icon name="check" size={16} /> Salvar e usar</button>
       </form>
     );
@@ -76,25 +113,66 @@ export default function FoodPicker({ onAdd, onClose }) {
 
   // ---------- escolher porção ----------
   if (sel) {
+    const nq = num(qty);
     return (
       <form className="picker" onSubmit={add}>
         <div className="card-head">
           <h3 style={{ overflowWrap: 'anywhere' }}>{sel.name}</h3>
           <button type="button" className="icon-btn" title="Voltar" onClick={() => setSel(null)}><Icon name="back" size={18} /></button>
         </div>
-        <span className="muted small">{fmtKcal(sel.kcal)} a cada 100 g</span>
-        <div className="row">
-          <input className="input w-num" inputMode="decimal" autoFocus value={grams} onChange={(e) => setGrams(e.target.value)} aria-label="Gramas" />
-          <span className="muted">g</span>
-          <div className="chips">
-            {PORTIONS.map((p) => (
-              <button type="button" key={p} className={`chip ${g === p ? 'on' : ''}`} onClick={() => setGrams(String(p))}>{p}g</button>
-            ))}
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <div className="segmented">
+            <button type="button" className={mode === 'un' ? 'on' : ''} onClick={() => setMode('un')}>Unidades</button>
+            <button type="button" className={mode === 'g' ? 'on' : ''} onClick={() => setMode('g')}>Gramas</button>
           </div>
+          <span className="muted small">{fmtKcal(sel.kcal)} a cada 100 g</span>
         </div>
+
+        {mode === 'un' ? (
+          <>
+            <div className="row">
+              <input className="input w-num" inputMode="decimal" autoFocus value={qty} onChange={(e) => setQty(e.target.value)} aria-label="Quantidade" />
+              <span className="muted">{nq > 1 ? unit.plural : unit.label}</span>
+              <div className="chips">
+                {QTYS.map((n) => (
+                  <button type="button" key={n} className={`chip ${nq === n ? 'on' : ''}`} onClick={() => setQty(String(n))}>{n}</button>
+                ))}
+              </div>
+            </div>
+            <div className="row small muted">
+              {editUnit ? (
+                <>
+                  1 {unit.label} =
+                  <input className="input w-num" inputMode="decimal" autoFocus value={unitG} onChange={(e) => setUnitG(e.target.value)} aria-label="Gramas por unidade" />
+                  g
+                  <button type="button" className="link small" onClick={() => setEditUnit(false)}>ok</button>
+                </>
+              ) : (
+                <>
+                  1 {unit.label} ≈ {String(unit.g).replace('.', ',')} g
+                  <button type="button" className="link small" onClick={() => setEditUnit(true)}>ajustar</button>
+                </>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="row">
+            <input className="input w-num" inputMode="decimal" autoFocus value={grams} onChange={(e) => setGrams(e.target.value)} aria-label="Gramas" />
+            <span className="muted">g</span>
+            <div className="chips">
+              {PORTIONS.map((p) => (
+                <button type="button" key={p} className={`chip ${num(grams) === p ? 'on' : ''}`} onClick={() => setGrams(String(p))}>{p}g</button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {preview && (
           <div className="row" style={{ justifyContent: 'space-between' }}>
-            <strong style={{ fontSize: '1.2rem' }}>{fmtKcal(preview.kcal)}</strong>
+            <span>
+              <strong style={{ fontSize: '1.2rem' }}>{fmtKcal(preview.kcal)}</strong>
+              {mode === 'un' && <span className="muted small"> · {Math.round(totalG)} g</span>}
+            </span>
             {!sel.custom && <span className="muted small">P {preview.p} g · C {preview.c} g · G {preview.g} g</span>}
           </div>
         )}
@@ -108,25 +186,30 @@ export default function FoodPicker({ onAdd, onClose }) {
   return (
     <div className="picker">
       <div className="row">
-        <input className="input" autoFocus placeholder="Buscar alimento (ex.: arroz cozido, banana)" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && onClose?.()} />
+        <input className="input" autoFocus placeholder="Buscar alimento (ex.: ovo, pão francês, banana)" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && onClose?.()} />
         {onClose && <button className="icon-btn" title="Fechar" onClick={onClose}><Icon name="x" size={18} /></button>}
       </div>
       {!q.trim() && frequent.length > 0 && <span className="muted small">Mais usados</span>}
       {list.length > 0 ? (
         <ul className="list picker-list">
-          {list.map((f) => (
-            <li key={f.key}>
-              <button className="picker-item" onClick={() => pick(f)}>
-                <span className="item-title">{f.name}{f.custom && <span className="badge primary" style={{ marginLeft: 6 }}>meu</span>}</span>
-                <span className="muted small">{Math.round(f.kcal)} kcal/100g</span>
-              </button>
-            </li>
-          ))}
+          {list.map((f) => {
+            const u = defaultUnit(f);
+            return (
+              <li key={f.key}>
+                <button className="picker-item" onClick={() => pick(f)}>
+                  <span className="item-title">{f.name}{f.custom && <span className="badge primary" style={{ marginLeft: 6 }}>meu</span>}</span>
+                  <span className="muted small">
+                    {u ? `${Math.round((f.kcal * unitOf(f).g) / 100)} kcal/${u.label}` : `${Math.round(f.kcal)} kcal/100g`}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         q.trim() && <p className="muted small" style={{ margin: 0 }}>Nada encontrado para “{q}”. Tente outra palavra ou cadastre.</p>
       )}
-      <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setCreating({ name: q, portion: '100', kcal: '' })}>
+      <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setCreating({ name: q, portion: '100', kcal: '', unit: '' })}>
         + Cadastrar alimento de marca / que não está na lista
       </button>
     </div>
