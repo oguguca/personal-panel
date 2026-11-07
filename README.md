@@ -16,9 +16,11 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
   e rode `node scripts/build-taco.mjs <pasta-dos-csv>`.
 - **Treino**: mapa muscular clicável (frente/costas), 876 exercícios com prévia animada (fotos de início/fim
   do movimento), filtros por músculo, equipamento e tipo, e montagem de treinos (séries, repetições, carga e dias).
-  68 exercícios têm passo a passo próprio em português; os demais vêm do
-  [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (domínio público), com nome traduzido e
-  instruções originais em inglês. Para baixar/atualizar a lista e as fotos: `npm run exercises`.
+  Todos os nomes e passos a passos estão em português: 68 exercícios com texto próprio e os demais vindos do
+  [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (domínio público), traduzidos à mão
+  (traduções em `scripts/translations/`). Também há aba de **ciclo e descanso**: sequência de 1 a 7 treinos,
+  dias de descanso e previsão que segue o último treino feito. Para baixar/atualizar a lista e as fotos:
+  `npm run exercises`.
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

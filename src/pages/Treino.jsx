@@ -156,7 +156,6 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
                 <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                   <button className="link" style={{ color: 'var(--text)', textAlign: 'left' }} onClick={() => setOpen(open === e.id ? null : e.id)}>
                     {e.name}
-                    {e.en && e.en !== e.name && <div className="muted small" style={{ fontWeight: 400 }}>{e.en}</div>}
                   </button>
                   {inTarget.has(e.id) ? (
                     <span className="badge success"><Icon name="check" size={12} /> no {targetW.name}</span>
@@ -176,8 +175,7 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
                 {open === e.id ? (
                   <>
                     <ExercisePreview id={e.id} name={e.name} size="big" />
-                    {e.lang === 'en' && <span className="muted small">Passo a passo original (em inglês):</span>}
-                    <ol lang={e.lang === 'en' ? 'en' : undefined}>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                    <ol>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
                     <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(null)}>Fechar</button>
                   </>
                 ) : (
@@ -270,7 +268,7 @@ function WorkoutCard({ w, isToday, letter, onOpenCycle, onChange, onRemove, onAd
                 <div className="ex-tile-body">
                   <div className="ex-tile-head">
                     <div style={{ minWidth: 0 }}>
-                      <div className="ex-tile-name" title={e?.en || ''}>{e?.name || 'Exercício removido'}</div>
+                      <div className="ex-tile-name">{e?.name || 'Exercício removido'}</div>
                       <div className="muted small">{(e?.m || []).slice(0, 2).map((m) => MUSCLES[m]).join(' · ')}{e && ` · ${e.eq}`}</div>
                     </div>
                     <div className="ex-tile-actions">
