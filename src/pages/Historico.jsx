@@ -32,7 +32,7 @@ function DayDetail({ day, data }) {
         <p className="muted small" style={{ margin: 0 }}>{(day.water || []).map((w) => `${w.ml} ml às ${formatTime(w.at)}`).join(' · ')}</p>
       </div>
       <div>
-        <h3>Gravação</h3>
+        <h3>Renda</h3>
         <p className="small" style={{ margin: '4px 0' }}>{s.record || 0} min de {s.recordGoal || data.settings.recordGoalMin} min</p>
         <p className="muted small" style={{ margin: 0 }}>{(day.recording || []).map((r) => `${r.min} min às ${formatTime(r.at)}`).join(' · ')}</p>
       </div>
@@ -153,7 +153,7 @@ export default function Historico() {
           <div className="legend"><span><i style={{ background: 'var(--danger)' }} />kcal por dia</span><span>– – meta</span></div>
         </div>
         <div className="card">
-          <div className="card-head"><h2>Minutos gravados</h2></div>
+          <div className="card-head"><h2><img src="./renda.png" alt="" width="18" height="18" style={{ objectFit: 'contain' }} /> Renda · minutos gravados</h2></div>
           <BarChart
             items={mk((s) => s.record || 0, (s) => `${s.record || 0} de ${s.recordGoal || data.settings.recordGoalMin} min`)}
             goal={data.settings.recordGoalMin}
@@ -176,7 +176,7 @@ export default function Historico() {
         {allDays.length ? (
           <div>
             <div className="day-row muted small" style={{ cursor: 'default' }}>
-              <span>Dia</span><span>Água</span><span>Gravação</span><span>Tarefas</span><span>Metas</span><span />
+              <span>Dia</span><span>Água</span><span>Renda</span><span>Tarefas</span><span>Metas</span><span />
             </div>
             {allDays.slice(0, limit).map((k) => {
               const d = data.days[k];

@@ -52,8 +52,11 @@ export default function Gravacao() {
     <div className="page">
       <header className="page-header">
         <div>
-          <h1>Gravação</h1>
-          <p className="muted">Meta diária de {formatDuration(goal)}</p>
+          <h1 className="row" style={{ gap: 12 }}>
+            <img src="./renda.png" alt="" width="34" height="34" style={{ objectFit: 'contain' }} />
+            Renda
+          </h1>
+          <p className="muted">Minutos gravados · meta diária de {formatDuration(goal)}</p>
         </div>
         {editGoal === null ? (
           <button className="btn" onClick={() => setEditGoal(String(goal))}><Icon name="edit" size={16} /> Mudar meta</button>
@@ -78,9 +81,9 @@ export default function Gravacao() {
       </header>
 
       <section className="card">
-        <div className="water-hero">
-          <div className="water-numbers" style={{ flex: 1, maxWidth: 560 }}>
-            <div className="water-big" style={{ color: 'var(--primary)' }}>{formatDuration(total)}</div>
+        <div className="water-hero" style={{ justifyContent: 'flex-start' }}>
+          <div className="water-numbers" style={{ flex: 1, maxWidth: 640 }}>
+            <div className="water-big" style={{ color: '#1fc773' }}>{formatDuration(total)}</div>
             <div className="muted">{left > 0 ? `Faltam ${formatDuration(left)} para a meta` : 'Meta de gravação batida! 🎉'}</div>
             <Progress value={total} max={goal} variant={left ? '' : 'success'} />
             <div className="row" style={{ marginTop: 8 }}>

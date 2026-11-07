@@ -171,7 +171,7 @@ export default function Hoje({ go }) {
         {/* Gravação */}
         <div className="card">
           <div className="card-head">
-            <h2>Gravação</h2>
+            <h2><img src="./renda.png" alt="" width="20" height="20" style={{ objectFit: 'contain' }} /> Renda</h2>
             <button className="link" onClick={() => go('gravacao')}>Abrir</button>
           </div>
           <div className="row" style={{ justifyContent: 'space-between' }}>

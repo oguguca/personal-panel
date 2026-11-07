@@ -261,7 +261,7 @@ export default function Configuracoes() {
         </div>
 
         <div className="card">
-          <h2>Gravação</h2>
+          <h2>Renda (minutos gravados)</h2>
           <label className="field">
             <span>Meta diária (minutos)</span>
             <input

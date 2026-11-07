@@ -20,7 +20,7 @@ export const PAGES = [
   { id: 'agua', label: 'Água', icon: 'agua', Comp: Agua },
   { id: 'alimentacao', label: 'Alimentação', short: 'Refeições', icon: 'alimentacao', Comp: Alimentacao },
   { id: 'treino', label: 'Treino', icon: 'treino', Comp: Treino },
-  { id: 'gravacao', label: 'Gravação', short: 'Gravar', icon: 'gravacao', Comp: Gravacao },
+  { id: 'gravacao', label: 'Renda', img: './renda.png', Comp: Gravacao },
   { id: 'historico', label: 'Histórico', icon: 'historico', Comp: Historico },
   { id: 'config', label: 'Configurações', short: 'Ajustes', icon: 'config', Comp: Configuracoes },
 ];
@@ -76,7 +76,7 @@ export default function App() {
             onClick={() => go(p.id)}
             aria-current={page === p.id ? 'page' : undefined}
           >
-            <Icon name={p.icon} />
+            {p.img ? <img src={p.img} alt="" width="20" height="20" className="nav-img" /> : <Icon name={p.icon} />}
             <span className="nav-label">{p.label}</span>
             <span className="nav-short">{p.short || p.label}</span>
           </button>

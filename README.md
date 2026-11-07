@@ -19,7 +19,7 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
   68 exercícios têm passo a passo próprio em português; os demais vêm do
   [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (domínio público), com nome traduzido e
   instruções originais em inglês. Para baixar/atualizar a lista e as fotos: `npm run exercises`.
-- **Gravação**: registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
+- **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.
 - Ao fechar a janela, o app continua na **bandeja do sistema** (perto do relógio). Para sair: clique com o botão direito no ícone → **Sair**.
