@@ -24,7 +24,7 @@ function findPortrait(slug: string): Promise<string | null> {
   return found.get(slug)!;
 }
 
-function usePortrait(slug: string) {
+export function usePortrait(slug: string) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
@@ -90,9 +90,11 @@ interface Props {
   locked?: boolean;
   animate?: boolean;
   title?: string;
+  /** não mostra a imagem dentro do escudo (quando ela já aparece em volta) */
+  noPhoto?: boolean;
 }
 
-export default function RankEmblem({ tier, div = 0, size = 96, locked = false, animate = true, title }: Props) {
+export default function RankEmblem({ tier, div = 0, size = 96, locked = false, animate = true, title, noPhoto = false }: Props) {
   const id = useId().replace(/:/g, '');
   const [light, base, dark] = TIERS[tier].colors;
   const g = (n: string) => `url(#${n}${id})`;
@@ -102,7 +104,8 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
   const gem = tier >= 6;
   const legend = tier === TIERS.length - 1;
   const slug = tierSlug(TIERS[tier].name);
-  const photo = usePortrait(slug);
+  const found = usePortrait(slug);
+  const photo = noPhoto ? null : found;
 
   return (
     <svg
@@ -229,5 +232,34 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
         </g>
       )}
     </svg>
+  );
+}
+
+/**
+ * Arte do rank: se o rank tem imagem, mostra a imagem GRANDE em um card
+ * (com o emblema pequeno no canto). No topo (Ganley), o card fica entre as asas de anjo.
+ * Sem imagem, mostra só o emblema.
+ */
+export function RankArt({ tier, div = 0, size = 120, locked = false, animate = true }: Omit<Props, 'title' | 'noPhoto'>) {
+  const photo = usePortrait(tierSlug(TIERS[tier].name));
+  if (!photo) return <RankEmblem tier={tier} div={div} size={size} locked={locked} animate={animate} />;
+  const [light, base, dark] = TIERS[tier].colors;
+  const style = { '--t-light': light, '--t-base': base, '--t-dark': dark } as React.CSSProperties;
+  const card = (w: number) => (
+    <div className={`rank-card ${locked ? 'locked' : ''}`} style={{ ...style, width: w, height: w }}>
+      <img src={photo} alt={TIERS[tier].name} />
+      <span className="rank-card-badge">
+        <RankEmblem tier={tier} div={div} size={Math.round(w * 0.34)} locked={locked} animate={false} noPhoto />
+      </span>
+    </div>
+  );
+  if (tier !== TIERS.length - 1) return card(size);
+  // Ganley: card no meio do emblema de anjo (asas, auréola, raios e brilhos).
+  const S = size * 2.4;
+  return (
+    <div className="angel-card" style={{ width: S, height: Math.round((S * 180) / 244) }}>
+      <RankEmblem tier={tier} div={div} size={S} locked={locked} animate={animate} noPhoto />
+      <div className="angel-card-photo">{card(Math.round(S * 0.4))}</div>
+    </div>
   );
 }

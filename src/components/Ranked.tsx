@@ -1,6 +1,6 @@
 // Painel do rank da temporada: emblema, pontos, sequência, partidas, escada e temporadas passadas.
 import { useEffect, useState, type CSSProperties } from 'react';
-import RankEmblem from './RankEmblem';
+import RankEmblem, { RankArt } from './RankEmblem';
 import { formatShort, parseKey } from '../store/dates';
 import { GYM_TIERS } from '../store/game';
 import { RANK, TIERS, TOP, comboOf, type Match, type Ranked } from '../store/rank';
@@ -32,7 +32,7 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
     <section className="card ranked" style={tierStyle(r.tier)}>
       <div className="ranked-hero">
         <div className="ranked-emblem">
-          <RankEmblem tier={r.tier} div={r.div} size={150} title={r.label} />
+          <RankArt tier={r.tier} div={r.div} size={150} />
         </div>
         <div className="ranked-info">
           <span className="ranked-season">
@@ -145,7 +145,7 @@ export function RankChange({ ranked, kind, onClose }: { ranked: Ranked; kind: 'u
     <div className={`rank-change ${kind}`} role="dialog" aria-modal="true" aria-label={title} style={tierStyle(r.tier)} onClick={onClose}>
       <div className="rank-change-box" onClick={(e) => e.stopPropagation()}>
         <div className="rank-change-burst" />
-        <RankEmblem tier={r.tier} div={r.div} size={190} />
+        <RankArt tier={r.tier} div={r.div} size={200} />
         <span className="rank-change-title">{title}</span>
         <b className="rank-change-name">{r.label}</b>
         <p>{text}</p>
@@ -173,7 +173,7 @@ function AllRanks({ current, onClose }: { current: number; onClose: () => void }
         <div className="all-ranks-grid">
           {TIERS.map((t, i) => (
             <div key={t.name} className={`all-rank ${i === current ? 'on' : ''} ${i === TOP ? 'top' : ''}`} style={tierStyle(i)}>
-              <RankEmblem tier={i} div={i === TOP ? 0 : 1} size={i === TOP ? 260 : 110} animate={i === current || i === TOP} />
+              <RankArt tier={i} div={i === TOP ? 0 : 1} size={i === TOP ? 200 : 130} animate={i === current || i === TOP} />
               <b>{t.name}</b>
               <span>{i === 0 ? 'Começo' : `${(i * perTier).toLocaleString('pt-BR')} PR`}</span>
               <span className="all-rank-gym">Academia: {GYM_TIERS[i].min.toLocaleString('pt-BR')} XP de Força</span>
