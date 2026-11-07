@@ -36,13 +36,16 @@ function DayDetail({ day, data }) {
         <p className="muted small" style={{ margin: 0 }}>{(day.recording || []).map((r) => `${r.min} min às ${formatTime(r.at)}`).join(' · ')}</p>
       </div>
       <div>
-        <h3>Refeições</h3>
+        <h3>Refeições{s.kcal ? ` · ${s.kcal} kcal` : ''}</h3>
         <ul className="list small">
           {mealIds.map((id) => {
             const st = day.meals?.[id] || {};
+            const items = st.items || [];
             return (
               <li key={id} style={{ padding: '3px 0' }}>
                 {st.done ? '✅' : '⬜'} {s.mealNames[id]}
+                {items.length > 0 && <span className="muted"> ({items.reduce((a, i) => a + i.kcal, 0)} kcal)</span>}
+                {items.length > 0 && <div className="muted">{items.map((i) => `${i.name} ${i.grams} g`).join(' · ')}</div>}
                 {st.note && <div className="muted">“{st.note}”</div>}
               </li>
             );
@@ -136,6 +139,16 @@ export default function Historico() {
             color="var(--success)"
             format={(v) => `${v}%`}
           />
+        </div>
+        <div className="card">
+          <div className="card-head"><h2>Calorias</h2></div>
+          <BarChart
+            items={mk((s) => s.kcal || 0, (s) => `${s.kcal || 0} kcal${s.kcalGoal ? ` de ${s.kcalGoal}` : ''}`)}
+            goal={data.settings.kcalGoal}
+            color="var(--danger)"
+            format={(v) => (v >= 1000 ? `${(v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}k` : v)}
+          />
+          <div className="legend"><span><i style={{ background: 'var(--danger)' }} />kcal por dia</span><span>– – meta</span></div>
         </div>
         <div className="card">
           <div className="card-head"><h2>Minutos gravados</h2></div>

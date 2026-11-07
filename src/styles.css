@@ -230,6 +230,18 @@ textarea.input { resize: vertical; min-height: 60px; }
 .legend { display: flex; gap: 14px; font-size: 0.8rem; color: var(--muted); flex-wrap: wrap; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
+/* ---------- Seletor de alimentos ---------- */
+.picker { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: var(--surface-2); }
+.picker .input { background: var(--surface); }
+.picker-list { max-height: 280px; overflow-y: auto; }
+.picker-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; cursor: pointer;
+}
+.picker-item:hover { background: var(--surface); }
+.food-item { min-height: 36px; padding: 4px 6px; }
+.kcal-total { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
 /* ---------- Histórico ---------- */
 .day-row { display: grid; grid-template-columns: 1.3fr repeat(4, 1fr) 24px; gap: 10px; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; border: 0; background: transparent; text-align: left; width: 100%; }
 .day-row:hover { background: var(--surface-2); }

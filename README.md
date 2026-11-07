@@ -9,7 +9,11 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
 - **Tarefas**: adicionar, marcar, editar (duplo clique), apagar, reordenar (arrastar ou setas), recorrentes (todo dia ou dias da semana) e adiar para amanhã. As não feitas passam para o dia seguinte (opção nas Configurações).
 - **Metas**: diárias (checkbox ou contador) e de longo prazo com barra de progresso.
 - **Água**: meta diária, botões rápidos, valor personalizado, desfazer, copo enchendo e lembrete periódico.
-- **Alimentação**: horários configuráveis, notificação no horário, marcar como feita e anotar o que comeu.
+- **Alimentação**: horários configuráveis, notificação no horário, marcar como feita e anotações.
+  Calorias: busque o alimento na Tabela TACO (591 alimentos, funciona offline), informe os gramas e o app calcula kcal,
+  proteína, carboidrato e gordura. Alimentos de marca podem ser cadastrados com os dados do rótulo. Meta diária de kcal opcional.
+  Para atualizar a tabela: baixe os CSVs de [raulfdm/taco-api](https://github.com/raulfdm/taco-api/tree/main/references/csv)
+  e rode `node scripts/build-taco.mjs <pasta-dos-csv>`.
 - **Gravação**: registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

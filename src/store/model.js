@@ -1,5 +1,6 @@
 // Modelo de dados, valores padrão e regras do dia (virada, recorrentes, resumo).
 import { addDays, weekday } from './dates.js';
+import { dayNutrition } from './foods.js';
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
@@ -16,6 +17,7 @@ export function defaultSettings() {
     waterActiveEnd: '22:00',
     carryOverTasks: true,
     recordGoalMin: 60,
+    kcalGoal: 2000,
     recordQuick: [5, 10, 15, 30],
     meals: [
       { id: 'cafe', name: 'Café da manhã', time: '08:00' },
@@ -35,6 +37,8 @@ export function defaultData() {
     longGoals: [], // { id, title, current, target, unit }
     days: {}, // 'AAAA-MM-DD' -> Day
     lastDay: null,
+    customFoods: [], // { id, name, kcal (por 100 g) }
+    foodUsage: {}, // chave do alimento -> { count, grams, last }
   };
 }
 
@@ -107,6 +111,8 @@ export function computeSummary(data, key) {
   return {
     water: waterTotal(day),
     waterGoal: data.settings.waterGoal,
+    kcal: dayNutrition(day).kcal,
+    kcalGoal: data.settings.kcalGoal,
     record: recordTotal(day),
     recordGoal: data.settings.recordGoalMin,
     tasksDone: tasks.filter((t) => t.done).length,

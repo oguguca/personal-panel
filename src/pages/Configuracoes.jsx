@@ -154,6 +154,18 @@ export default function Configuracoes() {
 
         <div className="card">
           <h2>Refeições</h2>
+          <label className="field">
+            <span>Meta diária de calorias (kcal) — 0 desliga a meta</span>
+            <input
+              className="input"
+              type="number"
+              min="0"
+              max="10000"
+              step="50"
+              value={settings.kcalGoal}
+              onChange={(e) => setS('kcalGoal', Math.min(10000, Math.max(0, Number(e.target.value) || 0)))}
+            />
+          </label>
           <ul className="list">
             {settings.meals.map((m) => (
               <li key={m.id} className="item" style={{ padding: '4px 0' }}>

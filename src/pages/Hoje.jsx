@@ -4,6 +4,7 @@ import { Check, Empty, Progress, fmtValue, pct } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import { formatDuration, formatLong, greeting, nowMinutes, toMinutes } from '../store/dates.js';
 import { goalDone, recordTotal, waterTotal } from '../store/model.js';
+import { dayNutrition, fmtKcal } from '../store/foods.js';
 
 export function nextMeal(settings, day) {
   const n = nowMinutes();
@@ -31,6 +32,7 @@ export default function Hoje({ go }) {
     });
   const addWater = (ml) => update((d) => d.days[today].water.push({ ml, at: Date.now() }));
   const rec = recordTotal(day);
+  const kcal = dayNutrition(day).kcal;
   const addRec = (min) => update((d) => d.days[today].recording.push({ min, at: Date.now() }));
   const markMeal = (id) =>
     update((d) => {
@@ -189,6 +191,11 @@ export default function Hoje({ go }) {
             <h2>Refeições</h2>
             <button className="link" onClick={() => go('alimentacao')}>Abrir</button>
           </div>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <span><strong>{fmtKcal(kcal)}</strong>{settings.kcalGoal > 0 && <span className="muted"> de {fmtKcal(settings.kcalGoal)}</span>}</span>
+            {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
+          </div>
+          {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
           <ul className="list">
             {[...settings.meals]
               .sort((a, b) => toMinutes(a.time) - toMinutes(b.time))

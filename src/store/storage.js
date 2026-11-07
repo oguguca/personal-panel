@@ -14,6 +14,8 @@ function normalize(raw) {
     dailyGoals: Array.isArray(raw.dailyGoals) ? raw.dailyGoals : [],
     longGoals: Array.isArray(raw.longGoals) ? raw.longGoals : [],
     days: raw.days && typeof raw.days === 'object' ? raw.days : {},
+    customFoods: Array.isArray(raw.customFoods) ? raw.customFoods : [],
+    foodUsage: raw.foodUsage && typeof raw.foodUsage === 'object' ? raw.foodUsage : {},
   };
 }
 
