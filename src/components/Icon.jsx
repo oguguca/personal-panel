@@ -6,8 +6,6 @@ const P = {
   agua: 'M12 2.7c-3.6 4.3-6 7.7-6 10.8a6 6 0 0 0 12 0c0-3.1-2.4-6.5-6-10.8z',
   alimentacao: 'M7 2v20M4 2v6a3 3 0 0 0 6 0V2M17 22V2c-2.2 1.6-3 4.2-3 7v4h3',
   gravacao: 'M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8',
-  play: 'M7 4l13 8-13 8z',
-  stop: 'M6 6h12v12H6z',
   historico:'M3 3v18h18M7 16v-5M12 16V8M17 16v-3',
   config: 'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
   plus: 'M12 5v14M5 12h14',

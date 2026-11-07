@@ -35,7 +35,6 @@ export function defaultData() {
     longGoals: [], // { id, title, current, target, unit }
     days: {}, // 'AAAA-MM-DD' -> Day
     lastDay: null,
-    recTimer: null, // { startedAt } quando o cronômetro de gravação está rodando
   };
 }
 

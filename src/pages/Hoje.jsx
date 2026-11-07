@@ -137,7 +137,7 @@ export default function Hoje({ go }) {
         {/* Gravação */}
         <div className="card">
           <div className="card-head">
-            <h2>Gravação {data.recTimer && <span className="badge warning">● gravando</span>}</h2>
+            <h2>Gravação</h2>
             <button className="link" onClick={() => go('gravacao')}>Abrir</button>
           </div>
           <div className="row" style={{ justifyContent: 'space-between' }}>
