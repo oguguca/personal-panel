@@ -3,7 +3,7 @@ import BodyMap from '../components/BodyMap.jsx';
 import ExercisePreview, { hasPreview } from '../components/ExercisePreview.jsx';
 import Icon from '../components/Icon.jsx';
 import { Empty } from '../components/ui.jsx';
-import { EQUIPMENT, EXERCISES, EXERCISE_BY_ID, MUSCLES } from '../data/exercises.js';
+import { CATEGORIES, EQUIPMENT, EXERCISES, EXERCISE_BY_ID, MUSCLES } from '../data/exercises.js';
 import { useStore } from '../store/StoreContext.jsx';
 import { weekday } from '../store/dates.js';
 import { norm } from '../store/foods.js';
@@ -11,6 +11,7 @@ import { uid } from '../store/model.js';
 import { DayPicker, describeDays } from './Tarefas.jsx';
 
 const LETTERS = 'ABCDEFGHIJ';
+const PAGE = 40; // exercícios por página na biblioteca
 
 /** Músculos trabalhados por um treino (principais). */
 function musclesOf(w) {
@@ -25,27 +26,36 @@ function musclesOf(w) {
 function Library({ workouts, target, setTarget, onAdd, onCreate }) {
   const [muscles, setMuscles] = useState([]);
   const [equip, setEquip] = useState([]);
+  const [cats, setCats] = useState([]);
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(null);
+  const [limit, setLimit] = useState(PAGE);
 
-  const toggle = (list, set) => (v) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  const toggle = (list, set) => (v) => {
+    set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+    setLimit(PAGE);
+  };
   const toggleMuscle = toggle(muscles, setMuscles);
   const toggleEquip = toggle(equip, setEquip);
+  const toggleCat = toggle(cats, setCats);
 
   const list = useMemo(() => {
     const words = norm(q).split(' ').filter(Boolean);
+    const rank = (e) =>
+      (muscles.length && !muscles.some((m) => e.m.includes(m)) ? 100 : 0) + // músculo escolhido como PRINCIPAL primeiro
+      (e.curated ? 0 : 10) + // depois os que têm passo a passo em português
+      (hasPreview(e.id) ? 0 : 1);
     return EXERCISES.filter((e) => {
       if (muscles.length && !muscles.some((m) => e.m.includes(m) || e.s.includes(m))) return false;
       if (equip.length && !equip.includes(e.eq)) return false;
-      if (words.length && !words.every((w) => norm(e.name).includes(w))) return false;
+      if (cats.length && !cats.includes(e.cat)) return false;
+      if (words.length) {
+        const hay = norm(`${e.name} ${e.en || ''}`);
+        if (!words.every((w) => hay.includes(w))) return false;
+      }
       return true;
-    }).sort((a, b) => {
-      // quem tem o músculo escolhido como PRINCIPAL vem antes
-      const pa = muscles.some((m) => a.m.includes(m)) ? 0 : 1;
-      const pb = muscles.some((m) => b.m.includes(m)) ? 0 : 1;
-      return pa - pb;
-    });
-  }, [muscles, equip, q]);
+    }).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'pt-BR'));
+  }, [muscles, equip, cats, q]);
 
   const targetW = workouts.find((w) => w.id === target);
   const inTarget = new Set(targetW?.items.map((i) => i.exId) || []);
@@ -67,12 +77,23 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
 
       <div className="card">
         <div className="row">
-          <input className="input" placeholder="Buscar exercício…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="input" placeholder="Buscar exercício (português ou inglês)…" value={q} onChange={(e) => { setQ(e.target.value); setLimit(PAGE); }} />
         </div>
-        <div className="chips">
-          {EQUIPMENT.map((eq) => (
-            <button key={eq} className={`chip ${equip.includes(eq) ? 'on' : ''}`} onClick={() => toggleEquip(eq)}>{eq}</button>
-          ))}
+        <div className="field" style={{ gap: 6 }}>
+          <span className="muted small">Equipamento</span>
+          <div className="chips">
+            {EQUIPMENT.map((eq) => (
+              <button key={eq} className={`chip ${equip.includes(eq) ? 'on' : ''}`} onClick={() => toggleEquip(eq)}>{eq}</button>
+            ))}
+          </div>
+        </div>
+        <div className="field" style={{ gap: 6 }}>
+          <span className="muted small">Tipo</span>
+          <div className="chips">
+            {CATEGORIES.map((c) => (
+              <button key={c} className={`chip ${cats.includes(c) ? 'on' : ''}`} onClick={() => toggleCat(c)}>{c}</button>
+            ))}
+          </div>
         </div>
         <div className="row small" style={{ justifyContent: 'space-between' }}>
           <span className="muted">{list.length} exercício(s)</span>
@@ -90,13 +111,14 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
 
         {list.length ? (
           <div className="list" style={{ gap: 8 }}>
-            {list.map((e) => (
+            {list.slice(0, limit).map((e) => (
               <div key={e.id} className={`ex-item ${hasPreview(e.id) && open !== e.id ? 'with-thumb' : ''}`}>
                 {open !== e.id && <ExercisePreview id={e.id} name={e.name} onClick={() => setOpen(e.id)} />}
                 <div className="ex-body">
                 <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                   <button className="link" style={{ color: 'var(--text)', textAlign: 'left' }} onClick={() => setOpen(open === e.id ? null : e.id)}>
                     {e.name}
+                    {e.en && e.en !== e.name && <div className="muted small" style={{ fontWeight: 400 }}>{e.en}</div>}
                   </button>
                   {inTarget.has(e.id) ? (
                     <span className="badge success"><Icon name="check" size={12} /> no {targetW.name}</span>
@@ -110,11 +132,14 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
                   {e.m.map((m) => <span key={m} className="badge primary">{MUSCLES[m]}</span>)}
                   {e.s.map((m) => <span key={m} className="badge">{MUSCLES[m]}</span>)}
                   <span className="badge warning">{e.eq}</span>
+                  {e.cat !== 'Força' && <span className="badge water">{e.cat}</span>}
+                  {e.level && <span className="badge">{e.level}</span>}
                 </div>
                 {open === e.id ? (
                   <>
                     <ExercisePreview id={e.id} name={e.name} size="big" />
-                    <ol>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                    {e.lang === 'en' && <span className="muted small">Passo a passo original (em inglês):</span>}
+                    <ol lang={e.lang === 'en' ? 'en' : undefined}>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
                     <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(null)}>Fechar</button>
                   </>
                 ) : (
@@ -123,6 +148,11 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
                 </div>
               </div>
             ))}
+            {list.length > limit && (
+              <button className="btn" style={{ alignSelf: 'center' }} onClick={() => setLimit(limit + PAGE)}>
+                Mostrar mais ({list.length - limit} restantes)
+              </button>
+            )}
           </div>
         ) : (
           <Empty>Nenhum exercício com esses filtros.</Empty>

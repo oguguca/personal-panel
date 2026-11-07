@@ -11,6 +11,7 @@
     "dev:web": "vite",
     "build": "vite build",
     "icon": "node scripts/make-icon.mjs",
+    "exercises": "node scripts/start-electron.mjs scripts/build-exercises.cjs",
     "dist": "vite build && electron-builder --win"
   },
   "build": {

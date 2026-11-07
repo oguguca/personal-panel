@@ -8,5 +8,7 @@ const electronPath = createRequire(import.meta.url)('electron');
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 
-const child = spawn(electronPath, ['.'], { stdio: 'inherit', env });
+// Sem argumentos abre o app; com argumentos roda um script no Electron (ex.: scripts/build-exercises.cjs).
+const args = process.argv.slice(2);
+const child = spawn(electronPath, args.length ? args : ['.'], { stdio: 'inherit', env });
 child.on('exit', (code) => process.exit(code ?? 0));

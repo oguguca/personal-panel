@@ -14,6 +14,7 @@ const BODY_CENTER = [
 
 // Músculos: side = desenha nos dois lados (espelhado); center = desenho único.
 const FRONT = [
+  { id: 'neck', center: { el: 'rect', p: { x: 93, y: 50, width: 14, height: 11, rx: 4 } } },
   { id: 'traps', side: { el: 'path', p: { d: 'M88 60 L99 63 L99 68 L76 69 Z' } } },
   { id: 'shoulders', side: { el: 'ellipse', p: { cx: 66, cy: 80, rx: 12, ry: 14 } } },
   { id: 'chest', side: { el: 'path', p: { d: 'M79 72 Q97 69 99 74 L99 104 Q88 110 77 102 Q72 88 79 72 Z' } } },
@@ -23,13 +24,17 @@ const FRONT = [
   { id: 'obliques', side: { el: 'path', p: { d: 'M77 110 Q85 112 86 116 L86 170 Q79 172 76 160 Q72 134 77 110 Z' } } },
   { id: 'adductors', side: { el: 'path', p: { d: 'M95 200 L99 201 L98 244 Q91 234 89 210 Z' } } },
   { id: 'quads', side: { el: 'path', p: { d: 'M78 198 Q86 200 88 206 Q92 240 93 284 Q86 292 80 284 Q72 240 78 198 Z' } } },
+  { id: 'abductors', side: { el: 'ellipse', p: { cx: 75, cy: 202, rx: 4.5, ry: 13 } } },
   { id: 'calves', side: { el: 'ellipse', p: { cx: 85, cy: 330, rx: 7.5, ry: 26 } } },
 ];
 
 const BACK = [
+  { id: 'neck', center: { el: 'rect', p: { x: 93, y: 48, width: 14, height: 10, rx: 4 } } },
   { id: 'traps', center: { el: 'path', p: { d: 'M100 58 L120 67 L109 98 L100 110 L91 98 L80 67 Z' } } },
   { id: 'shoulders', side: { el: 'ellipse', p: { cx: 66, cy: 80, rx: 12, ry: 14 } } },
   { id: 'lats', side: { el: 'path', p: { d: 'M77 88 Q86 92 92 104 L96 142 Q84 142 78 128 Q72 108 77 88 Z' } } },
+  // desenhado depois dos dorsais para ficar por cima (faixa ao lado da coluna)
+  { id: 'midback', side: { el: 'path', p: { d: 'M92 104 L99 112 L99 138 L95 140 Q93 120 92 104 Z' } } },
   { id: 'lowerback', center: { el: 'rect', p: { x: 88, y: 142, width: 24, height: 38, rx: 7 } } },
   { id: 'triceps', side: { el: 'ellipse', p: { cx: 56, cy: 114, rx: 7.5, ry: 18 } } },
   { id: 'forearms', side: { el: 'ellipse', p: { cx: 49, cy: 162, rx: 7, ry: 22, transform: 'rotate(8 49 162)' } } },

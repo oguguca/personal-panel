@@ -1,5 +1,6 @@
 // Biblioteca de exercícios (texto próprio). Dicas gerais: em caso de dúvida, procure um profissional.
 // m = músculos principais, s = secundários, eq = equipamento, steps = passo a passo.
+import EXTRA from './exercises-extra.json' with { type: 'json' };
 
 export const MUSCLES = {
   chest: 'Peito',
@@ -10,20 +11,29 @@ export const MUSCLES = {
   abs: 'Abdômen',
   obliques: 'Oblíquos',
   lats: 'Costas (dorsais)',
+  midback: 'Meio das costas',
   traps: 'Trapézio',
   lowerback: 'Lombar',
+  neck: 'Pescoço',
   glutes: 'Glúteos',
+  abductors: 'Abdutores',
   quads: 'Quadríceps',
   hamstrings: 'Posteriores da coxa',
   adductors: 'Adutores',
   calves: 'Panturrilhas',
 };
 
-export const EQUIPMENT = ['Peso corporal', 'Halteres', 'Barra', 'Máquina', 'Cabo', 'Kettlebell', 'Elástico', 'Acessório'];
+export const EQUIPMENT = [
+  'Máquina', 'Halteres', 'Cabo', 'Barra', 'Barra W', 'Peso corporal', 'Kettlebell', 'Elástico',
+  'Medicine ball', 'Bola suíça', 'Rolo de espuma', 'Acessório', 'Outro',
+];
 
-const ex = (id, name, m, s, eq, steps) => ({ id, name, m, s, eq, steps });
+export const CATEGORIES = ['Força', 'Alongamento', 'Pliometria', 'Powerlifting', 'Levantamento olímpico', 'Strongman', 'Cardio'];
 
-export const EXERCISES = [
+const ex = (id, name, m, s, eq, steps) => ({ id, name, m, s, eq, steps, cat: 'Força', curated: true });
+
+// Exercícios com texto próprio em português (aparecem primeiro).
+const CURATED = [
   // ---------- Peito ----------
   ex('supino-reto-barra', 'Supino reto com barra', ['chest'], ['triceps', 'shoulders'], 'Barra', [
     'Deite no banco com os pés firmes no chão e segure a barra um pouco mais aberta que os ombros.',
@@ -394,5 +404,8 @@ export const EXERCISES = [
     'Desça abaixo da linha do degrau.',
   ]),
 ];
+
+// + exercícios importados do free-exercise-db (gerado por `npm run exercises`; passo a passo em inglês).
+export const EXERCISES = [...CURATED, ...EXTRA];
 
 export const EXERCISE_BY_ID = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
