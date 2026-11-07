@@ -6,7 +6,6 @@ import { useStore } from './store/StoreContext.jsx';
 import Hoje from './pages/Hoje.jsx';
 import Tarefas from './pages/Tarefas.jsx';
 import Metas from './pages/Metas.jsx';
-import Agua from './pages/Agua.jsx';
 import Alimentacao from './pages/Alimentacao.jsx';
 import Gravacao from './pages/Gravacao.jsx';
 import Treino from './pages/Treino.jsx';
@@ -17,7 +16,8 @@ export const PAGES = [
   { id: 'hoje', label: 'Hoje', icon: 'hoje', Comp: Hoje },
   { id: 'tarefas', label: 'Tarefas', icon: 'tarefas', Comp: Tarefas },
   { id: 'metas', label: 'Metas', icon: 'metas', Comp: Metas },
-  { id: 'agua', label: 'Água', icon: 'agua', Comp: Agua },
+  // Água fica dentro de Alimentação (aba); a rota continua existindo para os links.
+  { id: 'agua', label: 'Água', hidden: true, parent: 'alimentacao', Comp: (props) => <Alimentacao {...props} tab="agua" /> },
   { id: 'alimentacao', label: 'Alimentação', short: 'Refeições', icon: 'alimentacao', Comp: Alimentacao },
   { id: 'treino', label: 'Treino', icon: 'treino', Comp: Treino },
   { id: 'gravacao', label: 'Renda', img: './renda.png', Comp: Gravacao },
@@ -60,7 +60,8 @@ export default function App() {
     document.querySelector('.content')?.scrollTo(0, 0);
   };
 
-  const Current = PAGES.find((p) => p.id === page).Comp;
+  const currentPage = PAGES.find((p) => p.id === page);
+  const Current = currentPage.Comp;
 
   return (
     <div className="app">
@@ -69,12 +70,12 @@ export default function App() {
           <img src="./icon.png" alt="" width="32" height="32" />
           <span>Painel Pessoal</span>
         </div>
-        {PAGES.map((p) => (
+        {PAGES.filter((p) => !p.hidden).map((p) => (
           <button
             key={p.id}
-            className={`nav-item ${page === p.id ? 'active' : ''}`}
+            className={`nav-item ${page === p.id || currentPage.parent === p.id ? 'active' : ''}`}
             onClick={() => go(p.id)}
-            aria-current={page === p.id ? 'page' : undefined}
+            aria-current={page === p.id || currentPage.parent === p.id ? 'page' : undefined}
           >
             {p.img ? <img src={p.img} alt="" width="20" height="20" className="nav-img" /> : <Icon name={p.icon} />}
             <span className="nav-label">{p.label}</span>

@@ -8,7 +8,7 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
 - **Hoje**: data, saudação e resumo do dia (tarefas, água, próxima refeição).
 - **Tarefas**: adicionar, marcar, editar (duplo clique), apagar, reordenar (arrastar ou setas), recorrentes (todo dia ou dias da semana) e adiar para amanhã. As não feitas passam para o dia seguinte (opção nas Configurações).
 - **Metas**: diárias (checkbox ou contador) e de longo prazo com barra de progresso.
-- **Água**: meta diária, botões rápidos, valor personalizado, desfazer, copo enchendo e lembrete periódico.
+- **Água** (aba dentro de Alimentação, com atalho rápido na aba Refeições): meta diária, botões rápidos, valor personalizado, desfazer, copo enchendo e lembrete periódico.
 - **Alimentação**: horários configuráveis, notificação no horário, marcar como feita e anotações.
   Calorias: busque o alimento na Tabela TACO (591 alimentos, funciona offline), informe os gramas e o app calcula kcal,
   proteína, carboidrato e gordura. Alimentos de marca podem ser cadastrados com os dados do rótulo. Meta diária de kcal opcional.

@@ -6,7 +6,8 @@ import { useStore } from '../store/StoreContext.jsx';
 import BarChart from '../components/BarChart.jsx';
 import { addDays, formatMedium, formatShort, nowMinutes, parseKey, toMinutes } from '../store/dates.js';
 import { dayNutrition, fmtKcal, itemAmount, sumItems } from '../store/foods.js';
-import { mealList, uid } from '../store/model.js';
+import { mealList, uid, waterTotal } from '../store/model.js';
+import Agua from './Agua.jsx';
 import { energy } from '../store/body.js';
 
 const MACROS = [
@@ -74,7 +75,7 @@ function NewMealForm({ onSave, onCancel }) {
   );
 }
 
-export default function Alimentacao({ go }) {
+export default function Alimentacao({ go, startedAt, tab = 'refeicoes' }) {
   const { data, today, day, settings, update } = useStore();
   const [openPicker, setOpenPicker] = useState(null); // id da refeição com o seletor aberto
   const [adding, setAdding] = useState(false);
@@ -125,22 +126,46 @@ export default function Alimentacao({ go }) {
     });
   const removeItem = (mealId, itemId) => patch(mealId, (m) => { m.items = (m.items || []).filter((i) => i.id !== itemId); });
 
+  const water = waterTotal(day);
+  const addWater = (ml) => update((d) => d.days[today].water.push({ ml, at: Date.now() }));
+
+  const header = (
+    <header className="page-header">
+      <div>
+        <h1>Alimentação</h1>
+        <p className="muted">
+          {tab === 'agua'
+            ? `Água: ${water} de ${settings.waterGoal} ml hoje`
+            : meals.length ? `${doneCount} de ${meals.length} refeições feitas hoje` : 'Nenhuma refeição registrada hoje'}
+        </p>
+      </div>
+      <div className="row">
+        <div className="segmented">
+          <button className={tab !== 'agua' ? 'on' : ''} onClick={() => go('alimentacao')}><Icon name="alimentacao" size={16} /> Refeições</button>
+          <button className={tab === 'agua' ? 'on' : ''} onClick={() => go('agua')}><Icon name="agua" size={16} /> Água</button>
+        </div>
+        {tab !== 'agua' && !adding && (
+          <button className="btn primary" onClick={() => setAdding(true)}><Icon name="plus" size={18} /> Registrar refeição</button>
+        )}
+        {tab !== 'agua' && (
+          <button className="btn" onClick={() => go('config')}><Icon name="clock" size={18} /> Horários e meta</button>
+        )}
+      </div>
+    </header>
+  );
+
+  if (tab === 'agua') {
+    return (
+      <div className="page">
+        {header}
+        <Agua embedded startedAt={startedAt} />
+      </div>
+    );
+  }
+
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>Alimentação</h1>
-          <p className="muted">
-            {meals.length ? `${doneCount} de ${meals.length} refeições feitas hoje` : 'Nenhuma refeição registrada hoje'}
-          </p>
-        </div>
-        <div className="row">
-          {!adding && (
-            <button className="btn primary" onClick={() => setAdding(true)}><Icon name="plus" size={18} /> Registrar refeição</button>
-          )}
-          <button className="btn" onClick={() => go('config')}><Icon name="clock" size={18} /> Horários e meta</button>
-        </div>
-      </header>
+      {header}
 
       {adding && <NewMealForm onSave={createMeal} onCancel={() => setAdding(false)} />}
 
@@ -184,6 +209,28 @@ export default function Alimentacao({ go }) {
               <button className="link" onClick={() => go('config')}>Configurações</button>.
             </span>
           )}
+        </div>
+      </section>
+
+      {/* Água compacta: registra sem sair da aba de refeições */}
+      <section className="card water-mini">
+        <div className="row" style={{ gap: 14, flexWrap: 'nowrap' }}>
+          <div className="stat-icon water"><Icon name="agua" /></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="row" style={{ justifyContent: 'space-between' }}>
+              <span><strong>{water} ml</strong> <span className="muted">de {settings.waterGoal} ml de água</span></span>
+              <button className="link small" onClick={() => go('agua')}>Detalhes</button>
+            </div>
+            <Progress value={water} max={settings.waterGoal} variant="water" />
+          </div>
+        </div>
+        <div className="row">
+          {settings.waterQuick.map((ml) => (
+            <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{ml} ml</button>
+          ))}
+          <button className="btn sm" onClick={() => update((d) => d.days[today].water.pop())} disabled={!day.water.length}>
+            <Icon name="undo" size={14} /> Desfazer
+          </button>
         </div>
       </section>
 

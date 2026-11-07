@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import WaterCup from '../components/WaterCup.jsx';
 import { Empty, Progress, Switch } from '../components/ui.jsx';
@@ -7,7 +7,7 @@ import { useStore } from '../store/StoreContext.jsx';
 import { formatTime } from '../store/dates.js';
 import { waterTotal } from '../store/model.js';
 
-export default function Agua({ startedAt }) {
+export default function Agua({ startedAt, embedded = false }) {
   const { today, day, settings, update } = useStore();
   const [custom, setCustom] = useState('');
   const [, tick] = useState(0);
@@ -37,14 +37,18 @@ export default function Agua({ startedAt }) {
     else nextText = `Próximo lembrete às ${formatTime(Math.max(next, Date.now()))}`;
   }
 
+  // embedded: mostrada como aba dentro de Alimentação (sem cabeçalho próprio)
+  const Wrapper = embedded ? Fragment : 'div';
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>Água</h1>
-          <p className="muted">Meta diária de {goal} ml</p>
-        </div>
-      </header>
+    <Wrapper {...(embedded ? {} : { className: 'page' })}>
+      {!embedded && (
+        <header className="page-header">
+          <div>
+            <h1>Água</h1>
+            <p className="muted">Meta diária de {goal} ml</p>
+          </div>
+        </header>
+      )}
 
       <section className="card">
         <div className="water-hero">
@@ -113,6 +117,6 @@ export default function Agua({ startedAt }) {
           )}
         </div>
       </section>
-    </div>
+    </Wrapper>
   );
 }

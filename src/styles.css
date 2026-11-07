@@ -182,7 +182,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 }
 .chip.on { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
 .segmented { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 2px; }
-.segmented button { border: 0; background: transparent; padding: 6px 14px; border-radius: 8px; cursor: pointer; color: var(--muted); font-weight: 550; }
+.segmented button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; padding: 6px 14px; border-radius: 8px; cursor: pointer; color: var(--muted); font-weight: 550; }
 .segmented button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 
 /* ---------- Listas ---------- */
