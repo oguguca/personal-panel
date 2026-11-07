@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import Icon from '../components/Icon.jsx';
 import WaterCup from '../components/WaterCup.jsx';
-import { Empty, Progress, Switch } from '../components/ui.jsx';
+import { Empty, Progress, Switch, fmtMl } from '../components/ui.jsx';
 import { inActiveWindow, nextWaterReminder } from '../hooks/useReminders.js';
 import { useStore } from '../store/StoreContext.jsx';
 import { formatTime } from '../store/dates.js';
@@ -17,8 +17,14 @@ export default function Agua({ startedAt, embedded = false }) {
   }, []);
 
   const total = waterTotal(day);
-  const goal = settings.waterGoal;
-  const left = Math.max(0, goal - total);
+  const goal = settings.waterGoal; // mínimo
+  const ideal = Math.max(goal, settings.waterIdeal || goal);
+  const status =
+    total < goal
+      ? `Faltam ${fmtMl(goal - total)} para o mínimo (${fmtMl(goal)})`
+      : total < ideal
+        ? `Mínimo batido! ✅ Faltam ${fmtMl(ideal - total)} para o ideal (${fmtMl(ideal)})`
+        : 'Ideal do dia batido! 🎉';
 
   const add = (ml) => {
     const v = Math.round(Number(ml));
@@ -32,7 +38,7 @@ export default function Agua({ startedAt, embedded = false }) {
   const next = nextWaterReminder(settings, day, startedAt);
   let nextText = 'Lembretes desligados';
   if (settings.notificationsOn && settings.waterReminderOn) {
-    if (!next) nextText = 'Meta batida! Sem mais lembretes hoje 🎉';
+    if (!next) nextText = 'Ideal batido! Sem mais lembretes hoje 🎉';
     else if (!inActiveWindow(settings)) nextText = `Fora do horário (${settings.waterActiveStart}–${settings.waterActiveEnd})`;
     else nextText = `Próximo lembrete às ${formatTime(Math.max(next, Date.now()))}`;
   }
@@ -45,21 +51,24 @@ export default function Agua({ startedAt, embedded = false }) {
         <header className="page-header">
           <div>
             <h1>Água</h1>
-            <p className="muted">Meta diária de {goal} ml</p>
+            <p className="muted">Mínimo {fmtMl(goal)} · ideal {fmtMl(ideal)}</p>
           </div>
         </header>
       )}
 
       <section className="card">
         <div className="water-hero">
-          <WaterCup value={total} goal={goal} size={200} />
+          <WaterCup value={total} goal={ideal} mark={goal} size={200} />
           <div className="water-numbers">
-            <div className="water-big">{total} ml</div>
-            <div className="muted">{left > 0 ? `Faltam ${left} ml para a meta` : 'Meta do dia batida! 🎉'}</div>
-            <Progress value={total} max={goal} variant="water" />
+            <div className="water-big">{fmtMl(total)}</div>
+            <div className="muted">{status}</div>
+            <Progress value={total} max={ideal} mark={goal} variant={total >= goal ? 'success' : 'water'} />
+            <div className="row small muted" style={{ justifyContent: 'space-between' }}>
+              <span>0</span><span>mínimo {fmtMl(goal)}</span><span>ideal {fmtMl(ideal)}</span>
+            </div>
             <div className="row" style={{ marginTop: 8 }}>
               {settings.waterQuick.map((ml) => (
-                <button key={ml} className="btn water" onClick={() => add(ml)}>+{ml} ml</button>
+                <button key={ml} className="btn water" onClick={() => add(ml)}>+{fmtMl(ml)}</button>
               ))}
             </div>
             <form className="row" onSubmit={(e) => { e.preventDefault(); add(custom); setCustom(''); }}>

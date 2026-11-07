@@ -214,6 +214,12 @@ textarea.input { resize: vertical; min-height: 60px; }
 .progress > div { height: 100%; background: var(--primary); border-radius: 99px; transition: width 0.4s ease; }
 .progress.water > div { background: var(--water); }
 .progress.success > div { background: var(--success); }
+.progress.has-mark { position: relative; overflow: visible; }
+.progress.has-mark > div { border-radius: 99px; }
+.progress-mark {
+  position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 2px;
+  background: var(--text); opacity: 0.55;
+}
 
 /* ---------- Água ---------- */
 .water-hero { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; justify-content: center; }

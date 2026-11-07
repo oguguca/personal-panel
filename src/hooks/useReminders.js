@@ -4,6 +4,7 @@ import { notify } from '../platform.js';
 import { useStore } from '../store/StoreContext.jsx';
 import { nowMinutes, toMinutes } from '../store/dates.js';
 import { waterTotal } from '../store/model.js';
+import { fmtMl } from '../components/ui.jsx';
 
 const TICK_MS = 30000;
 const MEAL_WINDOW_MIN = 30; // avisa até 30 min depois do horário
@@ -18,7 +19,7 @@ export function inActiveWindow(settings, now = new Date()) {
 /** Momento (ms) do próximo lembrete de água, ou null se não houver. */
 export function nextWaterReminder(settings, day, startedAt) {
   if (!settings.notificationsOn || !settings.waterReminderOn) return null;
-  if (waterTotal(day) >= settings.waterGoal) return null;
+  if (waterTotal(day) >= (settings.waterIdeal || settings.waterGoal)) return null; // lembra até o ideal
   const lastDrink = day.water.length ? day.water[day.water.length - 1].at : 0;
   const base = Math.max(lastDrink, day.lastWaterReminder || 0, startedAt);
   return base + settings.waterReminderMinutes * 60000;
@@ -42,7 +43,12 @@ export function useReminders() {
       const next = nextWaterReminder(s, day, startedAt.current);
       if (next && now.getTime() >= next && inActiveWindow(s, now)) {
         const total = waterTotal(day);
-        notify('Hora de beber água 💧', `Você bebeu ${total} de ${s.waterGoal} ml hoje.`);
+        notify(
+          'Hora de beber água 💧',
+          total < s.waterGoal
+            ? `Você bebeu ${fmtMl(total)} hoje. Mínimo: ${fmtMl(s.waterGoal)}.`
+            : `Mínimo batido (${fmtMl(total)})! Ideal: ${fmtMl(s.waterIdeal || s.waterGoal)}.`
+        );
         update((d) => {
           d.days[today].lastWaterReminder = now.getTime();
         });

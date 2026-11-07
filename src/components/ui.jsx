@@ -1,13 +1,23 @@
 // Componentes pequenos reaproveitados pelas páginas.
 import Icon from './Icon.jsx';
 
-export function Progress({ value, max, variant = '' }) {
+/** Barra de progresso. mark: valor onde desenhar uma marca (ex.: mínimo de água). */
+export function Progress({ value, max, variant = '', mark }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  const markPct = mark && max > 0 ? Math.min(100, (mark / max) * 100) : null;
   return (
-    <div className={`progress ${variant}`} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+    <div className={`progress ${variant} ${markPct ? 'has-mark' : ''}`} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
       <div style={{ width: `${pct}%` }} />
+      {markPct !== null && <span className="progress-mark" style={{ left: `${markPct}%` }} title="mínimo" />}
     </div>
   );
+}
+
+/** 300 -> "300 ml", 4000 -> "4 L", 2500 -> "2,5 L" */
+export function fmtMl(ml) {
+  const n = Math.round(Number(ml) || 0);
+  if (Math.abs(n) < 1000) return `${n} ml`;
+  return `${(n / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} L`;
 }
 
 export function Check({ on, onClick, label }) {

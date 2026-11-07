@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import FoodPicker from '../components/FoodPicker.jsx';
 import Icon from '../components/Icon.jsx';
-import { Check, Empty, Progress } from '../components/ui.jsx';
+import { Check, Empty, Progress, fmtMl } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import BarChart from '../components/BarChart.jsx';
 import { addDays, formatMedium, formatShort, nowMinutes, parseKey, toMinutes } from '../store/dates.js';
@@ -135,7 +135,7 @@ export default function Alimentacao({ go, startedAt, tab = 'refeicoes' }) {
         <h1>Alimentação</h1>
         <p className="muted">
           {tab === 'agua'
-            ? `Água: ${water} de ${settings.waterGoal} ml hoje`
+            ? `Água hoje: ${fmtMl(water)} · mínimo ${fmtMl(settings.waterGoal)} · ideal ${fmtMl(settings.waterIdeal || settings.waterGoal)}`
             : meals.length ? `${doneCount} de ${meals.length} refeições feitas hoje` : 'Nenhuma refeição registrada hoje'}
         </p>
       </div>
@@ -218,15 +218,23 @@ export default function Alimentacao({ go, startedAt, tab = 'refeicoes' }) {
           <div className="stat-icon water"><Icon name="agua" /></div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
-              <span><strong>{water} ml</strong> <span className="muted">de {settings.waterGoal} ml de água</span></span>
+              <span>
+                <strong>{fmtMl(water)}</strong>{' '}
+                <span className="muted">de água · mínimo {fmtMl(settings.waterGoal)} · ideal {fmtMl(settings.waterIdeal || settings.waterGoal)}</span>
+              </span>
               <button className="link small" onClick={() => go('agua')}>Detalhes</button>
             </div>
-            <Progress value={water} max={settings.waterGoal} variant="water" />
+            <Progress
+              value={water}
+              max={Math.max(settings.waterGoal, settings.waterIdeal || 0)}
+              mark={settings.waterGoal}
+              variant={water >= settings.waterGoal ? 'success' : 'water'}
+            />
           </div>
         </div>
         <div className="row">
           {settings.waterQuick.map((ml) => (
-            <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{ml} ml</button>
+            <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{fmtMl(ml)}</button>
           ))}
           <button className="btn sm" onClick={() => update((d) => d.days[today].water.pop())} disabled={!day.water.length}>
             <Icon name="undo" size={14} /> Desfazer

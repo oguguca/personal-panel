@@ -178,7 +178,7 @@ export default function Configuracoes() {
         <div className="card">
           <h2>Água</h2>
           <label className="field">
-            <span>Meta diária (ml)</span>
+            <span>Mínimo diário (ml)</span>
             <input
               className="input"
               type="number"
@@ -186,7 +186,19 @@ export default function Configuracoes() {
               step="50"
               value={settings.waterGoal}
               onChange={(e) => setS('waterGoal', Math.max(0, Number(e.target.value) || 0))}
-              onBlur={(e) => setS('waterGoal', Math.max(250, Number(e.target.value) || 2000))}
+              onBlur={(e) => setS('waterGoal', Math.max(250, Number(e.target.value) || 4000))}
+            />
+          </label>
+          <label className="field">
+            <span>Ideal diário (ml)</span>
+            <input
+              className="input"
+              type="number"
+              min="250"
+              step="50"
+              value={settings.waterIdeal ?? settings.waterGoal}
+              onChange={(e) => setS('waterIdeal', Math.max(0, Number(e.target.value) || 0))}
+              onBlur={(e) => setS('waterIdeal', Math.max(settings.waterGoal, Number(e.target.value) || 6000))}
             />
           </label>
           <div className="field">

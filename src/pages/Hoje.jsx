@@ -1,6 +1,6 @@
 import Icon from '../components/Icon.jsx';
 import WaterCup from '../components/WaterCup.jsx';
-import { Check, Empty, Progress, fmtValue, pct } from '../components/ui.jsx';
+import { Check, Empty, Progress, fmtMl, fmtValue, pct } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes } from '../store/dates.js';
 import { goalDone, mealList, recordTotal, waterTotal } from '../store/model.js';
@@ -76,7 +76,7 @@ export default function Hoje({ go }) {
         <button className="card stat" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => go('agua')}>
           <div className="stat-icon water"><Icon name="agua" /></div>
           <div>
-            <div className="stat-value">{water} <span className="muted small">/ {settings.waterGoal} ml</span></div>
+            <div className="stat-value">{fmtMl(water)} <span className="muted small">/ {fmtMl(settings.waterGoal)}</span></div>
             <div className="stat-label">água hoje</div>
           </div>
         </button>
@@ -136,12 +136,15 @@ export default function Hoje({ go }) {
             <button className="link" onClick={() => go('agua')}>Detalhes</button>
           </div>
           <div className="row" style={{ justifyContent: 'center', gap: 20 }}>
-            <WaterCup value={water} goal={settings.waterGoal} size={120} />
+            <WaterCup value={water} goal={Math.max(settings.waterGoal, settings.waterIdeal || 0)} mark={settings.waterGoal} size={120} />
             <div className="field" style={{ gap: 8 }}>
-              <div><strong>{water} ml</strong> <span className="muted">de {settings.waterGoal} ml</span></div>
+              <div>
+                <strong>{fmtMl(water)}</strong> <span className="muted">· mínimo {fmtMl(settings.waterGoal)}</span>
+                <div className="muted small">ideal {fmtMl(settings.waterIdeal || settings.waterGoal)}</div>
+              </div>
               <div className="row">
                 {settings.waterQuick.map((ml) => (
-                  <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{ml}</button>
+                  <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{fmtMl(ml)}</button>
                 ))}
               </div>
             </div>

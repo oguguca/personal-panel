@@ -6,6 +6,11 @@ const KEY = 'painel-pessoal:data';
 function normalize(raw) {
   const base = defaultData();
   if (!raw || typeof raw !== 'object') return base;
+  // Migração (uma vez): meta única de água -> mínimo 4 L / ideal 6 L; botões rápidos maiores.
+  if (raw.settings && raw.settings.waterIdeal === undefined) {
+    raw = { ...raw, settings: { ...raw.settings, waterGoal: Math.max(raw.settings.waterGoal || 0, 4000), waterIdeal: 6000 } };
+    if (String(raw.settings.waterQuick) === '200,300,500') raw.settings.waterQuick = [300, 500, 1000];
+  }
   return {
     ...base,
     ...raw,

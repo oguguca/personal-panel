@@ -9,8 +9,9 @@ export function defaultSettings() {
     userName: '',
     theme: 'system', // 'light' | 'dark' | 'system'
     notificationsOn: true,
-    waterGoal: 2000,
-    waterQuick: [200, 300, 500],
+    waterGoal: 4000, // mínimo do dia (conta como "meta batida")
+    waterIdeal: 6000, // ideal do dia (barra/copo enchem até aqui)
+    waterQuick: [300, 500, 1000],
     waterReminderOn: true,
     waterReminderMinutes: 60,
     waterActiveStart: '07:00',
@@ -136,6 +137,7 @@ export function computeSummary(data, key) {
   return {
     water: waterTotal(day),
     waterGoal: data.settings.waterGoal,
+    waterIdeal: data.settings.waterIdeal,
     kcal: dayNutrition(day).kcal,
     kcalGoal: data.settings.kcalGoal,
     record: recordTotal(day),
