@@ -18,6 +18,7 @@ export function defaultSettings() {
     carryOverTasks: true,
     recordGoalMin: 60,
     kcalGoal: 2000,
+    profile: { height: '', weight: '', age: '', birthday: '', sex: '', activity: 1.375 },
     recordQuick: [5, 10, 15, 30],
     meals: [
       { id: 'cafe', name: 'Café da manhã', time: '08:00' },

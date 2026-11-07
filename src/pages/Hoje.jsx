@@ -5,6 +5,7 @@ import { useStore } from '../store/StoreContext.jsx';
 import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes } from '../store/dates.js';
 import { goalDone, mealList, recordTotal, waterTotal } from '../store/model.js';
 import { dayNutrition, fmtKcal } from '../store/foods.js';
+import { isBirthday } from '../store/body.js';
 
 export function nextMeal(settings, day) {
   const n = nowMinutes();
@@ -53,8 +54,8 @@ export default function Hoje({ go }) {
         <div>
           <p className="muted">{formatLong(today)}</p>
           <h1>
-            {greeting()}
-            {name ? `, ${name}` : ''}! 👋
+            {isBirthday(settings.profile) ? 'Feliz aniversário' : greeting()}
+            {name ? `, ${name}` : ''}! {isBirthday(settings.profile) ? '🎂' : '👋'}
           </h1>
         </div>
       </header>

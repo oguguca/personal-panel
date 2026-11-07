@@ -9,7 +9,11 @@ function normalize(raw) {
   return {
     ...base,
     ...raw,
-    settings: { ...defaultSettings(), ...(raw.settings || {}) },
+    settings: {
+      ...defaultSettings(),
+      ...(raw.settings || {}),
+      profile: { ...defaultSettings().profile, ...(raw.settings?.profile || {}) },
+    },
     recurring: Array.isArray(raw.recurring) ? raw.recurring : [],
     dailyGoals: Array.isArray(raw.dailyGoals) ? raw.dailyGoals : [],
     longGoals: Array.isArray(raw.longGoals) ? raw.longGoals : [],

@@ -1,5 +1,6 @@
 // Gráfico de barras simples em SVG (sem biblioteca).
-// items: [{ key, label, value, title }], max: topo do eixo, goal: linha tracejada opcional.
+// items: [{ key, label, value, title, segments? }], max: topo do eixo, goal: linha tracejada opcional.
+// segments: [{ value, color, title }] empilha partes na mesma barra (value = soma).
 export default function BarChart({ items, max, goal, color = 'var(--primary)', format = (v) => v, height = 170 }) {
   const W = 640;
   const H = height;
@@ -25,11 +26,25 @@ export default function BarChart({ items, max, goal, color = 'var(--primary)', f
         const x = padL + slot * i + (slot - barW) / 2;
         const v = it.value || 0;
         const h = Math.max(v > 0 ? 2 : 0, y(0) - y(v));
+        let acc = 0;
         return (
           <g key={it.key}>
-            <rect className="bar" x={x} y={y(0) - h} width={barW} height={h} rx={Math.min(4, barW / 2)} fill={it.missing ? 'var(--border)' : color}>
-              <title>{it.title}</title>
-            </rect>
+            {it.segments ? (
+              it.segments.map((s, si) => {
+                const sh = y(0) - y(s.value || 0);
+                acc += sh;
+                // separador de 1px entre as partes empilhadas
+                return (
+                  <rect key={si} className="bar" x={x} y={y(0) - acc} width={barW} height={Math.max(0, sh - (si < it.segments.length - 1 ? 1 : 0))} fill={s.color}>
+                    <title>{s.title}</title>
+                  </rect>
+                );
+              })
+            ) : (
+              <rect className="bar" x={x} y={y(0) - h} width={barW} height={h} rx={Math.min(4, barW / 2)} fill={it.missing ? 'var(--border)' : color}>
+                <title>{it.title}</title>
+              </rect>
+            )}
             {i % labelEvery === 0 && (
               <text x={x + barW / 2} y={H - 6} textAnchor="middle">{it.label}</text>
             )}

@@ -3,9 +3,27 @@ import FoodPicker from '../components/FoodPicker.jsx';
 import Icon from '../components/Icon.jsx';
 import { Check, Empty, Progress } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
-import { nowMinutes, parseKey, toMinutes } from '../store/dates.js';
+import BarChart from '../components/BarChart.jsx';
+import { addDays, formatMedium, formatShort, nowMinutes, parseKey, toMinutes } from '../store/dates.js';
 import { dayNutrition, fmtKcal, sumItems } from '../store/foods.js';
 import { mealList, uid } from '../store/model.js';
+import { energy } from '../store/body.js';
+
+const MACROS = [
+  { k: 'p', label: 'Proteína', color: 'var(--danger)' },
+  { k: 'c', label: 'Carboidrato', color: 'var(--warning)' },
+  { k: 'g', label: 'Gordura', color: 'var(--water)' },
+];
+
+function MacroLine({ t }) {
+  return (
+    <div className="macros">
+      {MACROS.map((m) => (
+        <span key={m.k}><i style={{ background: m.color }} />{m.label} <strong>{Math.round(t[m.k])} g</strong></span>
+      ))}
+    </div>
+  );
+}
 
 const MEAL_TYPES = ['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'];
 const pad = (n) => String(n).padStart(2, '0');
@@ -66,6 +84,19 @@ export default function Alimentacao({ go }) {
   const doneCount = meals.filter((m) => m.st.done).length;
   const tot = dayNutrition(day);
   const goal = settings.kcalGoal;
+  const en = energy(settings.profile);
+
+  // Últimos 7 dias (hoje incluso), barras empilhadas de proteína/carboidrato/gordura em gramas.
+  const week = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6)).map((k) => ({ k, t: dayNutrition(data.days[k]) }));
+  const withFood = week.filter((w) => w.t.kcal > 0);
+  const avg = (f) => (withFood.length ? withFood.reduce((a, w) => a + w.t[f], 0) / withFood.length : 0);
+  const weekAvg = { kcal: avg('kcal'), p: avg('p'), c: avg('c'), g: avg('g') };
+  const weekItems = week.map(({ k, t }) => ({
+    key: k,
+    label: formatMedium(k).split(',')[0].replace('.', ''),
+    value: t.p + t.c + t.g,
+    segments: MACROS.map((m) => ({ value: t[m.k], color: m.color, title: `${formatShort(k)} · ${m.label}: ${Math.round(t[m.k])} g` })),
+  }));
 
   const patch = (id, fn) =>
     update((d) => {
@@ -123,8 +154,36 @@ export default function Alimentacao({ go }) {
         </div>
         {goal > 0 && <Progress value={tot.kcal} max={goal} variant={tot.kcal > goal ? '' : 'success'} />}
         <div className="row small muted" style={{ justifyContent: 'space-between' }}>
-          <span>Proteína {Math.round(tot.p)} g · Carboidrato {Math.round(tot.c)} g · Gordura {Math.round(tot.g)} g</span>
+          <MacroLine t={tot} />
           {goal > 0 && <span>{tot.kcal <= goal ? `Restam ${fmtKcal(goal - tot.kcal)}` : `${fmtKcal(tot.kcal - goal)} acima da meta`}</span>}
+        </div>
+        <div className="energy">
+          {en.tdee ? (
+            <>
+              <div>
+                <div className="muted small">Gasto diário estimado</div>
+                <strong style={{ fontSize: '1.2rem' }}>{fmtKcal(en.tdee)}</strong>
+                <div className="muted small">basal {fmtKcal(en.bmr)} × atividade {String(en.factor).replace('.', ',')}</div>
+              </div>
+              <div>
+                <div className="muted small">Saldo de hoje</div>
+                <strong style={{ fontSize: '1.2rem', color: tot.kcal > en.tdee ? 'var(--warning)' : 'var(--success)' }}>
+                  {tot.kcal > en.tdee ? '+' : '−'}{fmtKcal(Math.abs(en.tdee - tot.kcal))}
+                </strong>
+                <div className="muted small">{tot.kcal > en.tdee ? 'acima do gasto' : 'abaixo do gasto (déficit)'}</div>
+              </div>
+              {goal !== en.tdee && (
+                <button className="btn sm" onClick={() => update((d) => { d.settings.kcalGoal = en.tdee; })}>
+                  Usar {fmtKcal(en.tdee)} como meta
+                </button>
+              )}
+            </>
+          ) : (
+            <span className="muted small">
+              Para ver quantas calorias você gasta por dia, preencha {en.missing.join(', ')} em{' '}
+              <button className="link" onClick={() => go('config')}>Configurações</button>.
+            </span>
+          )}
         </div>
       </section>
 
@@ -156,7 +215,7 @@ export default function Alimentacao({ go }) {
                       </div>
                     </div>
                   </div>
-                  <div className="row" style={{ gap: 2 }}>
+                  <div className="row" style={{ gap: 2, flexWrap: 'nowrap' }}>
                     {st.done ? (
                       <label className="badge success" title="Horário em que você comeu (pode ajustar)">
                         Comi às
@@ -191,6 +250,7 @@ export default function Alimentacao({ go }) {
                     ))}
                   </ul>
                 )}
+                {items.length > 0 && <MacroLine t={sub} />}
 
                 {openPicker === m.id ? (
                   <FoodPicker onAdd={(item) => addItem(m.id, item)} onClose={() => setOpenPicker(null)} />
@@ -222,6 +282,20 @@ export default function Alimentacao({ go }) {
           </div>
         )
       )}
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Macros da semana</h2>
+          <span className="muted small">média: {weekAvg.kcal ? `${fmtKcal(weekAvg.kcal)}/dia` : '—'}</span>
+        </div>
+        <BarChart items={weekItems} format={(v) => `${v}g`} />
+        <div className="legend">
+          {MACROS.map((m) => <span key={m.k}><i style={{ background: m.color }} />{m.label}</span>)}
+          {weekAvg.kcal > 0 && (
+            <span>média/dia: P {Math.round(weekAvg.p)} g · C {Math.round(weekAvg.c)} g · G {Math.round(weekAvg.g)} g</span>
+          )}
+        </div>
+      </section>
 
       {data.customFoods.length > 0 && (
         <section className="card">

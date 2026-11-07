@@ -15,6 +15,7 @@ import { useStore } from '../store/StoreContext.jsx';
 import { dateKey } from '../store/dates.js';
 import { defaultData, uid } from '../store/model.js';
 import { exportJSON, parseBackup } from '../store/storage.js';
+import { ACTIVITY_LEVELS, ageOf, bmi, bmiLabel } from '../store/body.js';
 
 export default function Configuracoes() {
   const { data, settings, update, replaceAll } = useStore();
@@ -30,6 +31,9 @@ export default function Configuracoes() {
   }, [msg]);
 
   const setS = (k, v) => update((d) => { d.settings[k] = v; });
+  const profile = settings.profile;
+  const setP = (k, v) => update((d) => { d.settings.profile[k] = v; });
+  const bmiValue = bmi(profile);
   const setMeal = (id, k, v) => update((d) => { d.settings.meals.find((m) => m.id === id)[k] = v; });
 
   const doExport = () => {
@@ -84,6 +88,57 @@ export default function Configuracoes() {
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="card">
+          <h2>Seu corpo</h2>
+          <p className="muted small" style={{ margin: 0 }}>Usado para calcular quantas calorias você gasta por dia.</p>
+          <div className="row">
+            <label className="field"><span>Altura (cm)</span>
+              <input className="input w-num" type="number" min="50" max="250" placeholder="175" value={profile.height} onChange={(e) => setP('height', e.target.value)} />
+            </label>
+            <label className="field"><span>Peso (kg)</span>
+              <input className="input w-num" type="number" min="20" max="400" step="0.1" placeholder="70" value={profile.weight} onChange={(e) => setP('weight', e.target.value)} />
+            </label>
+          </div>
+          <div className="row">
+            <label className="field"><span>Data de aniversário</span>
+              <input className="input" type="date" value={profile.birthday} max={dateKey()} onChange={(e) => setP('birthday', e.target.value)} />
+            </label>
+            <label className="field"><span>Idade</span>
+              <input
+                className="input w-num"
+                type="number"
+                min="1"
+                max="120"
+                value={profile.birthday ? (ageOf(profile) ?? '') : profile.age}
+                disabled={!!profile.birthday}
+                title={profile.birthday ? 'Calculada pelo aniversário' : ''}
+                onChange={(e) => setP('age', e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="field">
+            <span className="muted small">Sexo (a fórmula muda um pouco)</span>
+            <div className="segmented">
+              {[['m', 'Masculino'], ['f', 'Feminino']].map(([v, l]) => (
+                <button key={v} className={profile.sex === v ? 'on' : ''} onClick={() => setP('sex', v)}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <label className="field">
+            <span>Nível de atividade</span>
+            <select className="input" value={profile.activity} onChange={(e) => setP('activity', Number(e.target.value))}>
+              {ACTIVITY_LEVELS.map((a) => (
+                <option key={a.value} value={a.value}>{a.label} — {a.hint}</option>
+              ))}
+            </select>
+          </label>
+          {bmiValue && (
+            <p className="small" style={{ margin: 0 }}>
+              IMC: <strong>{bmiValue.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</strong> <span className="muted">({bmiLabel(bmiValue)})</span>
+            </p>
+          )}
         </div>
 
         <div className="card">
