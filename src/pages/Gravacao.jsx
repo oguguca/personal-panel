@@ -24,6 +24,15 @@ export function recordStreak(data, today) {
 export default function Gravacao() {
   const { data, today, day, settings, update } = useStore();
   const [custom, setCustom] = useState('');
+  const [editGoal, setEditGoal] = useState(null); // texto do campo enquanto edita a meta
+
+  const saveGoal = (e) => {
+    e.preventDefault();
+    const v = Math.round(Number(String(editGoal).replace(',', '.')));
+    if (!v || v < 1 || v > 1440) return;
+    update((d) => { d.settings.recordGoalMin = v; });
+    setEditGoal(null);
+  };
 
   const total = recordTotal(day);
   const goal = settings.recordGoalMin;
@@ -46,6 +55,26 @@ export default function Gravacao() {
           <h1>Gravação</h1>
           <p className="muted">Meta diária de {formatDuration(goal)}</p>
         </div>
+        {editGoal === null ? (
+          <button className="btn" onClick={() => setEditGoal(String(goal))}><Icon name="edit" size={16} /> Mudar meta</button>
+        ) : (
+          <form className="row" onSubmit={saveGoal}>
+            <input
+              className="input w-num"
+              type="number"
+              min="1"
+              max="1440"
+              autoFocus
+              value={editGoal}
+              onChange={(e) => setEditGoal(e.target.value)}
+              onKeyDown={(e) => e.key === 'Escape' && setEditGoal(null)}
+              aria-label="Meta diária em minutos"
+            />
+            <span className="muted small">min/dia</span>
+            <button className="btn primary" type="submit"><Icon name="check" size={16} /> Salvar</button>
+            <button className="icon-btn" type="button" title="Cancelar" onClick={() => setEditGoal(null)}><Icon name="x" size={18} /></button>
+          </form>
+        )}
       </header>
 
       <section className="card">
