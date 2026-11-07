@@ -6,8 +6,7 @@ import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes
 import { goalDone, mealList, recordTotal, waterTotal } from '../store/model.js';
 import { dayNutrition, fmtKcal } from '../store/foods.js';
 import { energy, isBirthday } from '../store/body.js';
-import { weekday } from '../store/dates.js';
-import { EXERCISE_BY_ID } from '../data/exercises.js';
+import { TodayTraining } from './TreinoCiclo.jsx';
 
 export function nextMeal(settings, day) {
   const n = nowMinutes();
@@ -39,7 +38,6 @@ export default function Hoje({ go }) {
   const meals = mealList(settings, day);
   const lastMeal = [...meals].reverse().find((m) => m.st.done);
   const en = energy(settings.profile);
-  const todayWorkouts = data.workouts.filter((w) => w.days.includes(weekday(today)));
   const addRec = (min) => update((d) => d.days[today].recording.push({ min, at: Date.now() }));
   const markMeal = (id) =>
     update((d) => {
@@ -152,22 +150,13 @@ export default function Hoje({ go }) {
         </div>
 
         {/* Treino do dia */}
-        {todayWorkouts.length > 0 && (
+        {data.workouts.length > 0 && (
           <div className="card">
             <div className="card-head">
               <h2>Treino de hoje</h2>
               <button className="link" onClick={() => go('treino')}>Abrir</button>
             </div>
-            {todayWorkouts.map((w) => (
-              <div key={w.id} className="field">
-                <strong>{w.name}</strong>
-                <span className="muted small">
-                  {w.items.length} exercício(s)
-                  {w.items.length > 0 && ': ' + w.items.slice(0, 4).map((i) => EXERCISE_BY_ID[i.exId]?.name).filter(Boolean).join(', ')}
-                  {w.items.length > 4 && '…'}
-                </span>
-              </div>
-            ))}
+            <TodayTraining compact onOpen={() => go('treino')} />
           </div>
         )}
 

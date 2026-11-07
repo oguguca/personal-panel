@@ -25,6 +25,10 @@ function normalize(raw) {
     days: raw.days && typeof raw.days === 'object' ? raw.days : {},
     customFoods: Array.isArray(raw.customFoods) ? raw.customFoods : [],
     workouts: Array.isArray(raw.workouts) ? raw.workouts : [],
+    training: {
+      rotation: Array.isArray(raw.training?.rotation) ? raw.training.rotation : [],
+      restDays: Array.isArray(raw.training?.restDays) ? raw.training.restDays : [],
+    },
     foodUsage: raw.foodUsage && typeof raw.foodUsage === 'object' ? raw.foodUsage : {},
   };
 }

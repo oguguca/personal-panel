@@ -5,10 +5,10 @@ import Icon from '../components/Icon.jsx';
 import { Empty } from '../components/ui.jsx';
 import { CATEGORIES, EQUIPMENT, EXERCISES, EXERCISE_BY_ID, MUSCLES } from '../data/exercises.js';
 import { useStore } from '../store/StoreContext.jsx';
-import { weekday } from '../store/dates.js';
 import { norm } from '../store/foods.js';
 import { uid } from '../store/model.js';
-import { DayPicker, describeDays } from './Tarefas.jsx';
+import { slotLetter, suggestion, trainingConfig } from '../store/training.js';
+import TreinoCiclo from './TreinoCiclo.jsx';
 
 const LETTERS = 'ABCDEFGHIJ';
 const PAGE = 40; // exercícios por página na biblioteca
@@ -203,9 +203,8 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
 // ---------------------------------------------------------------------------
 // Um treino montado (Treino A, B…)
 // ---------------------------------------------------------------------------
-function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
+function WorkoutCard({ w, isToday, letter, onOpenCycle, onChange, onRemove, onAddExercises }) {
   const [renaming, setRenaming] = useState(false);
-  const [showDays, setShowDays] = useState(false);
   const muscles = musclesOf(w);
   const strength = w.items.filter((it) => !isTimed(it.exId));
   const totalSets = strength.reduce((a, it) => a + (parseInt(it.sets, 10) || 0), 0);
@@ -239,16 +238,15 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
       </div>
 
       <div className="workout-meta">
-        <button className="meta-item" onClick={() => setShowDays(!showDays)} title="Escolher dias">
-          <Icon name="clock" size={14} /> {w.days.length ? describeDays(w.days) : 'Sem dia fixo'}
-          <span className="link small">{showDays ? 'pronto' : 'alterar'}</span>
+        <button className="meta-item" onClick={onOpenCycle} title="Ver ciclo e descanso">
+          <Icon name="repeat" size={14} /> {letter ? `${letter} no ciclo` : 'Fora do ciclo'}
+          <span className="link small">ciclo</span>
         </button>
         <span className="meta-item"><Icon name="treino" size={14} /> {w.items.length} exercício(s)</span>
         {totalSets > 0 && <span className="meta-item"><Icon name="repeat" size={14} /> {totalSets} séries</span>}
         {cardioMin > 0 && <span className="meta-item"><Icon name="clock" size={14} /> {cardioMin} min de cardio</span>}
         {missing > 0 && <span className="meta-item warn">{missing} sem carga</span>}
       </div>
-      {showDays && <DayPicker value={w.days} onChange={(v) => onChange((x) => { x.days = v; })} />}
 
       {muscles.length > 0 && (
         <div className="chips">{muscles.map((m) => <span key={m} className="badge primary">{MUSCLES[m]}</span>)}</div>
@@ -329,7 +327,9 @@ export default function Treino() {
   const workouts = data.workouts;
   const [tab, setTab] = useState('treinos');
   const [target, setTarget] = useState(workouts[0]?.id || null);
-  const wd = weekday(today);
+  const { rotation } = trainingConfig(data);
+  const sug = suggestion(data, today);
+  const todayId = sug.logged ? sug.logged.workoutId : sug.workoutId; // em dia de descanso, nenhum
 
   const createWorkout = () => {
     const w = { id: uid(), name: `Treino ${LETTERS[workouts.length] || workouts.length + 1}`, days: [], items: [] };
@@ -363,11 +363,14 @@ export default function Treino() {
         </div>
         <div className="segmented">
           <button className={tab === 'treinos' ? 'on' : ''} onClick={() => setTab('treinos')}>Meus treinos</button>
+          <button className={tab === 'ciclo' ? 'on' : ''} onClick={() => setTab('ciclo')}>Ciclo e descanso</button>
           <button className={tab === 'exercicios' ? 'on' : ''} onClick={() => setTab('exercicios')}>Exercícios</button>
         </div>
       </header>
 
-      {tab === 'exercicios' ? (
+      {tab === 'ciclo' ? (
+        <TreinoCiclo goTab={setTab} />
+      ) : tab === 'exercicios' ? (
         <Library workouts={workouts} target={target} setTarget={setTarget} onAdd={addExercise} onCreate={createWorkout} />
       ) : (
         <>
@@ -380,7 +383,9 @@ export default function Treino() {
                 <WorkoutCard
                   key={w.id}
                   w={w}
-                  isToday={w.days.includes(wd)}
+                  isToday={todayId === w.id}
+                  letter={rotation.includes(w.id) ? slotLetter(rotation.indexOf(w.id)) : null}
+                  onOpenCycle={() => setTab('ciclo')}
                   onChange={changeWorkout(w.id)}
                   onRemove={() => removeWorkout(w)}
                   onAddExercises={() => { setTarget(w.id); setTab('exercicios'); }}

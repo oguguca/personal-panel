@@ -41,7 +41,8 @@ export function defaultData() {
     lastDay: null,
     customFoods: [], // { id, name, kcal (por 100 g) }
     foodUsage: {}, // chave do alimento -> { count, grams, last }
-    workouts: [], // { id, name, days: [0..6], items: [{ id, exId, sets, reps, weight, note }] }
+    workouts: [], // { id, name, items: [{ id, exId, sets, reps, weight } | { id, exId, minutes, distance }] }
+    training: { rotation: [], restDays: [] }, // ciclo (ordem dos treinos) e dias de descanso da semana
   };
 }
 
