@@ -169,6 +169,8 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
   const [renaming, setRenaming] = useState(false);
   const [showDays, setShowDays] = useState(false);
   const muscles = musclesOf(w);
+  const totalSets = w.items.reduce((a, it) => a + (parseInt(it.sets, 10) || 0), 0);
+  const missing = w.items.filter((it) => String(it.weight ?? '').trim() === '').length;
 
   const setItem = (id, k, v) => onChange((x) => { x.items.find((i) => i.id === id)[k] = v; });
   const move = (idx, dir) =>
@@ -179,15 +181,15 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
     });
 
   return (
-    <div className="card">
+    <div className={`card workout-card ${isToday ? 'is-today' : ''}`}>
       <div className="card-head">
         {renaming ? (
           <form className="inline-edit" onSubmit={(e) => { e.preventDefault(); setRenaming(false); }}>
             <input className="input" autoFocus value={w.name} onChange={(e) => onChange((x) => { x.name = e.target.value; })} onBlur={() => setRenaming(false)} />
           </form>
         ) : (
-          <h2 onDoubleClick={() => setRenaming(true)}>
-            {w.name} {isToday && <span className="badge success">hoje</span>}
+          <h2 className="workout-title" onDoubleClick={() => setRenaming(true)}>
+            {w.name} {isToday && <span className="badge success">treino de hoje</span>}
           </h2>
         )}
         <div className="row" style={{ gap: 2, flexWrap: 'nowrap' }}>
@@ -196,11 +198,14 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
         </div>
       </div>
 
-      <div className="row small" style={{ justifyContent: 'space-between' }}>
-        <span className="muted">
+      <div className="workout-meta">
+        <button className="meta-item" onClick={() => setShowDays(!showDays)} title="Escolher dias">
           <Icon name="clock" size={14} /> {w.days.length ? describeDays(w.days) : 'Sem dia fixo'}
-        </span>
-        <button className="link small" onClick={() => setShowDays(!showDays)}>{showDays ? 'Pronto' : 'Escolher dias'}</button>
+          <span className="link small">{showDays ? 'pronto' : 'alterar'}</span>
+        </button>
+        <span className="meta-item"><Icon name="treino" size={14} /> {w.items.length} exercício(s)</span>
+        <span className="meta-item"><Icon name="repeat" size={14} /> {totalSets} séries</span>
+        {missing > 0 && <span className="meta-item warn">{missing} sem carga</span>}
       </div>
       {showDays && <DayPicker value={w.days} onChange={(v) => onChange((x) => { x.days = v; })} />}
 
@@ -209,35 +214,60 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
       )}
 
       {w.items.length ? (
-        <ul className="list">
+        <div className="ex-grid">
           {w.items.map((it, i) => {
             const e = EXERCISE_BY_ID[it.exId];
+            const noWeight = String(it.weight ?? '').trim() === '';
             return (
-              <li key={it.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
-                <div className="ex-row">
-                  <span className="muted small">{i + 1}.</span>
-                  <span className="item-title row" style={{ gap: 10, flexWrap: 'nowrap' }}>
-                    <ExercisePreview id={it.exId} name={e?.name} size="mini" />
-                    {e?.name || 'Exercício removido'}
-                  </span>
-                  <div className="item-actions">
-                    <button className="icon-btn" title="Subir" disabled={i === 0} onClick={() => move(i, -1)}><Icon name="up" size={16} /></button>
-                    <button className="icon-btn" title="Descer" disabled={i === w.items.length - 1} onClick={() => move(i, 1)}><Icon name="down" size={16} /></button>
-                    <button className="icon-btn danger" title="Remover" onClick={() => onChange((x) => { x.items = x.items.filter((y) => y.id !== it.id); })}><Icon name="trash" size={16} /></button>
+              <div key={it.id} className="ex-tile">
+                <div className="ex-tile-media">
+                  {hasPreview(it.exId) ? (
+                    <ExercisePreview id={it.exId} name={e?.name} size="tile" />
+                  ) : (
+                    <div className="ex-anim tile ex-noimg"><Icon name="treino" size={28} /></div>
+                  )}
+                  <span className="ex-num">{i + 1}</span>
+                </div>
+                <div className="ex-tile-body">
+                  <div className="ex-tile-head">
+                    <div style={{ minWidth: 0 }}>
+                      <div className="ex-tile-name" title={e?.en || ''}>{e?.name || 'Exercício removido'}</div>
+                      <div className="muted small">{(e?.m || []).slice(0, 2).map((m) => MUSCLES[m]).join(' · ')}{e && ` · ${e.eq}`}</div>
+                    </div>
+                    <div className="ex-tile-actions">
+                      <button className="icon-btn" title="Subir" disabled={i === 0} onClick={() => move(i, -1)}><Icon name="up" size={16} /></button>
+                      <button className="icon-btn" title="Descer" disabled={i === w.items.length - 1} onClick={() => move(i, 1)}><Icon name="down" size={16} /></button>
+                      <button className="icon-btn danger" title="Remover" onClick={() => onChange((x) => { x.items = x.items.filter((y) => y.id !== it.id); })}><Icon name="trash" size={16} /></button>
+                    </div>
+                  </div>
+                  <div className="pills">
+                    <label className="pill">
+                      <input type="number" min="1" value={it.sets} onChange={(ev) => setItem(it.id, 'sets', ev.target.value)} aria-label="Séries" style={{ width: `${String(it.sets).length + 0.6}ch` }} />
+                      <span>séries</span>
+                    </label>
+                    <label className="pill">
+                      <input value={it.reps} onChange={(ev) => setItem(it.id, 'reps', ev.target.value)} aria-label="Repetições" placeholder="10" style={{ width: `${Math.max(1.6, String(it.reps).length + 0.6)}ch` }} />
+                      <span>reps</span>
+                    </label>
+                    <label className={`pill ${noWeight ? 'pill-empty' : 'pill-strong'}`} title={noWeight ? 'Preencha depois do treino' : 'Carga'}>
+                      {noWeight && <span>+</span>}
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={it.weight}
+                        onChange={(ev) => setItem(it.id, 'weight', ev.target.value)}
+                        aria-label="Carga em kg"
+                        style={{ width: `${Math.max(noWeight ? 0.5 : 1.6, String(it.weight).length + 0.6)}ch` }}
+                      />
+                      <span>kg</span>
+                    </label>
                   </div>
                 </div>
-                <div className="ex-sets" style={{ paddingLeft: 32 }}>
-                  <input className="input" type="number" min="1" value={it.sets} onChange={(ev) => setItem(it.id, 'sets', ev.target.value)} aria-label="Séries" />
-                  <span>séries ×</span>
-                  <input className="input" value={it.reps} onChange={(ev) => setItem(it.id, 'reps', ev.target.value)} aria-label="Repetições" placeholder="10-12" />
-                  <span>reps</span>
-                  <input className="input" type="number" min="0" step="0.5" value={it.weight} onChange={(ev) => setItem(it.id, 'weight', ev.target.value)} aria-label="Carga em kg" placeholder="—" />
-                  <span>kg</span>
-                </div>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       ) : (
         <Empty>Nenhum exercício ainda.</Empty>
       )}
@@ -296,7 +326,7 @@ export default function Treino() {
             <button className="btn primary" onClick={createWorkout}><Icon name="plus" size={18} /> Novo treino</button>
           </div>
           {workouts.length ? (
-            <section className="grid">
+            <section className="stack">
               {workouts.map((w) => (
                 <WorkoutCard
                   key={w.id}
