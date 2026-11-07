@@ -18,7 +18,7 @@ export const DEFAULT_BODY: BodyConfig = { legTop: 0.64, legSplit: 0.52, hand: [0
 
 /** Ajustes por imagem (quando o corpo é muito diferente do padrão). */
 export const BODY_CONFIG: Record<string, Partial<BodyConfig>> = {
-  toguro: { legTop: 0.63, legSplit: 0.52, hand: [0.9, 0.58], shoulder: [0.55, 0.21] },
+  toguro: { legTop: 0.6, legSplit: 0.45, hand: [0.92, 0.53], shoulder: [0.45, 0.25] },
 };
 
 export interface BodySprite {
@@ -144,7 +144,7 @@ export function rigFor(action: string, phase: number, time: number, cfg: BodyCon
     case 'pull':
       return { ...base, dy: -14 - 10 * e, legB: 4 * Math.sin(time * 3), legF: -4 * Math.sin(time * 3) };
     case 'bench':
-      return { ...base, lie: 90, dy: -10, prop: { kind: 'barbell', at: [1.0 + 0.35 * e, 0.3] } };
+      return { ...base, lie: 90, dy: -10, prop: { kind: 'barbell', at: [0.8 + 0.3 * e, 0.36] } };
     case 'abs':
       return { ...base, lie: 90 - 30 * e, dy: -1 };
     case 'pushup':
