@@ -31,13 +31,14 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
   const [open, setOpen] = useState(null);
   const [limit, setLimit] = useState(PAGE);
 
-  const toggle = (list, set) => (v) => {
-    set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  // atualização funcional: cliques rápidos seguidos não se perdem
+  const toggle = (set) => (v) => {
+    set((list) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]));
     setLimit(PAGE);
   };
-  const toggleMuscle = toggle(muscles, setMuscles);
-  const toggleEquip = toggle(equip, setEquip);
-  const toggleCat = toggle(cats, setCats);
+  const toggleMuscle = toggle(setMuscles);
+  const toggleEquip = toggle(setEquip);
+  const toggleCat = toggle(setCats);
 
   const list = useMemo(() => {
     const words = norm(q).split(' ').filter(Boolean);
@@ -352,7 +353,7 @@ export default function Treino() {
           )}
           <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>
             Dicas gerais de execução. Em caso de dor ou dúvida, procure um profissional de educação física.
-            {' '}Imagens: free-exercise-db (domínio público).
+            {' '}Imagens: free-exercise-db (domínio público). Mapa muscular: react-body-highlighter (MIT).
           </p>
         </>
       )}

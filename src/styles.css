@@ -255,15 +255,31 @@ textarea.input { resize: vertical; min-height: 60px; }
 .kcal-total { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 
 /* ---------- Treino ---------- */
-.body-map { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
-.body-map .silhouette { fill: var(--surface-2); stroke: var(--border); stroke-width: 1; }
-.body-map .muscle {
-  fill: var(--border); stroke: var(--surface); stroke-width: 1.5; cursor: pointer;
-  transition: fill 0.15s; outline: none;
+/* Mapa muscular */
+.body-map {
+  --m-base: #c9cede; --m-body: #dfe2ec; --m-hover: #a5b4fc; --m-on: var(--primary); --m-line: var(--surface);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 10px 8px 4px; border-radius: 14px;
+  background: radial-gradient(ellipse at 50% 35%, var(--surface-2), transparent 70%);
 }
-.body-map .muscle:hover, .body-map .muscle:focus-visible { fill: var(--primary); fill-opacity: 0.5; }
-.body-map .muscle.on, .body-map .muscle.on:hover { fill: var(--primary); fill-opacity: 1; transition: none; }
-.body-map .body-label { fill: var(--muted); font-size: 13px; font-weight: 600; }
+:root[data-theme='dark'] .body-map { --m-base: #3a3f63; --m-body: #2a2e4a; --m-hover: #6d74c9; --m-on: #8b93ff; }
+.body-figs { display: flex; justify-content: center; gap: 4%; width: 100%; }
+.body-fig { margin: 0; flex: 1; max-width: 190px; display: flex; flex-direction: column; align-items: center; }
+.body-fig svg { width: 100%; height: auto; overflow: visible; }
+.body-fig figcaption { color: var(--muted); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.body-fig polygon { stroke: var(--m-line); stroke-width: 0.35; stroke-linejoin: round; }
+.body-part polygon { fill: var(--m-body); }
+.body-map .muscle { cursor: pointer; outline: none; }
+.body-map .muscle polygon { fill: var(--m-base); transition: fill 0.15s; }
+.body-map .muscle.hover polygon { fill: var(--m-hover); }
+.body-map .muscle.on polygon { fill: var(--m-on); }
+.body-map .muscle.on { filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--m-on) 70%, transparent)); }
+.body-map .muscle:focus-visible polygon { stroke: var(--text); stroke-width: 0.6; }
+.body-hint {
+  font-size: 0.85rem; font-weight: 650; color: var(--muted); padding: 4px 12px; border-radius: 99px;
+  background: var(--surface-2); min-height: 26px; transition: color 0.15s, background 0.15s;
+}
+.body-hint.active { color: var(--primary); background: var(--primary-soft); }
 .treino-layout { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 16px; align-items: start; }
 .treino-layout > .card:first-child { position: sticky; top: 0; }
 .ex-item { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }

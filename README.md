@@ -24,6 +24,8 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.
 - Ao fechar a janela, o app continua na **bandeja do sistema** (perto do relógio). Para sair: clique com o botão direito no ícone → **Sair**.
 
+Créditos e licenças dos dados e desenhos de terceiros: [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
 ## Pré-requisitos
 
 - [Node.js LTS](https://nodejs.org) (inclui o npm)
