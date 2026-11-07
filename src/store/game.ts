@@ -103,8 +103,8 @@ export const XP = {
   workout: 30,
 };
 
-const num = (v: unknown) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
-const repsOf = (r: unknown) => {
+export const num = (v: unknown) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
+export const repsOf = (r: unknown) => {
   const n = String(r ?? '').match(/\d+/g); // "10-12" -> média 11
   return n ? n.map(Number).reduce((a, b) => a + b, 0) / n.length : 0;
 };
@@ -112,7 +112,7 @@ const isCardio = (exId: string) => EXERCISE_BY_ID[exId]?.cat === 'Cardio';
 const LEG = new Set(['quads', 'hamstrings', 'calves', 'glutes', 'adductors', 'abductors']);
 
 /** Itens do treino feito no dia (cópia salva; dias antigos usam o treino atual). */
-function trainingItems(data: Data, t: TrainingLog): Omit<WorkoutItem, 'id'>[] {
+export function trainingItems(data: Data, t: TrainingLog): Omit<WorkoutItem, 'id'>[] {
   if (t.items) return t.items;
   return data.workouts.find((w) => w.id === t.workoutId)?.items || [];
 }

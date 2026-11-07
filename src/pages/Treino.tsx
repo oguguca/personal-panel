@@ -9,7 +9,7 @@ import { norm } from '../store/foods';
 import { uid } from '../store/model';
 import { slotLetter, suggestion, trainingConfig } from '../store/training';
 import type { Exercise, Workout, WorkoutItem } from '../store/types';
-import TreinoCiclo from './TreinoCiclo';
+import TreinoCiclo, { useTrainingActions } from './TreinoCiclo';
 
 type SetItem = (id: string, k: 'sets' | 'reps' | 'weight' | 'minutes' | 'distance', v: string) => void;
 type Dispatch = (fn: (list: string[]) => string[]) => void;
@@ -211,9 +211,12 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }: {
 // ---------------------------------------------------------------------------
 // Um treino montado (Treino A, B…)
 // ---------------------------------------------------------------------------
-function WorkoutCard({ w, isToday, letter, onOpenCycle, onChange, onRemove, onAddExercises }: {
+function WorkoutCard({ w, isToday, doneToday, letter, onOpenCycle, onChange, onRemove, onAddExercises, onDone, onUndo }: {
   w: Workout;
   isToday: boolean;
+  doneToday: boolean;
+  onDone: () => void;
+  onUndo: () => void;
   letter: string | null;
   onOpenCycle: () => void;
   onChange: (fn: (w: Workout) => void) => void;
@@ -248,10 +251,17 @@ function WorkoutCard({ w, isToday, letter, onOpenCycle, onChange, onRemove, onAd
           </form>
         ) : (
           <h2 className="workout-title" onDoubleClick={() => setRenaming(true)}>
-            {w.name} {isToday && <span className="badge success">treino de hoje</span>}
+            {w.name} {doneToday ? <span className="badge success">✓ feito hoje</span> : isToday && <span className="badge success">treino de hoje</span>}
           </h2>
         )}
         <div className="row" style={{ gap: 2, flexWrap: 'nowrap' }}>
+          {doneToday ? (
+            <button className="btn sm" onClick={onUndo} title="Desmarcar o treino de hoje"><Icon name="undo" size={14} /> Desfazer</button>
+          ) : (
+            <button className="btn sm primary" onClick={onDone} disabled={!w.items.length} title="Marca que você fez este treino hoje (o personagem refaz ele na aba Evolução)">
+              ✅ Já fiz hoje
+            </button>
+          )}
           <button className="icon-btn" title="Renomear" onClick={() => setRenaming(true)}><Icon name="edit" size={18} /></button>
           <button className="icon-btn danger" title="Apagar treino" onClick={onRemove}><Icon name="trash" size={18} /></button>
         </div>
@@ -350,6 +360,8 @@ export default function Treino() {
   const { rotation } = trainingConfig(data);
   const sug = suggestion(data, today);
   const todayId = sug.logged ? sug.logged.workoutId : sug.workoutId ?? null; // em dia de descanso, nenhum
+  const act = useTrainingActions();
+  const doneId = data.days[today]?.training?.type === 'workout' ? data.days[today].training!.workoutId : null;
 
   const createWorkout = () => {
     const w: Workout = { id: uid(), name: `Treino ${LETTERS[workouts.length] || workouts.length + 1}`, days: [], items: [] };
@@ -408,6 +420,9 @@ export default function Treino() {
                   key={w.id}
                   w={w}
                   isToday={todayId === w.id}
+                  doneToday={doneId === w.id}
+                  onDone={() => act.done(w.id)}
+                  onUndo={act.undo}
                   letter={rotation.includes(w.id) ? slotLetter(rotation.indexOf(w.id)) : null}
                   onOpenCycle={() => setTab('ciclo')}
                   onChange={changeWorkout(w.id)}
