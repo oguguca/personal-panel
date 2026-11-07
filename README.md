@@ -14,6 +14,10 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
   proteína, carboidrato e gordura. Alimentos de marca podem ser cadastrados com os dados do rótulo. Meta diária de kcal opcional.
   Para atualizar a tabela: baixe os CSVs de [raulfdm/taco-api](https://github.com/raulfdm/taco-api/tree/main/references/csv)
   e rode `node scripts/build-taco.mjs <pasta-dos-csv>`.
+- **Treino**: mapa muscular clicável (frente/costas), 68 exercícios com passo a passo e prévia animada
+  (fotos de início/fim do movimento), montagem de treinos (séries, repetições, carga e dias da semana).
+  Imagens: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (domínio público), salvas em
+  `public/exercises/`. Para baixar de novo: `node scripts/fetch-exercise-images.mjs`.
 - **Gravação**: registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

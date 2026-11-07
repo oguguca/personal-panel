@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import BodyMap from '../components/BodyMap.jsx';
+import ExercisePreview, { hasPreview } from '../components/ExercisePreview.jsx';
 import Icon from '../components/Icon.jsx';
 import { Empty } from '../components/ui.jsx';
 import { EQUIPMENT, EXERCISES, EXERCISE_BY_ID, MUSCLES } from '../data/exercises.js';
@@ -90,7 +91,9 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
         {list.length ? (
           <div className="list" style={{ gap: 8 }}>
             {list.map((e) => (
-              <div key={e.id} className="ex-item">
+              <div key={e.id} className={`ex-item ${hasPreview(e.id) && open !== e.id ? 'with-thumb' : ''}`}>
+                {open !== e.id && <ExercisePreview id={e.id} name={e.name} onClick={() => setOpen(e.id)} />}
+                <div className="ex-body">
                 <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
                   <button className="link" style={{ color: 'var(--text)', textAlign: 'left' }} onClick={() => setOpen(open === e.id ? null : e.id)}>
                     {e.name}
@@ -109,10 +112,15 @@ function Library({ workouts, target, setTarget, onAdd, onCreate }) {
                   <span className="badge warning">{e.eq}</span>
                 </div>
                 {open === e.id ? (
-                  <ol>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                  <>
+                    <ExercisePreview id={e.id} name={e.name} size="big" />
+                    <ol>{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                    <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(null)}>Fechar</button>
+                  </>
                 ) : (
                   <button className="link small" style={{ alignSelf: 'flex-start' }} onClick={() => setOpen(e.id)}>Como fazer</button>
                 )}
+                </div>
               </div>
             ))}
           </div>
@@ -178,7 +186,10 @@ function WorkoutCard({ w, isToday, onChange, onRemove, onAddExercises }) {
               <li key={it.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
                 <div className="ex-row">
                   <span className="muted small">{i + 1}.</span>
-                  <span className="item-title">{e?.name || 'Exercício removido'}</span>
+                  <span className="item-title row" style={{ gap: 10, flexWrap: 'nowrap' }}>
+                    <ExercisePreview id={it.exId} name={e?.name} size="mini" />
+                    {e?.name || 'Exercício removido'}
+                  </span>
                   <div className="item-actions">
                     <button className="icon-btn" title="Subir" disabled={i === 0} onClick={() => move(i, -1)}><Icon name="up" size={16} /></button>
                     <button className="icon-btn" title="Descer" disabled={i === w.items.length - 1} onClick={() => move(i, 1)}><Icon name="down" size={16} /></button>
@@ -281,6 +292,7 @@ export default function Treino() {
           )}
           <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>
             Dicas gerais de execução. Em caso de dor ou dúvida, procure um profissional de educação física.
+            {' '}Imagens: free-exercise-db (domínio público).
           </p>
         </>
       )}

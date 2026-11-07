@@ -267,6 +267,20 @@ textarea.input { resize: vertical; min-height: 60px; }
 .treino-layout { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 16px; align-items: start; }
 .treino-layout > .card:first-child { position: sticky; top: 0; }
 .ex-item { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ex-item.with-thumb { flex-direction: row; align-items: flex-start; gap: 12px; }
+.ex-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ex-anim {
+  position: relative; overflow: hidden; border-radius: 10px; background: var(--surface-2);
+  aspect-ratio: 3 / 2; flex: none; border: 0; padding: 0; display: block;
+}
+.ex-anim.thumb { width: 120px; cursor: pointer; }
+.ex-anim.mini { width: 60px; border-radius: 8px; }
+.ex-anim.big { width: 100%; max-width: 460px; }
+.ex-anim img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ex-anim img + img { animation: ex-flip 1.8s ease-in-out infinite; }
+@keyframes ex-flip { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ex-anim img + img { animation: none; opacity: 0; } }
+@media (max-width: 520px) { .ex-anim.thumb { width: 92px; } }
 .ex-item ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 0.88rem; }
 .ex-row { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; }
 .ex-sets { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 0.85rem; color: var(--muted); }
