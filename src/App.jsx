@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import Icon from './components/Icon.jsx';
 import { useReminders } from './hooks/useReminders.js';
 import { useStore } from './store/StoreContext.jsx';
@@ -82,7 +83,9 @@ export default function App() {
         ))}
       </nav>
       <main className="content">
-        <Current go={go} startedAt={startedAt} />
+        <ErrorBoundary resetKey={page}>
+          <Current go={go} startedAt={startedAt} />
+        </ErrorBoundary>
       </main>
     </div>
   );

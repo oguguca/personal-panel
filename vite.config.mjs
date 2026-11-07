@@ -9,5 +9,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    // não vigiar saídas de build (o instalador trava arquivos e gera erros EBUSY)
+    watch: { ignored: ['**/release/**', '**/dist/**'] },
   },
 });
