@@ -40,6 +40,49 @@ const WING = 'M20,-14 C38,-30 52,-26 60,-36 C60,-14 50,0 26,10 Z M22,2 C38,-4 48
 const CROWN = 'M-17,-36 L-12,-52 L-5,-41 L0,-56 L5,-41 L12,-52 L17,-36 Z';
 const GEM = 'M0,-14 L12,-2 L0,16 L-12,-2 Z';
 
+// Asa de anjo (lado direito): penas penduradas ao longo de um arco que sobe para fora.
+// Ponto no arco (Bézier quadrática): raiz (18,-6) → controle (46,-62) → ponta (92,-56).
+const arm = (t: number): [number, number] => {
+  const u = 1 - t;
+  return [u * u * 18 + 2 * u * t * 46 + t * t * 92, u * u * -6 + 2 * u * t * -62 + t * t * -56];
+};
+// [t no arco, ângulo da pena (90 = para baixo), comprimento, largura]
+const layer = (n: number, t0: number, t1: number, a0: number, a1: number, l0: number, l1: number, w: number) =>
+  Array.from({ length: n }, (_, i) => {
+    const k = i / (n - 1);
+    return [t0 + (t1 - t0) * k, a0 + (a1 - a0) * k, l0 + (l1 - l0) * k, w] as const;
+  });
+const ANGEL_LAYERS = [
+  layer(11, 0.1, 1, 100, 18, 40, 52, 7), // penas grandes (de trás)
+  layer(9, 0.05, 0.85, 105, 40, 30, 36, 7),
+  layer(8, 0.05, 0.75, 110, 60, 18, 20, 6.5),
+];
+const ARM = 'M18,-6 Q46,-62 92,-56';
+const feather = (l: number, w: number) =>
+  `M0,0 C${l * 0.25},${-w} ${l * 0.75},${-w * 0.8} ${l},0 C${l * 0.75},${w * 0.8} ${l * 0.25},${w} 0,0 Z`;
+const SPARKLES: [number, number, number, number][] = [
+  [-62, -40, 1, 0], [64, -46, 1.2, 0.6], [-70, 18, 0.8, 1.2], [70, 12, 0.9, 1.8],
+  [-38, -70, 0.7, 0.9], [40, -72, 0.8, 1.5], [-50, 52, 0.7, 2.1], [52, 50, 0.8, 0.3],
+];
+const STAR = 'M0,-6 C0.8,-1.2 1.2,-0.8 6,0 C1.2,0.8 0.8,1.2 0,6 C-0.8,1.2 -1.2,0.8 -6,0 C-1.2,-0.8 -0.8,-1.2 0,-6 Z';
+
+function AngelWing({ grad, glow }: { grad: string; glow: string }) {
+  return (
+    <g className="angel-wing" filter={glow}>
+      {ANGEL_LAYERS.map((ly, li) => (
+        <g key={li}>
+          {ly.map(([t, ang, l, w], i) => {
+            const [x, y] = arm(t);
+            return <path key={i} d={feather(l, w)} transform={`translate(${x},${y}) rotate(${ang})`} fill={grad} stroke="#c9961a" strokeOpacity="0.8" strokeWidth="0.8" />;
+          })}
+        </g>
+      ))}
+      <path d={ARM} fill="none" stroke="#fffdf4" strokeWidth="7" strokeLinecap="round" />
+      <path d={ARM} fill="none" stroke="#f5c542" strokeWidth="1.6" strokeLinecap="round" transform="translate(0,-3)" />
+    </g>
+  );
+}
+
 interface Props {
   tier: number;
   div?: number;
@@ -55,7 +98,7 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
   const g = (n: string) => `url(#${n}${id})`;
   const rays = tier >= 7;
   const wings = tier >= 3;
-  const crown = tier >= 5;
+  const crown = tier >= 5 && tier < TIERS.length - 1;
   const gem = tier >= 6;
   const legend = tier === TIERS.length - 1;
   const slug = tierSlug(TIERS[tier].name);
@@ -65,8 +108,8 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
     <svg
       className={`emblem ${locked ? 'locked' : ''} ${animate && !locked ? 'anim' : ''}`}
       width={size}
-      height={size}
-      viewBox="-64 -64 128 128"
+      height={legend ? Math.round((size * 180) / 244) : size}
+      viewBox={legend ? '-122 -104 244 180' : '-64 -64 128 128'}
       role="img"
       aria-label={title || TIERS[tier].name}
     >
@@ -85,12 +128,30 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
           <stop offset="1" stopColor={base} stopOpacity="0" />
         </radialGradient>
         <clipPath id={`c${id}`}><path d={SHIELD} /></clipPath>
-        <clipPath id={`p${id}`}><circle cy="-4" r="22" /></clipPath>
+        <clipPath id={`p${id}`}><circle cy="-2" r="29" /></clipPath>
+        <linearGradient id={`w${id}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.6" stopColor="#fff6dc" />
+          <stop offset="1" stopColor="#f5c542" />
+        </linearGradient>
+        <filter id={`g${id}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.2" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
       </defs>
 
-      {!locked && <circle r="62" fill={g('a')} className="emblem-aura" />}
+      <g className="emblem-art">
+      {!locked && <circle r={legend ? 80 : 62} fill={g('a')} className="emblem-aura" />}
 
-      {rays && (
+      {legend && (
+        <g className="angel-beams" opacity="0.3">
+          {Array.from({ length: 16 }, (_, i) => (
+            <path key={i} d="M-4,-30 L0,-84 L4,-30 Z" fill="#ffe7a3" transform={`rotate(${i * 22.5})`} />
+          ))}
+        </g>
+      )}
+
+      {rays && !legend && (
         <g className="emblem-rays" opacity="0.8">
           {Array.from({ length: 12 }, (_, i) => (
             <path key={i} d="M-3,-40 L0,-62 L3,-40 Z" fill={light} transform={`rotate(${i * 30})`} />
@@ -99,12 +160,13 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
       )}
 
       {legend && (
-        <g className="emblem-flame" fill="#ffb347" opacity="0.85">
-          <path d="M-22,30 C-40,10 -30,-20 -14,-34 C-18,-14 -6,-8 0,-26 C6,-8 18,-14 14,-34 C30,-20 40,10 22,30 Z" />
-        </g>
+        <>
+          <g className="angel-side right"><g transform="translate(18,-6) scale(0.82) translate(-18,6)"><AngelWing grad={g('w')} glow={g('g')} /></g></g>
+          <g transform="scale(-1,1)"><g className="angel-side left"><g transform="translate(18,-6) scale(0.82) translate(-18,6)"><AngelWing grad={g('w')} glow={g('g')} /></g></g></g>
+        </>
       )}
 
-      {wings && (
+      {wings && !legend && (
         <g fill={g('e')} stroke={dark} strokeWidth="1.5" strokeLinejoin="round">
           <path d={WING} />
           <path d={WING} transform="scale(-1,1)" />
@@ -121,20 +183,30 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
         <rect className="emblem-shine" x="-70" y="-60" width="18" height="130" fill="#fff" opacity="0.35" transform="skewX(-20)" />
       </g>
 
+      {legend && (
+        <g className="angel-halo" filter={g('g')}>
+          <ellipse cy="-58" rx="25" ry="7" fill="none" stroke="#ffd25e" strokeWidth="4.5" />
+          <ellipse cy="-58" rx="25" ry="7" fill="none" stroke="#fffbe8" strokeWidth="1.6" />
+        </g>
+      )}
+      </g>
+
       {photo ? (
         <>
-          <circle cy="-4" r="24" fill={dark} stroke={light} strokeWidth="2.5" />
+        <g className="emblem-photo">
+          <circle cy="-2" r="31.5" fill={dark} stroke={legend ? '#ffd25e' : light} strokeWidth="3" />
           <image
             href={photo}
-            x="-22" y="-26" width="44" height="44"
+            x="-29" y="-31" width="58" height="58"
             preserveAspectRatio="xMidYMid slice"
             clipPath={`url(#p${id})`}
           />
-          <rect x="-15" y="21" width="30" height="15" rx="4" fill={dark} stroke={light} strokeWidth="1.2" />
-          <text y="32.5" textAnchor="middle" fontSize="11" fontWeight="900" fill="#fff" style={{ fontFamily: 'Georgia, serif' }}>{ROMAN[div]}</text>
+        </g>
+          <rect x="-14" y="29" width="28" height="14" rx="4" fill={dark} stroke={legend ? '#ffd25e' : light} strokeWidth="1.2" />
+          <text y="39.8" textAnchor="middle" fontSize="11" fontWeight="900" fill="#fff" style={{ fontFamily: 'Georgia, serif' }}>{ROMAN[div]}</text>
         </>
       ) : (
-        <>
+        <g className="emblem-art">
           {gem ? (
             <path d={GEM} fill={light} stroke={dark} strokeWidth="1.5" className="emblem-gem" />
           ) : (
@@ -143,7 +215,18 @@ export default function RankEmblem({ tier, div = 0, size = 96, locked = false, a
           <text y={gem ? 4 : 5} textAnchor="middle" fontSize={div === 3 ? 12 : 14} fontWeight="900" fill={gem ? dark : '#fff'} style={{ fontFamily: 'Georgia, serif' }}>
             {ROMAN[div]}
           </text>
-        </>
+        </g>
+      )}
+
+      {legend && !locked && (
+        <g className="angel-fx">
+          {SPARKLES.map(([x, y, k, d], i) => (
+            <path key={i} d={STAR} fill="#fff8d6" transform={`translate(${x},${y}) scale(${k})`} style={{ animationDelay: `${d}s` }} className="angel-sparkle" />
+          ))}
+          {[-46, -18, 24, 50].map((x, i) => (
+            <path key={i} d={feather(10, 2.4)} fill="#fffaf0" transform={`translate(${x},-20) rotate(${70 + i * 25})`} className="angel-feather" style={{ animationDelay: `${i * 0.9}s` }} />
+          ))}
+        </g>
       )}
     </svg>
   );

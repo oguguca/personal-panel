@@ -90,7 +90,7 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
         <div className="ladder">
           {TIERS.map((t, i) => (
             <div key={t.name} className={`ladder-step ${i === r.tier ? 'on' : ''} ${i > r.tier ? 'off' : ''}`}>
-              <RankEmblem tier={i} div={i === r.tier ? r.div : i === TIERS.length - 1 ? 0 : 1} size={46} locked={i > r.tier} animate={false} />
+              <RankEmblem tier={i} div={i === r.tier ? r.div : i === TIERS.length - 1 ? 0 : 1} size={58} locked={i > r.tier} animate={false} />
               <span>{t.name}</span>
             </div>
           ))}
@@ -173,7 +173,7 @@ function AllRanks({ current, onClose }: { current: number; onClose: () => void }
         <div className="all-ranks-grid">
           {TIERS.map((t, i) => (
             <div key={t.name} className={`all-rank ${i === current ? 'on' : ''} ${i === TOP ? 'top' : ''}`} style={tierStyle(i)}>
-              <RankEmblem tier={i} div={i === TOP ? 0 : 1} size={i === TOP ? 150 : 110} animate={i === current || i === TOP} />
+              <RankEmblem tier={i} div={i === TOP ? 0 : 1} size={i === TOP ? 260 : 110} animate={i === current || i === TOP} />
               <b>{t.name}</b>
               <span>{i === 0 ? 'Começo' : `${(i * perTier).toLocaleString('pt-BR')} PR`}</span>
               <span className="all-rank-gym">Academia: {GYM_TIERS[i].min.toLocaleString('pt-BR')} XP de Força</span>
