@@ -17,13 +17,34 @@ export function inActiveWindow(settings: Settings, now = new Date()) {
   return s <= e ? n >= s && n < e : n >= s || n < e;
 }
 
-/** Momento (ms) do próximo lembrete de água, ou null se não houver. */
+/** Espera mínima depois de abrir o app antes do primeiro aviso (dá tempo de carregar). */
+export const STARTUP_GRACE_MS = 60000;
+
+/**
+ * Início do horário ativo de hoje. Se o horário passa da meia-noite (ex.: 20:00–02:00)
+ * e ainda estamos na parte da madrugada, vale o início de ontem.
+ */
+function activeStartBefore(settings: Settings, ts: number): number {
+  const start = toMinutes(settings.waterActiveStart);
+  const d = new Date(ts);
+  d.setHours(0, start, 0, 0);
+  const overnight = start > toMinutes(settings.waterActiveEnd);
+  if (overnight && d.getTime() > ts) d.setDate(d.getDate() - 1);
+  return d.getTime();
+}
+
+/**
+ * Momento (ms) do próximo lembrete de água, ou null se não houver.
+ * Conta a partir do último copo (ou do último aviso, ou do início do horário ativo),
+ * NUNCA de quando o app abriu: assim fechar/reabrir o app não zera a contagem.
+ */
 export function nextWaterReminder(settings: Settings, day: Day, startedAt: number): number | null {
   if (!settings.notificationsOn || !settings.waterReminderOn) return null;
   if (waterTotal(day) >= (settings.waterIdeal || settings.waterGoal)) return null; // lembra até o ideal
   const lastDrink = day.water.length ? day.water[day.water.length - 1].at : 0;
-  const base = Math.max(lastDrink, day.lastWaterReminder || 0, startedAt);
-  return base + settings.waterReminderMinutes * 60000;
+  const base = Math.max(lastDrink, day.lastWaterReminder || 0, activeStartBefore(settings, startedAt));
+  const next = base + settings.waterReminderMinutes * 60000;
+  return Math.max(next, startedAt + STARTUP_GRACE_MS); // atrasado: avisa logo depois de abrir
 }
 
 export function useReminders() {
