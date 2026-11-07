@@ -2,7 +2,7 @@ import Icon from '../components/Icon.jsx';
 import WaterCup from '../components/WaterCup.jsx';
 import { Check, Empty, Progress, fmtValue, pct } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
-import { formatDuration, formatLong, greeting, nowMinutes, toMinutes } from '../store/dates.js';
+import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes } from '../store/dates.js';
 import { goalDone, recordTotal, waterTotal } from '../store/model.js';
 import { dayNutrition, fmtKcal } from '../store/foods.js';
 
@@ -37,7 +37,7 @@ export default function Hoje({ go }) {
   const markMeal = (id) =>
     update((d) => {
       const m = d.days[today].meals;
-      m[id] = { ...(m[id] || {}), done: true, doneAt: Date.now() };
+      m[id] = { ...(m[id] || {}), done: true, doneAt: Date.now() }; // horário real do registro
     });
   const bumpGoal = (g) =>
     update((d) => {
@@ -205,7 +205,11 @@ export default function Hoje({ go }) {
                   <li key={m.id} className={`item ${st?.done ? 'done' : ''}`}>
                     <Check on={!!st?.done} onClick={() => (st?.done ? go('alimentacao') : markMeal(m.id))} label="Marcar como feita" />
                     <span className="item-title">{m.name}</span>
-                    <span className="badge">{m.time}</span>
+                    {st?.done && st.doneAt ? (
+                      <span className="badge success" title={`Sugerido: ${m.time}`}>{formatTime(st.doneAt)}</span>
+                    ) : (
+                      <span className="badge" title="Horário sugerido">{m.time}</span>
+                    )}
                   </li>
                 );
               })}

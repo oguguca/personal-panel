@@ -3,8 +3,18 @@ import FoodPicker from '../components/FoodPicker.jsx';
 import Icon from '../components/Icon.jsx';
 import { Check, Empty, Progress } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
-import { formatTime, nowMinutes, toMinutes } from '../store/dates.js';
+import { nowMinutes, parseKey, toMinutes } from '../store/dates.js';
 import { dayNutrition, fmtKcal, sumItems } from '../store/foods.js';
+
+const pad = (n) => String(n).padStart(2, '0');
+const toHHMM = (ts) => { const d = new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+/** Timestamp do dia `key` no horário 'HH:MM'. */
+const atTime = (key, hhmm) => {
+  const d = parseKey(key);
+  const [h, m] = hhmm.split(':').map(Number);
+  d.setHours(h, m, 0, 0);
+  return d.getTime();
+};
 
 export default function Alimentacao({ go }) {
   const { data, today, day, settings, update } = useStore();
@@ -73,11 +83,19 @@ export default function Alimentacao({ go }) {
                     />
                     <div>
                       <h2>{m.name}</h2>
-                      <div className="muted small">{m.time}{items.length > 0 && ` · ${fmtKcal(sub.kcal)}`}</div>
+                      <div className="muted small">Sugerido: {m.time}{items.length > 0 && ` · ${fmtKcal(sub.kcal)}`}</div>
                     </div>
                   </div>
                   {st.done ? (
-                    <span className="badge success">Feita {st.doneAt ? `às ${formatTime(st.doneAt)}` : ''}</span>
+                    <label className="badge success" title="Horário em que você comeu (pode ajustar)">
+                      Comi às
+                      <input
+                        type="time"
+                        className="time-inline"
+                        value={st.doneAt ? toHHMM(st.doneAt) : ''}
+                        onChange={(e) => e.target.value && patch(m.id, (x) => { x.doneAt = atTime(today, e.target.value); })}
+                      />
+                    </label>
                   ) : late ? (
                     <span className="badge warning">Pendente</span>
                   ) : (

@@ -44,6 +44,7 @@ function DayDetail({ day, data }) {
             return (
               <li key={id} style={{ padding: '3px 0' }}>
                 {st.done ? '✅' : '⬜'} {s.mealNames[id]}
+                {st.done && st.doneAt && <span className="muted"> às {formatTime(st.doneAt)}</span>}
                 {items.length > 0 && <span className="muted"> ({items.reduce((a, i) => a + i.kcal, 0)} kcal)</span>}
                 {items.length > 0 && <div className="muted">{items.map((i) => `${i.name} ${i.grams} g`).join(' · ')}</div>}
                 {st.note && <div className="muted">“{st.note}”</div>}
