@@ -3,7 +3,7 @@ import WaterCup from '../components/WaterCup.jsx';
 import { Check, Empty, Progress, fmtValue, pct } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes } from '../store/dates.js';
-import { goalDone, recordTotal, waterTotal } from '../store/model.js';
+import { goalDone, mealList, recordTotal, waterTotal } from '../store/model.js';
 import { dayNutrition, fmtKcal } from '../store/foods.js';
 
 export function nextMeal(settings, day) {
@@ -33,6 +33,8 @@ export default function Hoje({ go }) {
   const addWater = (ml) => update((d) => d.days[today].water.push({ ml, at: Date.now() }));
   const rec = recordTotal(day);
   const kcal = dayNutrition(day).kcal;
+  const meals = mealList(settings, day);
+  const lastMeal = [...meals].reverse().find((m) => m.st.done);
   const addRec = (min) => update((d) => d.days[today].recording.push({ min, at: Date.now() }));
   const markMeal = (id) =>
     update((d) => {
@@ -83,10 +85,15 @@ export default function Hoje({ go }) {
                   {nm.diff >= 0 ? `próxima refeição, em ${formatDuration(nm.diff)}` : 'refeição atrasada'}
                 </div>
               </>
+            ) : lastMeal ? (
+              <>
+                <div className="stat-value">{lastMeal.name} · {formatTime(lastMeal.st.doneAt)}</div>
+                <div className="stat-label">última refeição · {fmtKcal(kcal)} hoje</div>
+              </>
             ) : (
               <>
-                <div className="stat-value">Tudo certo</div>
-                <div className="stat-label">refeições do dia feitas</div>
+                <div className="stat-value">Registrar</div>
+                <div className="stat-label">nenhuma refeição registrada hoje</div>
               </>
             )}
           </div>
@@ -196,11 +203,12 @@ export default function Hoje({ go }) {
             {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
           </div>
           {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
+          {meals.length === 0 && (
+            <Empty>Nada registrado ainda. <button className="link" onClick={() => go('alimentacao')}>Registrar refeição</button></Empty>
+          )}
           <ul className="list">
-            {[...settings.meals]
-              .sort((a, b) => toMinutes(a.time) - toMinutes(b.time))
-              .map((m) => {
-                const st = day.meals[m.id];
+            {meals.map((m) => {
+                const st = m.st;
                 return (
                   <li key={m.id} className={`item ${st?.done ? 'done' : ''}`}>
                     <Check on={!!st?.done} onClick={() => (st?.done ? go('alimentacao') : markMeal(m.id))} label="Marcar como feita" />

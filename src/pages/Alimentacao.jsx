@@ -5,7 +5,9 @@ import { Check, Empty, Progress } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import { nowMinutes, parseKey, toMinutes } from '../store/dates.js';
 import { dayNutrition, fmtKcal, sumItems } from '../store/foods.js';
+import { mealList, uid } from '../store/model.js';
 
+const MEAL_TYPES = ['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'];
 const pad = (n) => String(n).padStart(2, '0');
 const toHHMM = (ts) => { const d = new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 /** Timestamp do dia `key` no horário 'HH:MM'. */
@@ -15,14 +17,53 @@ const atTime = (key, hhmm) => {
   d.setHours(h, m, 0, 0);
   return d.getTime();
 };
+/** Sugere o tipo de refeição pela hora atual. */
+const guessType = () => {
+  const h = new Date().getHours();
+  if (h < 10) return 'Café da manhã';
+  if (h < 15) return 'Almoço';
+  if (h < 18) return 'Lanche';
+  if (h < 22) return 'Jantar';
+  return 'Ceia';
+};
+
+function NewMealForm({ onSave, onCancel }) {
+  const [name, setName] = useState(guessType);
+  const [time, setTime] = useState(() => toHHMM(Date.now()));
+  return (
+    <form
+      className="card"
+      onSubmit={(e) => { e.preventDefault(); if (name.trim() && time) onSave(name.trim(), time); }}
+    >
+      <div className="card-head"><h2>Registrar refeição</h2></div>
+      <div className="chips">
+        {MEAL_TYPES.map((t) => (
+          <button type="button" key={t} className={`chip ${name === t ? 'on' : ''}`} onClick={() => setName(t)}>{t}</button>
+        ))}
+      </div>
+      <div className="row">
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome (ex.: Pré-treino)" aria-label="Nome da refeição" />
+        <label className="row small muted" style={{ gap: 6 }}>
+          Comi às
+          <input className="input w-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+        </label>
+      </div>
+      <div className="row">
+        <button className="btn primary" type="submit"><Icon name="check" size={16} /> Registrar e adicionar alimentos</button>
+        <button className="btn" type="button" onClick={onCancel}>Cancelar</button>
+      </div>
+    </form>
+  );
+}
 
 export default function Alimentacao({ go }) {
   const { data, today, day, settings, update } = useStore();
   const [openPicker, setOpenPicker] = useState(null); // id da refeição com o seletor aberto
+  const [adding, setAdding] = useState(false);
   const [showMine, setShowMine] = useState(false);
-  const meals = [...settings.meals].sort((a, b) => toMinutes(a.time) - toMinutes(b.time));
+  const meals = mealList(settings, day);
   const n = nowMinutes();
-  const doneCount = meals.filter((m) => day.meals[m.id]?.done).length;
+  const doneCount = meals.filter((m) => m.st.done).length;
   const tot = dayNutrition(day);
   const goal = settings.kcalGoal;
 
@@ -32,6 +73,19 @@ export default function Alimentacao({ go }) {
       m[id] = { ...(m[id] || {}) };
       fn(m[id]);
     });
+
+  const createMeal = (name, time) => {
+    const id = uid();
+    update((d) => {
+      d.days[today].meals[id] = { adhoc: true, name, done: true, doneAt: atTime(today, time), items: [] };
+    });
+    setAdding(false);
+    setOpenPicker(id);
+  };
+  const removeMeal = (m) => {
+    if ((m.st.items || []).length && !confirm(`Apagar o registro "${m.name}" e seus alimentos?`)) return;
+    update((d) => { delete d.days[today].meals[m.id]; });
+  };
 
   const addItem = (mealId, item) =>
     patch(mealId, (m) => {
@@ -45,10 +99,19 @@ export default function Alimentacao({ go }) {
       <header className="page-header">
         <div>
           <h1>Alimentação</h1>
-          <p className="muted">{doneCount} de {meals.length} refeições feitas hoje</p>
+          <p className="muted">
+            {meals.length ? `${doneCount} de ${meals.length} refeições feitas hoje` : 'Nenhuma refeição registrada hoje'}
+          </p>
         </div>
-        <button className="btn" onClick={() => go('config')}><Icon name="clock" size={18} /> Editar horários e meta</button>
+        <div className="row">
+          {!adding && (
+            <button className="btn primary" onClick={() => setAdding(true)}><Icon name="plus" size={18} /> Registrar refeição</button>
+          )}
+          <button className="btn" onClick={() => go('config')}><Icon name="clock" size={18} /> Horários e meta</button>
+        </div>
       </header>
+
+      {adding && <NewMealForm onSave={createMeal} onCancel={() => setAdding(false)} />}
 
       <section className="card">
         <div className="kcal-total">
@@ -68,39 +131,51 @@ export default function Alimentacao({ go }) {
       {meals.length ? (
         <section className="grid">
           {meals.map((m) => {
-            const st = day.meals[m.id] || {};
+            const st = m.st;
             const items = st.items || [];
             const sub = sumItems(items);
-            const late = !st.done && n > toMinutes(m.time);
+            const late = !st.done && m.time && n > toMinutes(m.time);
             return (
               <div key={m.id} className="card">
                 <div className="card-head">
                   <div className="row" style={{ gap: 12 }}>
-                    <Check
-                      on={!!st.done}
-                      onClick={() => patch(m.id, (x) => { x.done = !st.done; x.doneAt = st.done ? null : Date.now(); })}
-                      label="Marcar como feita"
-                    />
+                    {m.adhoc ? (
+                      <span className="stat-icon food" style={{ width: 32, height: 32, borderRadius: 10 }}><Icon name="alimentacao" size={16} /></span>
+                    ) : (
+                      <Check
+                        on={!!st.done}
+                        onClick={() => patch(m.id, (x) => { x.done = !st.done; x.doneAt = st.done ? null : Date.now(); })}
+                        label="Marcar como feita"
+                      />
+                    )}
                     <div>
                       <h2>{m.name}</h2>
-                      <div className="muted small">Sugerido: {m.time}{items.length > 0 && ` · ${fmtKcal(sub.kcal)}`}</div>
+                      <div className="muted small">
+                        {m.time ? `Sugerido: ${m.time}` : 'Registrada na hora'}
+                        {items.length > 0 && ` · ${fmtKcal(sub.kcal)}`}
+                      </div>
                     </div>
                   </div>
-                  {st.done ? (
-                    <label className="badge success" title="Horário em que você comeu (pode ajustar)">
-                      Comi às
-                      <input
-                        type="time"
-                        className="time-inline"
-                        value={st.doneAt ? toHHMM(st.doneAt) : ''}
-                        onChange={(e) => e.target.value && patch(m.id, (x) => { x.doneAt = atTime(today, e.target.value); })}
-                      />
-                    </label>
-                  ) : late ? (
-                    <span className="badge warning">Pendente</span>
-                  ) : (
-                    <span className="badge">Mais tarde</span>
-                  )}
+                  <div className="row" style={{ gap: 2 }}>
+                    {st.done ? (
+                      <label className="badge success" title="Horário em que você comeu (pode ajustar)">
+                        Comi às
+                        <input
+                          type="time"
+                          className="time-inline"
+                          value={st.doneAt ? toHHMM(st.doneAt) : ''}
+                          onChange={(e) => e.target.value && patch(m.id, (x) => { x.doneAt = atTime(today, e.target.value); })}
+                        />
+                      </label>
+                    ) : late ? (
+                      <span className="badge warning">Pendente</span>
+                    ) : (
+                      <span className="badge">Mais tarde</span>
+                    )}
+                    {m.adhoc && (
+                      <button className="icon-btn danger" title="Apagar registro" onClick={() => removeMeal(m)}><Icon name="trash" size={16} /></button>
+                    )}
+                  </div>
                 </div>
 
                 {items.length > 0 && (
@@ -136,9 +211,16 @@ export default function Alimentacao({ go }) {
           })}
         </section>
       ) : (
-        <div className="card">
-          <Empty>Nenhum horário de refeição. <button className="link" onClick={() => go('config')}>Configurar</button></Empty>
-        </div>
+        !adding && (
+          <div className="card">
+            <Empty>
+              Comeu algo? <button className="link" onClick={() => setAdding(true)}>Registrar refeição</button>
+              <div className="small" style={{ marginTop: 6 }}>
+                Se quiser lembretes, cadastre horários sugeridos em <button className="link" onClick={() => go('config')}>Configurações</button>.
+              </div>
+            </Empty>
+          </div>
+        )
       )}
 
       {data.customFoods.length > 0 && (

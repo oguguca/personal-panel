@@ -93,6 +93,29 @@ export function ensureDay(data, key) {
   return day;
 }
 
+/**
+ * Refeições do dia: as dos horários sugeridos (Configurações) + as registradas na hora
+ * (day.meals[id].adhoc). Ordenadas pelo horário real (se feita) ou sugerido.
+ * Retorna [{ id, name, time (sugerido ou null), st, adhoc }]
+ */
+export function mealList(settings, day) {
+  const meals = day?.meals || {};
+  const ids = new Set(settings.meals.map((m) => m.id));
+  const fixed = settings.meals.map((m) => ({ id: m.id, name: m.name, time: m.time, st: meals[m.id] || {}, adhoc: false }));
+  const extra = Object.entries(meals)
+    .filter(([id, st]) => !ids.has(id) && st.adhoc)
+    .map(([id, st]) => ({ id, name: st.name, time: null, st, adhoc: true }));
+  const min = (x) => {
+    if (x.st.done && x.st.doneAt) {
+      const d = new Date(x.st.doneAt);
+      return d.getHours() * 60 + d.getMinutes();
+    }
+    const [h, m] = String(x.time || '23:59').split(':').map(Number);
+    return h * 60 + m;
+  };
+  return [...fixed, ...extra].sort((a, b) => min(a) - min(b));
+}
+
 export function goalDone(goal, value) {
   if (goal.type === 'check') return (value || 0) >= 1;
   return (value || 0) >= (goal.target || 1);
@@ -107,7 +130,7 @@ export function computeSummary(data, key) {
   const day = data.days[key];
   // tarefas que passaram adiante contam como "não feitas" naquele dia
   const tasks = day.tasks;
-  const meals = data.settings.meals;
+  const meals = mealList(data.settings, day);
   return {
     water: waterTotal(day),
     waterGoal: data.settings.waterGoal,
@@ -119,7 +142,7 @@ export function computeSummary(data, key) {
     tasksTotal: tasks.length,
     goalsDone: data.dailyGoals.filter((g) => goalDone(g, day.goals[g.id])).length,
     goalsTotal: data.dailyGoals.length,
-    mealsDone: meals.filter((m) => day.meals[m.id]?.done).length,
+    mealsDone: meals.filter((m) => m.st.done).length,
     mealsTotal: meals.length,
     // fotografia dos nomes para o histórico continuar legível se algo for apagado
     goalNames: Object.fromEntries(data.dailyGoals.map((g) => [g.id, g.title])),
