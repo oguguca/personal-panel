@@ -256,31 +256,34 @@ textarea.input { resize: vertical; min-height: 60px; }
 
 /* ---------- Treino ---------- */
 /* Mapa muscular */
+/* Mapa muscular: painel escuro nos dois temas (como um visualizador) */
 .body-map {
-  --m-base: #c9cede; --m-body: #dfe2ec; --m-hover: #a5b4fc; --m-on: var(--primary); --m-line: var(--surface);
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 10px 8px 4px; border-radius: 14px;
-  background: radial-gradient(ellipse at 50% 35%, var(--surface-2), transparent 70%);
+  --m-bg: #131417; --m-body: #2b2a2e; --m-muscle: #6c6866; --m-hover: #8f8a87; --m-on: #7c7fff; --m-line: #f4f4f5;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 10px 10px; border-radius: 16px; background: var(--m-bg);
 }
-:root[data-theme='dark'] .body-map { --m-base: #3a3f63; --m-body: #2a2e4a; --m-hover: #6d74c9; --m-on: #8b93ff; }
-.body-figs { display: flex; justify-content: center; gap: 4%; width: 100%; }
-.body-fig { margin: 0; flex: 1; max-width: 190px; display: flex; flex-direction: column; align-items: center; }
+.body-figs { display: flex; justify-content: center; gap: 2%; width: 100%; }
+.body-fig { margin: 0; flex: 1; max-width: 300px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .body-fig svg { width: 100%; height: auto; overflow: visible; }
-.body-fig figcaption { color: var(--muted); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.body-fig polygon { stroke: var(--m-line); stroke-width: 0.35; stroke-linejoin: round; }
-.body-part polygon { fill: var(--m-body); }
-.body-map .muscle { cursor: pointer; outline: none; }
-.body-map .muscle polygon { fill: var(--m-base); transition: fill 0.15s; }
-.body-map .muscle.hover polygon { fill: var(--m-hover); }
-.body-map .muscle.on polygon { fill: var(--m-on); }
-.body-map .muscle.on { filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--m-on) 70%, transparent)); }
-.body-map .muscle:focus-visible polygon { stroke: var(--text); stroke-width: 0.6; }
-.body-hint {
-  font-size: 0.85rem; font-weight: 650; color: var(--muted); padding: 4px 12px; border-radius: 99px;
-  background: var(--surface-2); min-height: 26px; transition: color 0.15s, background 0.15s;
+.body-fig figcaption { color: #9a9aa2; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.body-fill { fill: var(--m-body); }
+.body-outline { fill: none; stroke: var(--m-line); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; pointer-events: none; }
+.body-line { fill: none; stroke: var(--m-line); stroke-width: 1.2; stroke-linecap: round; pointer-events: none; }
+.body-map .muscle {
+  fill: var(--m-muscle); stroke: var(--m-line); stroke-width: 1.4; stroke-linejoin: round;
+  cursor: pointer; outline: none; transition: fill 0.15s;
 }
-.body-hint.active { color: var(--primary); background: var(--primary-soft); }
-.treino-layout { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 16px; align-items: start; }
+.body-map .muscle.hover { fill: var(--m-hover); }
+.body-map .muscle.on { fill: var(--m-on); }
+.body-map .muscle.on.hover { fill: color-mix(in srgb, var(--m-on) 80%, #fff); }
+.body-map .muscle:focus-visible { stroke-width: 2.4; }
+.body-hint {
+  font-size: 0.85rem; font-weight: 700; color: #b9b9c0; padding: 4px 14px; border-radius: 99px;
+  background: #24252b; min-height: 28px; transition: color 0.15s, background 0.15s;
+}
+.body-hint.active { color: #fff; background: var(--m-on); }
+.page-wide { max-width: 1500px; }
+.treino-layout { display: grid; grid-template-columns: minmax(340px, 580px) 1fr; gap: 16px; align-items: start; }
 .treino-layout > .card:first-child { position: sticky; top: 0; }
 .ex-item { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 .ex-item.with-thumb { flex-direction: row; align-items: flex-start; gap: 12px; }

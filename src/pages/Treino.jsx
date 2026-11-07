@@ -307,7 +307,7 @@ export default function Treino() {
   };
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <header className="page-header">
         <div>
           <h1>Treino</h1>
@@ -353,7 +353,7 @@ export default function Treino() {
           )}
           <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>
             Dicas gerais de execução. Em caso de dor ou dúvida, procure um profissional de educação física.
-            {' '}Imagens: free-exercise-db (domínio público). Mapa muscular: react-body-highlighter (MIT).
+            {' '}Imagens: free-exercise-db (domínio público).
           </p>
         </>
       )}
