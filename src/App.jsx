@@ -7,6 +7,7 @@ import Tarefas from './pages/Tarefas.jsx';
 import Metas from './pages/Metas.jsx';
 import Agua from './pages/Agua.jsx';
 import Alimentacao from './pages/Alimentacao.jsx';
+import Gravacao from './pages/Gravacao.jsx';
 import Historico from './pages/Historico.jsx';
 import Configuracoes from './pages/Configuracoes.jsx';
 
@@ -16,6 +17,7 @@ export const PAGES = [
   { id: 'metas', label: 'Metas', icon: 'metas', Comp: Metas },
   { id: 'agua', label: 'Água', icon: 'agua', Comp: Agua },
   { id: 'alimentacao', label: 'Alimentação', short: 'Refeições', icon: 'alimentacao', Comp: Alimentacao },
+  { id: 'gravacao', label: 'Gravação', short: 'Gravar', icon: 'gravacao', Comp: Gravacao },
   { id: 'historico', label: 'Histórico', icon: 'historico', Comp: Historico },
   { id: 'config', label: 'Configurações', short: 'Ajustes', icon: 'config', Comp: Configuracoes },
 ];

@@ -15,6 +15,8 @@ export function defaultSettings() {
     waterActiveStart: '07:00',
     waterActiveEnd: '22:00',
     carryOverTasks: true,
+    recordGoalMin: 60,
+    recordQuick: [5, 10, 15, 30],
     meals: [
       { id: 'cafe', name: 'Café da manhã', time: '08:00' },
       { id: 'almoco', name: 'Almoço', time: '12:30' },
@@ -33,12 +35,17 @@ export function defaultData() {
     longGoals: [], // { id, title, current, target, unit }
     days: {}, // 'AAAA-MM-DD' -> Day
     lastDay: null,
+    recTimer: null, // { startedAt } quando o cronômetro de gravação está rodando
   };
 }
 
-/** Day: { tasks, water, goals, meals, summary, init } */
+/** Day: { tasks, water, goals, meals, recording, summary, init } */
 export function emptyDay() {
-  return { tasks: [], water: [], goals: {}, meals: {}, summary: null, init: false };
+  return { tasks: [], water: [], goals: {}, meals: {}, recording: [], summary: null, init: false };
+}
+
+export function recordTotal(day) {
+  return (day?.recording || []).reduce((s, r) => s + r.min, 0);
 }
 
 export function getDay(data, key) {
@@ -53,6 +60,7 @@ export function getDay(data, key) {
  */
 export function ensureDay(data, key) {
   const day = getDay(data, key);
+  if (!day.recording) day.recording = []; // dias salvos antes da gravação existir
   if (day.init) return day;
 
   const fresh = [];
@@ -100,6 +108,8 @@ export function computeSummary(data, key) {
   return {
     water: waterTotal(day),
     waterGoal: data.settings.waterGoal,
+    record: recordTotal(day),
+    recordGoal: data.settings.recordGoalMin,
     tasksDone: tasks.filter((t) => t.done).length,
     tasksTotal: tasks.length,
     goalsDone: data.dailyGoals.filter((g) => goalDone(g, day.goals[g.id])).length,

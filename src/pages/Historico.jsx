@@ -31,6 +31,11 @@ function DayDetail({ day, data }) {
         <p className="muted small" style={{ margin: 0 }}>{(day.water || []).map((w) => `${w.ml} ml às ${formatTime(w.at)}`).join(' · ')}</p>
       </div>
       <div>
+        <h3>Gravação</h3>
+        <p className="small" style={{ margin: '4px 0' }}>{s.record || 0} min de {s.recordGoal || data.settings.recordGoalMin} min</p>
+        <p className="muted small" style={{ margin: 0 }}>{(day.recording || []).map((r) => `${r.min} min às ${formatTime(r.at)}`).join(' · ')}</p>
+      </div>
+      <div>
         <h3>Refeições</h3>
         <ul className="list small">
           {mealIds.map((id) => {
@@ -133,6 +138,15 @@ export default function Historico() {
           />
         </div>
         <div className="card">
+          <div className="card-head"><h2>Minutos gravados</h2></div>
+          <BarChart
+            items={mk((s) => s.record || 0, (s) => `${s.record || 0} de ${s.recordGoal || data.settings.recordGoalMin} min`)}
+            goal={data.settings.recordGoalMin}
+            color="var(--warning)"
+          />
+          <div className="legend"><span><i style={{ background: 'var(--warning)' }} />min por dia</span><span>– – meta</span></div>
+        </div>
+        <div className="card">
           <div className="card-head"><h2>Metas diárias cumpridas</h2></div>
           <BarChart
             items={mk((s) => s.goalsDone, (s) => `${s.goalsDone} de ${s.goalsTotal}`)}
@@ -147,7 +161,7 @@ export default function Historico() {
         {allDays.length ? (
           <div>
             <div className="day-row muted small" style={{ cursor: 'default' }}>
-              <span>Dia</span><span>Água</span><span>Tarefas</span><span>Metas</span><span />
+              <span>Dia</span><span>Água</span><span>Gravação</span><span>Tarefas</span><span>Metas</span><span />
             </div>
             {allDays.slice(0, limit).map((k) => {
               const d = data.days[k];
@@ -157,6 +171,7 @@ export default function Historico() {
                   <button className="day-row" onClick={() => setOpen(open === k ? null : k)} aria-expanded={open === k}>
                     <strong>{k === today ? 'Hoje' : formatMedium(k)}</strong>
                     <span className={s.water >= s.waterGoal ? 'badge success' : ''}>{s.water} ml</span>
+                    <span className={s.recordGoal && (s.record || 0) >= s.recordGoal ? 'badge success' : ''}>{s.record || 0} min</span>
                     <span>{s.tasksDone}/{s.tasksTotal}</span>
                     <span>{s.goalsDone}/{s.goalsTotal}</span>
                     <Icon name={open === k ? 'up' : 'down'} size={16} />

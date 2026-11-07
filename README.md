@@ -10,6 +10,7 @@ Feito com **Electron + Vite + React** (JavaScript). Os dados ficam salvos só no
 - **Metas**: diárias (checkbox ou contador) e de longo prazo com barra de progresso.
 - **Água**: meta diária, botões rápidos, valor personalizado, desfazer, copo enchendo e lembrete periódico.
 - **Alimentação**: horários configuráveis, notificação no horário, marcar como feita e anotar o que comeu.
+- **Gravação**: meta diária em minutos, botões rápidos, cronômetro (continua contando com a janela fechada), sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.
 - Ao fechar a janela, o app continua na **bandeja do sistema** (perto do relógio). Para sair: clique com o botão direito no ícone → **Sair**.

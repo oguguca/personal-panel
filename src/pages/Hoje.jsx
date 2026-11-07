@@ -3,7 +3,7 @@ import WaterCup from '../components/WaterCup.jsx';
 import { Check, Empty, Progress, fmtValue, pct } from '../components/ui.jsx';
 import { useStore } from '../store/StoreContext.jsx';
 import { formatDuration, formatLong, greeting, nowMinutes, toMinutes } from '../store/dates.js';
-import { goalDone, waterTotal } from '../store/model.js';
+import { goalDone, recordTotal, waterTotal } from '../store/model.js';
 
 export function nextMeal(settings, day) {
   const n = nowMinutes();
@@ -30,6 +30,8 @@ export default function Hoje({ go }) {
       t.done = !t.done;
     });
   const addWater = (ml) => update((d) => d.days[today].water.push({ ml, at: Date.now() }));
+  const rec = recordTotal(day);
+  const addRec = (min) => update((d) => d.days[today].recording.push({ min, at: Date.now() }));
   const markMeal = (id) =>
     update((d) => {
       const m = d.days[today].meals;
@@ -129,6 +131,24 @@ export default function Hoje({ go }) {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Gravação */}
+        <div className="card">
+          <div className="card-head">
+            <h2>Gravação {data.recTimer && <span className="badge warning">● gravando</span>}</h2>
+            <button className="link" onClick={() => go('gravacao')}>Abrir</button>
+          </div>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <span><strong>{formatDuration(rec)}</strong> <span className="muted">de {formatDuration(settings.recordGoalMin)}</span></span>
+            <span className={`badge ${rec >= settings.recordGoalMin ? 'success' : 'primary'}`}>{pct(rec, settings.recordGoalMin)}%</span>
+          </div>
+          <Progress value={rec} max={settings.recordGoalMin} variant={rec >= settings.recordGoalMin ? 'success' : ''} />
+          <div className="row">
+            {settings.recordQuick.map((m) => (
+              <button key={m} className="btn sm" onClick={() => addRec(m)}>+{m} min</button>
+            ))}
           </div>
         </div>
 

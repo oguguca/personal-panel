@@ -178,6 +178,37 @@ export default function Configuracoes() {
         </div>
 
         <div className="card">
+          <h2>Gravação</h2>
+          <label className="field">
+            <span>Meta diária (minutos)</span>
+            <input
+              className="input"
+              type="number"
+              min="1"
+              max="1440"
+              value={settings.recordGoalMin}
+              onChange={(e) => setS('recordGoalMin', Math.max(0, Number(e.target.value) || 0))}
+              onBlur={(e) => setS('recordGoalMin', Math.min(1440, Math.max(1, Number(e.target.value) || 60)))}
+            />
+          </label>
+          <div className="field">
+            <span>Botões rápidos (min)</span>
+            <div className="row">
+              {settings.recordQuick.map((m, i) => (
+                <input
+                  key={i}
+                  className="input w-num"
+                  type="number"
+                  min="1"
+                  value={m}
+                  onChange={(e) => update((d) => { d.settings.recordQuick[i] = Math.max(0, Number(e.target.value) || 0); })}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
           <h2>Tarefas</h2>
           <Switch
             label="Passar tarefas não feitas para o dia seguinte"

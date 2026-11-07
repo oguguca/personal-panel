@@ -231,7 +231,7 @@ textarea.input { resize: vertical; min-height: 60px; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
 /* ---------- Histórico ---------- */
-.day-row { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr) 24px; gap: 10px; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; border: 0; background: transparent; text-align: left; width: 100%; }
+.day-row { display: grid; grid-template-columns: 1.3fr repeat(4, 1fr) 24px; gap: 10px; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; border: 0; background: transparent; text-align: left; width: 100%; }
 .day-row:hover { background: var(--surface-2); }
 .day-detail { padding: 6px 12px 14px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
@@ -263,5 +263,5 @@ textarea.input { resize: vertical; min-height: 60px; }
   h1 { font-size: 1.35rem; }
   .grid { grid-template-columns: 1fr; }
   .item-actions { opacity: 1; }
-  .day-row { grid-template-columns: 1fr 1fr 1fr 1fr 20px; font-size: 0.82rem; }
+  .day-row { grid-template-columns: 1.2fr 1fr 1fr 0.8fr 0.8fr 18px; gap: 6px; font-size: 0.78rem; }
 }
