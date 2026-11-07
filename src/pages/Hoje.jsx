@@ -5,7 +5,7 @@ import { useStore } from '../store/StoreContext.jsx';
 import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes } from '../store/dates.js';
 import { goalDone, mealList, recordTotal, waterTotal } from '../store/model.js';
 import { dayNutrition, fmtKcal } from '../store/foods.js';
-import { isBirthday } from '../store/body.js';
+import { energy, isBirthday } from '../store/body.js';
 
 export function nextMeal(settings, day) {
   const n = nowMinutes();
@@ -36,6 +36,7 @@ export default function Hoje({ go }) {
   const kcal = dayNutrition(day).kcal;
   const meals = mealList(settings, day);
   const lastMeal = [...meals].reverse().find((m) => m.st.done);
+  const en = energy(settings.profile);
   const addRec = (min) => update((d) => d.days[today].recording.push({ min, at: Date.now() }));
   const markMeal = (id) =>
     update((d) => {
@@ -204,6 +205,11 @@ export default function Hoje({ go }) {
             {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
           </div>
           {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
+          {en.tdee && (
+            <div className="muted small">
+              Seu corpo gasta ~{fmtKcal(en.tdee)}/dia · {kcal <= en.tdee ? `faltam ${fmtKcal(en.tdee - kcal)}` : `${fmtKcal(kcal - en.tdee)} acima`}
+            </div>
+          )}
           {meals.length === 0 && (
             <Empty>Nada registrado ainda. <button className="link" onClick={() => go('alimentacao')}>Registrar refeição</button></Empty>
           )}

@@ -15,7 +15,7 @@ import { useStore } from '../store/StoreContext.jsx';
 import { dateKey } from '../store/dates.js';
 import { defaultData, uid } from '../store/model.js';
 import { exportJSON, parseBackup } from '../store/storage.js';
-import { ACTIVITY_LEVELS, ageOf, bmi, bmiLabel } from '../store/body.js';
+import { ACTIVITY_LEVELS, ageOf, bmi, bmiLabel, energy } from '../store/body.js';
 
 export default function Configuracoes() {
   const { data, settings, update, replaceAll } = useStore();
@@ -34,6 +34,7 @@ export default function Configuracoes() {
   const profile = settings.profile;
   const setP = (k, v) => update((d) => { d.settings.profile[k] = v; });
   const bmiValue = bmi(profile);
+  const en = energy(profile);
   const setMeal = (id, k, v) => update((d) => { d.settings.meals.find((m) => m.id === id)[k] = v; });
 
   const doExport = () => {
@@ -134,11 +135,26 @@ export default function Configuracoes() {
               ))}
             </select>
           </label>
-          {bmiValue && (
-            <p className="small" style={{ margin: 0 }}>
-              IMC: <strong>{bmiValue.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</strong> <span className="muted">({bmiLabel(bmiValue)})</span>
-            </p>
-          )}
+          <div className="energy">
+            {en.tdee ? (
+              <>
+                <div>
+                  <div className="muted small">Seu corpo gasta por dia</div>
+                  <strong style={{ fontSize: '1.4rem', color: 'var(--primary)' }}>{en.tdee.toLocaleString('pt-BR')} kcal</strong>
+                  <div className="muted small">em repouso (basal): {en.bmr.toLocaleString('pt-BR')} kcal</div>
+                </div>
+                {bmiValue && (
+                  <div>
+                    <div className="muted small">IMC</div>
+                    <strong style={{ fontSize: '1.2rem' }}>{bmiValue.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</strong>
+                    <div className="muted small">{bmiLabel(bmiValue)}</div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className="muted small">Preencha {en.missing.join(', ')} para ver quantas calorias você gasta por dia.</span>
+            )}
+          </div>
         </div>
 
         <div className="card">
