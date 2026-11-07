@@ -1,5 +1,7 @@
 # Painel Pessoal
 
+[![CI](https://github.com/oguguca/personal-panel/actions/workflows/ci.yml/badge.svg)](https://github.com/oguguca/personal-panel/actions/workflows/ci.yml)
+
 App pessoal para Windows que organiza o dia: tarefas, metas, água, refeições e histórico.
 Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados ficam salvos só no seu computador.
 
@@ -45,6 +47,18 @@ npm run dev      # abre o app com recarregamento automático
 ```
 
 Para ver só a interface no navegador: `npm run dev:web` e abra http://localhost:5173.
+
+## Qualidade: tipos, testes e CI
+
+```bash
+npm run typecheck   # TypeScript em modo strict (tsc --noEmit)
+npm test            # testes da lógica com Vitest
+npm run test:watch  # testes rodando a cada alteração
+```
+
+Os testes ficam ao lado do código (`src/store/*.test.ts`) e cobrem a lógica do app: virada do dia,
+tarefas recorrentes e adiadas, busca de alimentos e macros, gasto calórico, ciclo de treino, XP/níveis
+da aba Evolução e backup. A cada push, o GitHub Actions (`.github/workflows/ci.yml`) roda tipos, testes e build.
 
 ## Como gerar o instalador (.exe)
 

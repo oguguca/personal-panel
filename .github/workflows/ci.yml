@@ -1,0 +1,33 @@
+# Roda a cada push e pull request: confere os tipos, roda os testes e gera o build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # o binário do Electron (~100 MB) não é necessário para checar e testar a interface
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Checar tipos (TypeScript)
+        run: npm run typecheck
+
+      - name: Testes (Vitest)
+        run: npm test
+
+      - name: Build da interface (Vite)
+        run: npm run build
