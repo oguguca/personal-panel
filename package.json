@@ -7,7 +7,7 @@
   "private": true,
   "main": "electron/main.js",
   "scripts": {
-    "dev": "concurrently -k -n vite,electron -c blue,green \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "dev": "concurrently -k -n vite,electron -c blue,green \"vite\" \"wait-on http://localhost:5173 && node scripts/start-electron.mjs\"",
     "dev:web": "vite",
     "build": "vite build",
     "icon": "node scripts/make-icon.mjs",
