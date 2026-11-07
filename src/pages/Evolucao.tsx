@@ -1,10 +1,13 @@
 // Desenvolvimento pessoal em modo jogo: personagem, atributos, rank de academia e atividade.
 import { useMemo, useState } from 'react';
 import Hologram from '../components/Hologram';
+import RankEmblem from '../components/RankEmblem';
+import RankedPanel, { RankChange } from '../components/Ranked';
 import { Empty, Progress } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import { formatShort } from '../store/dates';
 import { ATTR_BY_ID, GYM_TIERS, XP, computeGame } from '../store/game';
+import { computeRanked } from '../store/rank';
 import type { AttrId } from '../store/types';
 import type { PageProps } from './types';
 
@@ -13,6 +16,7 @@ const fmtKg = (n: number) => `${Math.round(n).toLocaleString('pt-BR')} kg`;
 export default function Evolucao({ go }: PageProps) {
   const { data, today, update } = useStore();
   const game = useMemo(() => computeGame(data, today), [data, today]);
+  const ranked = useMemo(() => computeRanked(data, today), [data, today]);
   const [selected, setSelected] = useState<AttrId | null>(null);
   const seen = data.game?.seenLevel ?? 0;
   const levelUp = game.total.level > seen;
@@ -20,6 +24,14 @@ export default function Evolucao({ go }: PageProps) {
   const events = sel ? game.events.filter((e) => e.attr === sel.id) : game.events;
   const { gym } = game;
   const tier = gym.tier;
+
+  const g = data.game || {};
+  const step = ranked.season.rank.step;
+  const change: 'up' | 'down' | 'season' | null =
+    g.seenSeason && g.seenSeason !== ranked.season.id ? 'season'
+    : g.seenStep === undefined ? (step > 0 ? 'up' : null)
+    : step > g.seenStep ? 'up' : step < g.seenStep ? 'down' : null;
+  const ackRank = () => update((d) => { d.game = { ...(d.game || {}), seenStep: step, seenSeason: ranked.season.id }; });
 
   const ackLevel = () => update((d) => { d.game = { ...(d.game || {}), seenLevel: game.total.level }; });
 
@@ -29,7 +41,7 @@ export default function Evolucao({ go }: PageProps) {
         <div>
           <h1>Evolução</h1>
           <p className="muted">
-            Nível {game.total.level} · {game.total.title} · {game.total.xp.toLocaleString('pt-BR')} XP no total
+            {ranked.season.rank.label} · Nível {game.total.level} · {game.total.title} · {game.total.xp.toLocaleString('pt-BR')} XP no total
           </p>
         </div>
       </header>
@@ -41,6 +53,10 @@ export default function Evolucao({ go }: PageProps) {
           <button className="btn" onClick={ackLevel}>Boa!</button>
         </div>
       )}
+
+      {change && <RankChange ranked={ranked} kind={change} onClose={ackRank} />}
+
+      <RankedPanel ranked={ranked} />
 
       <section className="card holo-card">
         <Hologram game={game} selected={selected} onSelect={(id) => setSelected(selected === id ? null : id)} />
@@ -75,9 +91,9 @@ export default function Evolucao({ go }: PageProps) {
             <button className="link" onClick={() => go('treino')}>Treino</button>
           </div>
           <div className="gym-rank">
-            <span className="gym-badge" style={{ '--tier': tier.color }}>{tier.name}</span>
+            <RankEmblem tier={tier.index} div={tier.div} size={84} title={tier.name} />
             <div className="gym-rank-info">
-              <b>{tier.name}</b>
+              <b>{tier.name}{tier.div ? ` ${['', 'I', 'II', 'III'][tier.div]}` : ''}</b>
               <span className="muted small">
                 {tier.next ? `${tier.need - tier.into} XP de Força para ${tier.next.name}` : 'Rank máximo!'}
               </span>

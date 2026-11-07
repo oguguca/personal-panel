@@ -39,9 +39,9 @@ describe('níveis e ranks', () => {
   });
 
   it('rank da academia pelo XP de Força', () => {
-    expect(gymTier(0).name).toBe('Ferro');
-    expect(gymTier(800)).toMatchObject({ name: 'Prata', into: 0, need: 800 });
-    expect(gymTier(99999)).toMatchObject({ name: 'Lenda', next: undefined });
+    expect(gymTier(0).name).toBe('Toguro');
+    expect(gymTier(800)).toMatchObject({ name: 'Balestrin', into: 0, need: 800 });
+    expect(gymTier(99999)).toMatchObject({ name: 'Ganley', next: undefined });
   });
 });
 

@@ -26,7 +26,10 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
 - **Evolução** (desenvolvimento pessoal em modo jogo): personagem holográfico com 6 atributos (Intelecto, Idiomas,
   Vitalidade, Força, Disciplina, Resistência). Cada tarefa pode ter um atributo (o app sugere pelo título: "ler", "inglês"…).
   Tarefas, água, refeições, metas, renda e treinos dão XP; o personagem sobe de nível, ganha rank (E a S) e brilha mais.
-  Rank da academia (Ferro a Lenda) usa os treinos feitos e a evolução das cargas.
+  **Rank por temporada** (cada mês): cada dia é uma partida (vitória/derrota), PR, divisões III → I, combo de sequência e tela de promoção.
+  Os ranks têm nomes de marombeiros brasileiros: Toguro (frango), Marombeiro, Balestrin, Jorlan, Cariani, Stronda, Brandão, CBum e Ganley (topo).
+  Imagem de cada rank (opcional): coloque em `public/ranks/<nome>.png` (ex.: `ganley.png`, `cbum.png`). Essa pasta não vai para o GitHub.
+  Rank da academia (mesmos nomes) usa os treinos feitos e a evolução das cargas.
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

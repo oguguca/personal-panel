@@ -9,6 +9,10 @@ out/
 *.exe
 *.blockmap
 
+# Imagens pessoais dos ranks (não vão para o GitHub)
+public/ranks/*
+!public/ranks/LEIA-ME.txt
+
 # Variáveis de ambiente
 .env
 .env.*

@@ -3,6 +3,7 @@
 // então desmarcar uma tarefa tira o XP e nada fica duplicado.
 import { EXERCISE_BY_ID } from '../data/exercises';
 import { norm } from './foods';
+import { TIERS } from './tiers';
 import { goalDone, mealList, recordTotal, waterTotal } from './model';
 import type { AttrId, Data, DayKey, TrainingLog, WorkoutItem } from './types';
 
@@ -56,7 +57,7 @@ export interface Game {
   muscles: Record<string, number>;
   events: (Gain & { key: DayKey })[];
   gym: {
-    tier: GymTier & { index: number; next?: GymTier; into: number; need: number };
+    tier: GymTier & { index: number; div: number; next?: GymTier; into: number; need: number };
     workouts: number;
     volume: number;
     progress: LoadProgress[];
@@ -183,22 +184,17 @@ export const rankOf = (level: number): string => RANKS.find(([min]) => level >= 
 const TITLES: [number, string][] = [[25, 'Lenda'], [18, 'Mestre'], [12, 'Elite'], [8, 'Veterano'], [5, 'Aventureiro'], [2, 'Aprendiz'], [0, 'Iniciante']];
 export const titleOf = (level: number): string => TITLES.find(([min]) => level >= min)![1];
 
-// Rank de academia (pelo XP de Força).
-export const GYM_TIERS: GymTier[] = [
-  { min: 0, name: 'Ferro', color: '#9ca3af' },
-  { min: 300, name: 'Bronze', color: '#d08a4f' },
-  { min: 800, name: 'Prata', color: '#cbd5e1' },
-  { min: 1600, name: 'Ouro', color: '#facc15' },
-  { min: 3000, name: 'Platina', color: '#5eead4' },
-  { min: 5000, name: 'Diamante', color: '#7dd3fc' },
-  { min: 8000, name: 'Mestre', color: '#c084fc' },
-  { min: 12000, name: 'Lenda', color: '#fb7185' },
-];
+// Rank de academia (pelo XP de Força). Mesmos nomes do rank da temporada, com divisões III → I.
+const GYM_MIN = [0, 300, 800, 1600, 3000, 5000, 8000, 12000, 17000];
+export const GYM_TIERS: GymTier[] = TIERS.map((t, i) => ({ min: GYM_MIN[i], name: t.name, color: t.colors[1] }));
 export function gymTier(xp: number): Game['gym']['tier'] {
   let i = GYM_TIERS.length - 1;
   while (GYM_TIERS[i].min > xp) i--;
   const next = GYM_TIERS[i + 1];
-  return { ...GYM_TIERS[i], index: i, next, into: xp - GYM_TIERS[i].min, need: next ? next.min - GYM_TIERS[i].min : 0 };
+  const into = xp - GYM_TIERS[i].min;
+  const need = next ? next.min - GYM_TIERS[i].min : 0;
+  const div = next ? 3 - Math.min(2, Math.floor((into / need) * 3)) : 0;
+  return { ...GYM_TIERS[i], index: i, div, next, into, need };
 }
 
 /** Estado completo do personagem. */

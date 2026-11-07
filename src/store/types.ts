@@ -217,7 +217,7 @@ export interface Data {
   foodUsage: Record<string, FoodUsage>;
   workouts: Workout[];
   training: { rotation: string[]; restDays: number[] };
-  game?: { seenLevel?: number };
+  game?: { seenLevel?: number; seenStep?: number; seenSeason?: string };
 }
 
 /** Exercício da biblioteca. m = músculos principais, s = secundários. */
