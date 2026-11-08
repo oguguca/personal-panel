@@ -218,6 +218,8 @@ export interface Data {
   workouts: Workout[];
   training: { rotation: string[]; restDays: number[] };
   game?: { seenLevel?: number; seenStep?: number; seenSeason?: string };
+  /** Calendário: compromissos e corridas. */
+  events: CalEvent[];
 }
 
 /** Exercício da biblioteca. m = músculos principais, s = secundários. */
@@ -233,4 +235,26 @@ export interface Exercise {
   level?: string;
   curated?: boolean;
   lang?: string;
+}
+
+export type EventKind = 'compromisso' | 'corrida';
+
+/** Alerta antes do evento: começa X dias antes e repete a cada Y horas até a hora do evento. */
+export interface EventAlert {
+  daysBefore: number;
+  everyHours: number;
+}
+
+export interface CalEvent {
+  id: string;
+  title: string;
+  date: DayKey;
+  time?: string; // 'HH:MM' (vazio = dia inteiro)
+  kind: EventKind;
+  place?: string;
+  distance?: string; // corridas: '5', '10', '21', '42' (km)
+  notes?: string;
+  alert?: EventAlert | null;
+  lastAlert?: number; // último aviso enviado (ms)
+  done?: boolean;
 }

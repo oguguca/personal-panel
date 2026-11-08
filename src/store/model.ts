@@ -44,6 +44,7 @@ export function defaultData(): Data {
     foodUsage: {}, // chave do alimento -> { count, grams, last }
     workouts: [], // { id, name, items: [{ id, exId, sets, reps, weight } | { id, exId, minutes, distance }] }
     training: { rotation: [], restDays: [] }, // ciclo (ordem dos treinos) e dias de descanso da semana
+    events: [], // calendário: compromissos e corridas
   };
 }
 

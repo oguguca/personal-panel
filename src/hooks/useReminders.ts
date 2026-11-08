@@ -5,6 +5,7 @@ import { useStore } from '../store/StoreContext';
 import { nowMinutes, toMinutes } from '../store/dates';
 import { waterTotal } from '../store/model';
 import { fmtMl } from '../components/ui';
+import { alertMessage, dueAlerts, eventTime } from '../store/calendar';
 import type { Day, Settings } from '../store/types';
 
 const TICK_MS = 30000;
@@ -73,6 +74,17 @@ export function useReminders() {
         );
         update((d) => {
           d.days[today].lastWaterReminder = now.getTime();
+        });
+      }
+
+      // Calendário: fora do horário ativo só avisa se o evento for nas próximas 24 h
+      for (const ev of dueAlerts(data.events || [], now.getTime())) {
+        if (!inActiveWindow(s, now) && eventTime(ev) - now.getTime() > 24 * 3600000) continue;
+        const msg = alertMessage(ev, now.getTime());
+        notify(msg.title, msg.body);
+        update((d) => {
+          const e = d.events.find((x) => x.id === ev.id);
+          if (e) e.lastAlert = now.getTime();
         });
       }
 

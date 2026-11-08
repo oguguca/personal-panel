@@ -30,6 +30,9 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   Os ranks têm nomes de marombeiros brasileiros: Toguro (frango), Marombeiro, Balestrin, Jorlan, Cariani, Stronda, Brandão, CBum e Ganley (topo).
   Imagem de cada rank (opcional): coloque em `public/ranks/<nome>.png` (ex.: `ganley.png`, `cbum.png`). Essa pasta não vai para o GitHub.
   Rank da academia (mesmos nomes) usa os treinos feitos e a evolução das cargas.
+- **Calendário**: mês interativo para marcar **compromissos** e **corridas** (hora, local, distância, observações).
+  Alerta opcional: começa X dias antes (1, 2, 3, 4, 5, 7, 14 ou outro) e repete a cada 1 h, 3 h, 6 h, 12 h, 1 ou 2 dias até a hora do evento.
+  Lista dos próximos eventos e resumo das corridas (feitas, marcadas e km).
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

@@ -32,6 +32,7 @@ function normalize(raw: any): Data {
       restDays: Array.isArray(raw.training?.restDays) ? raw.training.restDays : [],
     },
     foodUsage: raw.foodUsage && typeof raw.foodUsage === 'object' ? raw.foodUsage : {},
+    events: Array.isArray(raw.events) ? raw.events : [],
   };
 }
 
