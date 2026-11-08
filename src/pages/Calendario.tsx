@@ -163,6 +163,9 @@ export default function Calendario() {
   const races = events.filter((e) => e.kind === 'corrida');
   const racesDone = races.filter((e) => e.done || e.date < today);
   const kmDone = racesDone.reduce((s, e) => s + (parseFloat(e.distance || '') || 0), 0);
+  const paces = racesDone.map((e) => paceOf(e)).filter((p): p is number => p !== null);
+  const bestPace = paces.length ? Math.min(...paces) : null;
+  const longest = racesDone.reduce((m, e) => Math.max(m, parseFloat(e.distance || '') || 0), 0);
 
   const move = (n: number) => setYm(([y, m]) => {
     const d = new Date(y, m + n, 1);
@@ -310,6 +313,8 @@ export default function Calendario() {
                 <div><b>{racesDone.length}</b><span className="muted small">feitas</span></div>
                 <div><b>{races.length - racesDone.length}</b><span className="muted small">marcadas</span></div>
                 <div><b>{kmDone.toLocaleString('pt-BR')} km</b><span className="muted small">percorridos</span></div>
+                {bestPace !== null && <div><b>{formatPace(bestPace)}</b><span className="muted small">melhor pace</span></div>}
+                {longest > 0 && <div><b>{longest.toLocaleString('pt-BR')} km</b><span className="muted small">maior distância</span></div>}
               </div>
             </section>
           )}
