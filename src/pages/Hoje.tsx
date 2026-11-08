@@ -7,6 +7,7 @@ import { goalDone, mealList, recordTotal, waterTotal } from '../store/model';
 import { dayNutrition, fmtKcal } from '../store/foods';
 import { energy, isBirthday } from '../store/body';
 import { TodayTraining } from './TreinoCiclo';
+import { upcoming, whenText } from '../store/calendar';
 import type { PageProps } from './types';
 import type { DailyGoal, Day, Settings } from '../store/types';
 
@@ -159,6 +160,25 @@ export default function Hoje({ go }: PageProps) {
               <button className="link" onClick={() => go('treino')}>Abrir</button>
             </div>
             <TodayTraining compact onOpen={() => go('treino')} />
+          </div>
+        )}
+
+        {/* Calendário: próximos compromissos e corridas */}
+        {upcoming(data.events, today, 1).length > 0 && (
+          <div className="card">
+            <div className="card-head">
+              <h2><Icon name="calendario" size={20} /> Próximo na agenda</h2>
+              <button className="link" onClick={() => go('calendario')}>Abrir</button>
+            </div>
+            <ul className="list">
+              {upcoming(data.events, today, 3).map((ev) => (
+                <li key={ev.id} className="item">
+                  <span>{ev.kind === 'corrida' ? '🏃' : '📅'}</span>
+                  <span className="item-title">{ev.title}</span>
+                  <span className={`badge ${ev.date === today ? 'warning' : 'primary'}`}>{whenText(ev, today)}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
