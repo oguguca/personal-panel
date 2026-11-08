@@ -1,5 +1,5 @@
 // Calendário interativo: compromissos e corridas, com alertas antes do evento.
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Icon from '../components/Icon';
 import { Empty, Switch } from '../components/ui';
 import { useStore } from '../store/StoreContext';
@@ -172,6 +172,17 @@ export default function Calendario() {
   const move = (n: number) => setYm(([y, m]) => {
     const d = new Date(y, m + n, 1);
     return [d.getFullYear(), d.getMonth()];
+  });
+  // teclado: ← → trocam o mês (fora dos campos de texto), Esc fecha o formulário
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = (e.target as HTMLElement)?.closest?.('input, textarea, select');
+      if (e.key === 'Escape') setEditing(null);
+      else if (!typing && e.key === 'ArrowLeft') move(-1);
+      else if (!typing && e.key === 'ArrowRight') move(1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   });
   const goToday = () => {
     setYm([t.getFullYear(), t.getMonth()]);
