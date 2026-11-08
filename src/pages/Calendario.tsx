@@ -5,7 +5,7 @@ import { Empty, Switch } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import {
   DAYS_BEFORE, DEFAULT_ALERT, EVERY_HOURS, RACE_DISTANCES,
-  daysUntil, describeAlert, eventsByDay, monthGrid, upcoming, whenText,
+  daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
 } from '../store/calendar';
 import { formatLong, parseKey, WEEKDAYS_NAME } from '../store/dates';
 import { uid } from '../store/model';
@@ -70,6 +70,15 @@ function EventForm({ initial, onSave, onCancel, onDelete }: {
           </div>
         </div>
       )}
+      {race && (
+        <label className="field">
+          <span>Tempo final (depois da prova)</span>
+          <div className="row">
+            <input className="input w-num" placeholder="52:30" value={f.result || ''} onChange={(e) => set('result', e.target.value)} />
+            {paceOf(f) ? <span className="badge success">Pace {formatPace(paceOf(f)!)}</span> : f.result && !parseDuration(f.result) ? <span className="muted small">Use mm:ss ou h:mm:ss</span> : null}
+          </div>
+        </label>
+      )}
       <label className="field"><span>Observações (opcional)</span><textarea className="input" rows={2} placeholder={race ? 'Kit, horário de chegada, pace…' : ''} value={f.notes || ''} onChange={(e) => set('notes', e.target.value)} /></label>
 
       <div className="cal-alert">
@@ -125,6 +134,7 @@ function EventItem({ ev, today, onEdit, onToggle }: { ev: CalEvent; today: DayKe
         <b>{ev.title}</b>
         <span className="muted small">
           {[ev.time || 'dia inteiro', ev.kind === 'corrida' && ev.distance ? `${ev.distance} km` : '', ev.place].filter(Boolean).join(' · ')}
+          {paceOf(ev) && <> · ⏱ {ev.result} ({formatPace(paceOf(ev)!)})</>}
         </span>
         {ev.notes && <span className="muted small cal-notes">{ev.notes}</span>}
       </button>

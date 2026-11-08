@@ -103,3 +103,26 @@ export function upcoming(events: CalEvent[], today: DayKey, n = 5): CalEvent[] {
     .sort((a, b) => eventTime(a) - eventTime(b))
     .slice(0, n);
 }
+
+/** Tempo '52:30' ou '1:45:10' em segundos (null se inválido). */
+export function parseDuration(txt: string | undefined): number | null {
+  const parts = String(txt || '').trim().split(':').map((p) => Number(p));
+  if (parts.length < 2 || parts.length > 3 || parts.some((p) => !Number.isFinite(p) || p < 0)) return null;
+  const [h, m, s] = parts.length === 3 ? parts : [0, ...parts];
+  if (m >= 60 || s >= 60) return null;
+  const total = h * 3600 + m * 60 + s;
+  return total > 0 ? total : null;
+}
+
+/** Ritmo em segundos por km. */
+export function paceOf(ev: Pick<CalEvent, 'result' | 'distance'>): number | null {
+  const secs = parseDuration(ev.result);
+  const km = parseFloat(ev.distance || '');
+  return secs && km > 0 ? secs / km : null;
+}
+
+/** 315 -> "5:15 /km" */
+export function formatPace(secPerKm: number): string {
+  const r = Math.round(secPerKm);
+  return `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')} /km`;
+}
