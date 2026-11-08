@@ -5,7 +5,7 @@ import { Empty, Switch } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import {
   DAYS_BEFORE, DEFAULT_ALERT, EVERY_HOURS, RACE_DISTANCES,
-  daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
+  countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
 } from '../store/calendar';
 import { formatLong, parseKey, WEEKDAYS_NAME } from '../store/dates';
 import { uid } from '../store/model';
@@ -20,6 +20,12 @@ const monthName = (y: number, m: number) => {
   const s = new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const monthSummary = (c: { compromisso: number; corrida: number }) =>
+  c.compromisso + c.corrida
+    ? [c.compromisso && plural(c.compromisso, 'compromisso', 'compromissos'), c.corrida && plural(c.corrida, 'corrida', 'corridas')].filter(Boolean).join(' · ')
+    : 'nada marcado';
 
 type Draft = Omit<CalEvent, 'id'> & { id?: string };
 const blank = (date: DayKey, kind: EventKind = 'compromisso'): Draft => ({
@@ -233,7 +239,10 @@ export default function Calendario() {
         <section className="card cal-card">
           <div className="cal-head">
             <button className="icon-btn" onClick={() => move(-1)} title="Mês anterior"><Icon name="left" size={18} /></button>
-            <h2>{monthName(ym[0], ym[1])}</h2>
+            <h2 className="cal-title">
+              {monthName(ym[0], ym[1])}
+              <small className="muted">{monthSummary(countInMonth(events, ym[0], ym[1]))}</small>
+            </h2>
             <button className="icon-btn" onClick={() => move(1)} title="Próximo mês"><Icon name="right" size={18} /></button>
             <button className="btn sm" onClick={goToday}>Hoje</button>
             <div className="segmented cal-filter">

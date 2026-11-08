@@ -792,3 +792,5 @@ button.meta-item:hover { color: var(--text); }
   .cal-chip { padding: 1px 3px; text-align: center; }
   .cal-filter { margin-left: 0; }
 }
+.cal-title { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.cal-title small { font-size: 0.75rem; font-weight: 500; }

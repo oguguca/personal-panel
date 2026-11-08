@@ -126,3 +126,11 @@ export function formatPace(secPerKm: number): string {
   const r = Math.round(secPerKm);
   return `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')} /km`;
 }
+
+/** Quantos compromissos e corridas há no mês (month: 0 = janeiro). */
+export function countInMonth(events: CalEvent[], year: number, month: number): { compromisso: number; corrida: number } {
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+  const out = { compromisso: 0, corrida: 0 };
+  for (const e of events) if (e.date.startsWith(prefix)) out[e.kind]++;
+  return out;
+}
