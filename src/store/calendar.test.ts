@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alertMessage, dueAlerts, eventTime, formatPace, monthGrid, nextAlert, paceOf, parseDuration, upcoming, whenText } from './calendar';
+import { alertMessage, describeAlert, dueAlerts, eventTime, formatPace, monthGrid, nextAlert, paceOf, parseDuration, upcoming, whenText } from './calendar';
 import type { CalEvent } from './types';
 
 const at = (d: number, h = 0, m = 0) => new Date(2026, 10, d, h, m).getTime(); // novembro de 2026
@@ -83,5 +83,13 @@ describe('tempo e pace das corridas', () => {
     expect(formatPace(315)).toBe('5:15 /km');
     expect(formatPace(299.6)).toBe('5:00 /km');
     expect(paceOf({ result: '52:30', distance: '' })).toBeNull();
+  });
+});
+
+describe('texto do alerta', () => {
+  it('explica quando os avisos começam e de quanto em quanto tempo', () => {
+    expect(describeAlert(race())).toBe('Avisos a cada 1 dia, a partir de 12/11 às 07:00, até a hora do evento');
+    expect(describeAlert(race({ alert: { daysBefore: 1, everyHours: 6 } }))).toBe('Avisos a cada 6 horas, a partir de 14/11 às 07:00, até a hora do evento');
+    expect(describeAlert(race({ alert: null }))).toBe('Sem alerta');
   });
 });
