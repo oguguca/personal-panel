@@ -190,6 +190,8 @@ export default function Calendario() {
     setEditing(null);
   };
   const remove = (id: string) => {
+    const ev = events.find((e) => e.id === id);
+    if (ev && !window.confirm(`Apagar "${ev.title}"?`)) return;
     update((x) => { x.events = x.events.filter((e) => e.id !== id); });
     setEditing(null);
   };
