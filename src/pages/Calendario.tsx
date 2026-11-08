@@ -26,11 +26,12 @@ const blank = (date: DayKey, kind: EventKind = 'compromisso'): Draft => ({
   title: '', date, time: '', kind, place: '', distance: '', notes: '', alert: { ...DEFAULT_ALERT },
 });
 
-function EventForm({ initial, onSave, onCancel, onDelete }: {
+function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate }: {
   initial: Draft;
   onSave: (d: Draft) => void;
   onCancel: () => void;
   onDelete?: () => void;
+  onDuplicate?: () => void;
 }) {
   const [f, setF] = useState<Draft>(initial);
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setF((x) => ({ ...x, [k]: v }));
@@ -117,6 +118,7 @@ function EventForm({ initial, onSave, onCancel, onDelete }: {
       <div className="row">
         <button className="btn primary" type="submit"><Icon name="check" size={16} /> Salvar</button>
         <button className="btn" type="button" onClick={onCancel}>Cancelar</button>
+        {onDuplicate && <button className="btn" type="button" onClick={onDuplicate} title="Cria uma cópia para outra data">Duplicar</button>}
         {onDelete && <button className="btn danger" type="button" onClick={onDelete} style={{ marginLeft: 'auto' }}><Icon name="trash" size={16} /> Apagar</button>}
       </div>
     </form>
@@ -273,6 +275,7 @@ export default function Calendario() {
                 onSave={save}
                 onCancel={() => setEditing(null)}
                 onDelete={editing.id ? () => remove(editing.id!) : undefined}
+                onDuplicate={editing.id ? () => setEditing({ ...editing, id: undefined, done: false, result: '', lastAlert: undefined }) : undefined}
               />
             ) : dayEvents.length ? (
               <ul className="list">
