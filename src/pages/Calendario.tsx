@@ -253,7 +253,7 @@ export default function Calendario() {
               ))}
             </div>
           </div>
-          <div className="cal-grid">
+          <div className="cal-grid" role="group" aria-label="Dias do mês">
             {WEEKDAYS_NAME.map((w) => <span key={w} className="cal-wd">{w}</span>)}
             {grid.map((key) => {
               const d = parseKey(key);
@@ -266,6 +266,8 @@ export default function Calendario() {
                   onClick={() => setSelected(key)}
                   onDoubleClick={() => setEditing(blank(key))}
                   title="Clique para ver · duplo clique para adicionar"
+                  aria-label={`${formatLong(key)}${evs.length ? `, ${evs.length} ${evs.length === 1 ? 'evento' : 'eventos'}: ${evs.map((e) => e.title).join(', ')}` : ', sem eventos'}`}
+                  aria-pressed={key === selected}
                 >
                   <span className="cal-num">{d.getDate()}</span>
                   <span className="cal-chips">
