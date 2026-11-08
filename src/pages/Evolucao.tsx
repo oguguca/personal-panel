@@ -1,6 +1,6 @@
 // Desenvolvimento pessoal em modo jogo: personagem, atributos, rank de academia e atividade.
 import { useMemo, useState } from 'react';
-import GymGame from '../components/GymGame';
+import Hologram from '../components/Hologram';
 import RankEmblem from '../components/RankEmblem';
 import RankedPanel, { RankChange } from '../components/Ranked';
 import { Empty, Progress } from '../components/ui';
@@ -58,10 +58,9 @@ export default function Evolucao({ go }: PageProps) {
 
       <RankedPanel ranked={ranked} />
 
-      <GymGame data={data} today={today} tier={ranked.season.rank.tier} onGoTreino={() => go('treino')} />
-
-      <section className="card">
-        <div className="level-total">
+      <section className="card holo-card">
+        <Hologram game={game} selected={selected} onSelect={(id) => setSelected(selected === id ? null : id)} />
+        <div className="holo-total">
           <span>Nível {game.total.level}</span>
           <Progress value={game.total.into} max={game.total.need} />
           <span className="muted small">{game.total.need - game.total.into} XP para o nível {game.total.level + 1}</span>
