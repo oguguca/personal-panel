@@ -112,3 +112,19 @@ describe('agrupar e contar eventos', () => {
     expect(countInMonth(list, 2027, 0)).toEqual({ compromisso: 0, corrida: 0 });
   });
 });
+
+describe('casos de borda dos alertas', () => {
+  it('intervalo menor que 1 hora vira 1 hora (não dispara sem parar)', () => {
+    expect(nextAlert(race({ alert: { daysBefore: 1, everyHours: 0 }, lastAlert: at(14, 8) }), at(14, 8, 30))).toBe(at(14, 9));
+  });
+
+  it('vários eventos: só os que já passaram da hora do aviso disparam', () => {
+    const cedo = race({ id: 'cedo', date: '2026-11-30' });
+    const agora = race({ id: 'agora', date: '2026-11-10' });
+    expect(dueAlerts([cedo, agora], at(8)).map((e) => e.id)).toEqual(['agora']);
+  });
+
+  it('evento de ontem', () => {
+    expect(whenText(race(), '2026-11-16')).toBe('foi ontem');
+  });
+});
