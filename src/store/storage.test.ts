@@ -11,6 +11,11 @@ describe('backup', () => {
     expect(back.recurring).toEqual(data.recurring);
   });
 
+  it('backup guarda os compromissos e corridas do calendário', () => {
+    const data = makeData({ events: [{ id: 'e', title: 'Corrida', date: '2026-11-15', kind: 'corrida', distance: '10', alert: { daysBefore: 3, everyHours: 24 } }] });
+    expect(parseBackup(exportJSON(data)).events).toEqual(data.events);
+  });
+
   it('recusa arquivo que não é JSON ou não é do app', () => {
     expect(() => parseBackup('isso não é json')).toThrow('JSON válido');
     expect(() => parseBackup('{"foo": 1}')).toThrow('backup do Painel Pessoal');
@@ -19,6 +24,7 @@ describe('backup', () => {
   it('completa campos que faltam em backups antigos', () => {
     const old = parseBackup(JSON.stringify({ settings: { userName: 'Ana' }, days: {} }));
     expect(old.workouts).toEqual([]);
+    expect(old.events).toEqual([]);
     expect(old.training).toEqual({ rotation: [], restDays: [] });
     expect(old.settings.meals).toHaveLength(4);
   });
