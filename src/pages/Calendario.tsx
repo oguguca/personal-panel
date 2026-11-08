@@ -7,7 +7,7 @@ import {
   DAYS_BEFORE, DEFAULT_ALERT, EVERY_HOURS, RACE_DISTANCES,
   countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
 } from '../store/calendar';
-import { formatLong, parseKey, WEEKDAYS_NAME } from '../store/dates';
+import { formatLong, formatShort, parseKey, WEEKDAYS_NAME } from '../store/dates';
 import { uid } from '../store/model';
 import type { CalEvent, DayKey, EventKind } from '../store/types';
 
@@ -343,6 +343,20 @@ export default function Calendario() {
                 {bestPace !== null && <div><b>{formatPace(bestPace)}</b><span className="muted small">melhor pace</span></div>}
                 {longest > 0 && <div><b>{longest.toLocaleString('pt-BR')} km</b><span className="muted small">maior distância</span></div>}
               </div>
+              {racesDone.length > 0 && (
+                <ul className="list cal-results">
+                  {[...racesDone].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6).map((ev) => {
+                    const p = paceOf(ev);
+                    return (
+                      <li key={ev.id} className="item" onClick={() => setEditing(ev)} title="Abrir para editar o tempo">
+                        <span className="muted small">{formatShort(ev.date)}</span>
+                        <span className="item-title">{ev.title}{ev.distance ? ` · ${ev.distance} km` : ''}</span>
+                        {ev.result ? <span className={`badge ${p !== null && p === bestPace ? 'success' : 'primary'}`}>{ev.result}{p !== null ? ` · ${formatPace(p)}` : ''}</span> : <span className="muted small">sem tempo</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </section>
           )}
         </div>
