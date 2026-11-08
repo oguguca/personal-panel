@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alertMessage, describeAlert, dueAlerts, eventTime, formatPace, monthGrid, nextAlert, paceOf, parseDuration, upcoming, whenText } from './calendar';
+import { alertMessage, countInMonth, describeAlert, dueAlerts, eventTime, eventsByDay, formatPace, monthGrid, nextAlert, paceOf, parseDuration, upcoming, whenText } from './calendar';
 import type { CalEvent } from './types';
 
 const at = (d: number, h = 0, m = 0) => new Date(2026, 10, d, h, m).getTime(); // novembro de 2026
@@ -91,5 +91,24 @@ describe('texto do alerta', () => {
     expect(describeAlert(race())).toBe('Avisos a cada 1 dia, a partir de 12/11 às 07:00, até a hora do evento');
     expect(describeAlert(race({ alert: { daysBefore: 1, everyHours: 6 } }))).toBe('Avisos a cada 6 horas, a partir de 14/11 às 07:00, até a hora do evento');
     expect(describeAlert(race({ alert: null }))).toBe('Sem alerta');
+  });
+});
+
+describe('agrupar e contar eventos', () => {
+  it('agrupa por dia e ordena pela hora (sem hora conta como 9h)', () => {
+    const a = race({ id: 'a', time: '18:00' });
+    const b = race({ id: 'b', time: '' });
+    const c = race({ id: 'c', time: '06:00' });
+    const d = race({ id: 'd', date: '2026-11-16' });
+    const by = eventsByDay([a, b, c, d]);
+    expect(by['2026-11-15'].map((e) => e.id)).toEqual(['c', 'b', 'a']);
+    expect(by['2026-11-16'].map((e) => e.id)).toEqual(['d']);
+  });
+
+  it('conta compromissos e corridas do mês', () => {
+    const list = [race(), race({ id: 'x', kind: 'compromisso' }), race({ id: 'y', date: '2026-12-01' })];
+    expect(countInMonth(list, 2026, 10)).toEqual({ compromisso: 1, corrida: 1 });
+    expect(countInMonth(list, 2026, 11)).toEqual({ compromisso: 0, corrida: 1 });
+    expect(countInMonth(list, 2027, 0)).toEqual({ compromisso: 0, corrida: 0 });
   });
 });
