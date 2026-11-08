@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alertMessage, dueAlerts, eventTime, monthGrid, nextAlert, upcoming, whenText } from './calendar';
+import { alertMessage, dueAlerts, eventTime, formatPace, monthGrid, nextAlert, paceOf, parseDuration, upcoming, whenText } from './calendar';
 import type { CalEvent } from './types';
 
 const at = (d: number, h = 0, m = 0) => new Date(2026, 10, d, h, m).getTime(); // novembro de 2026
@@ -66,5 +66,22 @@ describe('telas do calendário', () => {
     const c = race({ id: 'c', date: '2026-11-13', done: true });
     const d = race({ id: 'd', date: '2026-11-01' });
     expect(upcoming([a, b, c, d], '2026-11-07').map((e) => e.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('tempo e pace das corridas', () => {
+  it('lê o tempo em mm:ss ou h:mm:ss', () => {
+    expect(parseDuration('52:30')).toBe(3150);
+    expect(parseDuration('1:45:10')).toBe(6310);
+    expect(parseDuration('52')).toBeNull();
+    expect(parseDuration('10:75')).toBeNull();
+    expect(parseDuration('')).toBeNull();
+  });
+
+  it('calcula o pace em min/km', () => {
+    expect(paceOf({ result: '52:30', distance: '10' })).toBe(315);
+    expect(formatPace(315)).toBe('5:15 /km');
+    expect(formatPace(299.6)).toBe('5:00 /km');
+    expect(paceOf({ result: '52:30', distance: '' })).toBeNull();
   });
 });
