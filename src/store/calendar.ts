@@ -1,6 +1,12 @@
 // Calendário: compromissos e corridas, com alertas que começam X dias antes e repetem a cada Y horas.
 import { addDays, dateKey, parseKey, toMinutes } from './dates';
-import type { CalEvent, DayKey, EventAlert } from './types';
+import type { CalEvent, DayKey, EventAlert, EventKind } from './types';
+
+/** Nome e ícone de cada tipo de evento (usado no Calendário e na tela Hoje). */
+export const EVENT_KINDS: Record<EventKind, { label: string; icon: string }> = {
+  compromisso: { label: 'Compromisso', icon: '📅' },
+  corrida: { label: 'Corrida', icon: '🏃' },
+};
 
 const HOUR = 3600000;
 const DAY = 24 * HOUR;
@@ -63,7 +69,7 @@ export function daysUntil(date: DayKey, today: DayKey): number {
 /** Texto da notificação. */
 export function alertMessage(ev: CalEvent, now: number): { title: string; body: string } {
   const today = dateKey(new Date(now));
-  const icon = ev.kind === 'corrida' ? '🏃' : '📅';
+  const icon = EVENT_KINDS[ev.kind].icon;
   const extra = [ev.kind === 'corrida' && ev.distance ? `${ev.distance} km` : '', ev.place || ''].filter(Boolean).join(' · ');
   const when = whenText(ev, today);
   return {

@@ -5,16 +5,13 @@ import { Empty, Switch } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import {
   DAYS_BEFORE, DEFAULT_ALERT, EVERY_HOURS, RACE_DISTANCES,
-  countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
+  EVENT_KINDS, countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
 } from '../store/calendar';
 import { formatLong, formatShort, parseKey, WEEKDAYS_NAME } from '../store/dates';
 import { uid } from '../store/model';
 import type { CalEvent, DayKey, EventKind } from '../store/types';
 
-const KIND: Record<EventKind, { label: string; icon: string }> = {
-  compromisso: { label: 'Compromisso', icon: '📅' },
-  corrida: { label: 'Corrida', icon: '🏃' },
-};
+const KIND = EVENT_KINDS;
 
 const monthName = (y: number, m: number) => {
   const s = new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });

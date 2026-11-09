@@ -7,7 +7,7 @@ import { goalDone, mealList, recordTotal, waterTotal } from '../store/model';
 import { dayNutrition, fmtKcal } from '../store/foods';
 import { energy, isBirthday } from '../store/body';
 import { TodayTraining } from './TreinoCiclo';
-import { upcoming, whenText } from '../store/calendar';
+import { EVENT_KINDS, upcoming, whenText } from '../store/calendar';
 import type { PageProps } from './types';
 import type { DailyGoal, Day, Settings } from '../store/types';
 
@@ -173,7 +173,7 @@ export default function Hoje({ go }: PageProps) {
             <ul className="list">
               {upcoming(data.events, today, 3).map((ev) => (
                 <li key={ev.id} className="item">
-                  <span>{ev.kind === 'corrida' ? '🏃' : '📅'}</span>
+                  <span>{EVENT_KINDS[ev.kind].icon}</span>
                   <span className="item-title">{ev.title}</span>
                   <span className={`badge ${ev.date === today ? 'warning' : 'primary'}`}>{whenText(ev, today)}</span>
                 </li>
