@@ -2,7 +2,7 @@
 // O próximo treino é calculado pelo ÚLTIMO TREINO FEITO (não pelo dia da semana),
 // então se a pessoa fizer o C na segunda, a sequência continua a partir do C.
 import { addDays, weekday } from './dates';
-import type { Data, DayKey, TrainingLog } from './types';
+import type { Data, DayKey, TrainingLog, Workout } from './types';
 
 export type Suggestion =
   | { logged: TrainingLog; next: string | null; rest?: undefined; workoutId?: undefined }
@@ -88,3 +88,12 @@ export function forecast(data: Data, today: DayKey, n = 7): ForecastDay[] {
 
 /** Letra do treino na sequência (A, B, C…) para mostrar de forma curta. */
 export const slotLetter = (i: number) => 'ABCDEFG'[i] || String(i + 1);
+
+/**
+ * Registro de "treino feito" do dia. Guarda uma cópia das cargas:
+ * é assim que a aba Evolução mede a força ao longo do tempo (mesmo se o treino mudar depois).
+ */
+export function workoutLog(workout: Workout | undefined, workoutId: string, at = Date.now()): TrainingLog {
+  const items = (workout?.items || []).map(({ exId, sets, reps, weight, minutes }) => ({ exId, sets, reps, weight, minutes }));
+  return { type: 'workout', workoutId, name: workout?.name || 'Treino', at, items };
+}

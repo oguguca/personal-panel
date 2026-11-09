@@ -4,19 +4,15 @@ import { Empty } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import { WEEKDAYS_NAME, formatMedium, formatShort, weekday } from '../store/dates';
 import type { Workout } from '../store/types';
-import { MAX_ROTATION, forecast, nextAfter, slotLetter, suggestion, trainingConfig } from '../store/training';
+import { MAX_ROTATION, forecast, nextAfter, slotLetter, suggestion, trainingConfig, workoutLog } from '../store/training';
 
 /** Ações de registro do dia (usadas aqui e na tela Hoje). */
 export function useTrainingActions() {
-  const { data, today, update } = useStore();
-  const nameOf = (id: string) => data.workouts.find((w) => w.id === id)?.name || 'Treino';
+  const { today, update } = useStore();
   return {
     done: (workoutId: string) =>
       update((d) => {
-        // guarda as cargas do dia: é assim que a aba Evolução mede a força ao longo do tempo
-        const w = d.workouts.find((x) => x.id === workoutId);
-        const items = (w?.items || []).map(({ exId, sets, reps, weight, minutes }) => ({ exId, sets, reps, weight, minutes }));
-        d.days[today].training = { type: 'workout', workoutId, name: nameOf(workoutId), at: Date.now(), items };
+        d.days[today].training = workoutLog(d.workouts.find((x) => x.id === workoutId), workoutId);
       }),
     rest: () => update((d) => { d.days[today].training = { type: 'rest', at: Date.now() }; }),
     undo: () => update((d) => { delete d.days[today].training; }),
