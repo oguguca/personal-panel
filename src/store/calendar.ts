@@ -140,3 +140,32 @@ export function countInMonth(events: CalEvent[], year: number, month: number): {
   for (const e of events) if (e.date.startsWith(prefix)) out[e.kind]++;
   return out;
 }
+
+const icsText = (s: string) => s.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
+const icsDate = (key: DayKey) => key.replace(/-/g, '');
+const icsDateTime = (ms: number) => {
+  const d = new Date(ms);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
+};
+
+/** Arquivo .ics (iCalendar) com o evento: abre no Google Agenda, celular, Outlook. */
+export function toICS(events: CalEvent[]): string {
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Painel Pessoal//Calendario//PT-BR', 'CALSCALE:GREGORIAN'];
+  for (const ev of events) {
+    const desc = [ev.kind === 'corrida' && ev.distance ? `${ev.distance} km` : '', ev.notes || ''].filter(Boolean).join('\n');
+    lines.push('BEGIN:VEVENT', `UID:${ev.id}@painel-pessoal`, `SUMMARY:${icsText(`${EVENT_KINDS[ev.kind].icon} ${ev.title}`)}`);
+    if (ev.time) {
+      const start = eventTime(ev);
+      lines.push(`DTSTART:${icsDateTime(start)}`, `DTEND:${icsDateTime(start + HOUR)}`);
+    } else {
+      lines.push(`DTSTART;VALUE=DATE:${icsDate(ev.date)}`, `DTEND;VALUE=DATE:${icsDate(addDays(ev.date, 1))}`);
+    }
+    if (ev.place) lines.push(`LOCATION:${icsText(ev.place)}`);
+    if (desc) lines.push(`DESCRIPTION:${icsText(desc)}`);
+    if (ev.alert) lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsText(ev.title)}`, `TRIGGER:-P${ev.alert.daysBefore}D`, 'END:VALARM');
+    lines.push('END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
