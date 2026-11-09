@@ -126,3 +126,26 @@ describe('personagem completo', () => {
     expect(computeGame(data, MON).total.xp).toBe(0);
   });
 });
+
+describe('XP do calendário', () => {
+  const ev = (patch: object) => ({ id: 'e', title: 'Corrida da Ponte', date: MON, kind: 'corrida' as const, distance: '10', done: true, ...patch });
+
+  it('corrida feita dá Resistência com bônus por km; compromisso feito dá Disciplina', () => {
+    const data = makeData({ events: [ev({}), ev({ id: 'c', kind: 'compromisso', title: 'Dentista' })] });
+    withDay(data, MON);
+    const { gains } = dayGains(data, MON);
+    expect(gains).toContainEqual({ attr: 'resist', xp: XP.race + 10 * XP.raceKm, label: 'Corrida: Corrida da Ponte (10 km)' });
+    expect(gains).toContainEqual({ attr: 'disc', xp: XP.event, label: 'Compromisso: Dentista' });
+  });
+
+  it('evento não concluído não dá XP', () => {
+    const data = makeData({ events: [ev({ done: false })] });
+    expect(dayGains(data, MON).gains).toEqual([]);
+  });
+
+  it('conta mesmo sem o app aberto naquele dia', () => {
+    const data = makeData({ events: [ev({})] });
+    const game = computeGame(data, TUE);
+    expect(game.attrs.find((a) => a.id === 'resist')!.xp).toBe(XP.race + 10 * XP.raceKm);
+  });
+});
