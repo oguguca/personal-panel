@@ -5,8 +5,9 @@ import { Empty, Switch } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import {
   DAYS_BEFORE, DEFAULT_ALERT, EVERY_HOURS, RACE_DISTANCES,
-  EVENT_KINDS, countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, upcoming, whenText,
+  EVENT_KINDS, countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, toICS, upcoming, whenText,
 } from '../store/calendar';
+import { saveTextFile } from '../platform';
 import { formatLong, formatShort, parseKey, WEEKDAYS_NAME } from '../store/dates';
 import { uid } from '../store/model';
 import type { CalEvent, DayKey, EventKind } from '../store/types';
@@ -29,12 +30,13 @@ const blank = (date: DayKey, kind: EventKind = 'compromisso'): Draft => ({
   title: '', date, time: '', kind, place: '', distance: '', notes: '', alert: { ...DEFAULT_ALERT },
 });
 
-function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate }: {
+function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate, onExport }: {
   initial: Draft;
   onSave: (d: Draft) => void;
   onCancel: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
+  onExport?: () => void;
 }) {
   const [f, setF] = useState<Draft>(initial);
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setF((x) => ({ ...x, [k]: v }));
@@ -122,6 +124,7 @@ function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate }: {
         <button className="btn primary" type="submit"><Icon name="check" size={16} /> Salvar</button>
         <button className="btn" type="button" onClick={onCancel}>Cancelar</button>
         {onDuplicate && <button className="btn" type="button" onClick={onDuplicate} title="Cria uma cópia para outra data">Duplicar</button>}
+        {onExport && <button className="btn" type="button" onClick={onExport} title="Abrir no Google Agenda, celular ou Outlook"><Icon name="download" size={16} /> .ics</button>}
         {onDelete && <button className="btn danger" type="button" onClick={onDelete} style={{ marginLeft: 'auto' }}><Icon name="trash" size={16} /> Apagar</button>}
       </div>
     </form>
@@ -187,6 +190,9 @@ export default function Calendario() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+  const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const exportOne = (ev: CalEvent) => saveTextFile(`${slug(ev.title) || 'evento'}-${ev.date}.ics`, toICS([ev]), 'text/calendar');
+  const exportUpcoming = () => saveTextFile(`agenda-${today}.ics`, toICS(upcoming(events, today, 500)), 'text/calendar');
   const goToday = () => {
     setYm([t.getFullYear(), t.getMonth()]);
     setSelected(today);
@@ -227,6 +233,11 @@ export default function Calendario() {
           </p>
         </div>
         <div className="row">
+          {next.length > 0 && (
+            <button className="btn" onClick={exportUpcoming} title="Baixa um arquivo .ics para abrir no Google Agenda, celular ou Outlook">
+              <Icon name="download" size={16} /> Exportar
+            </button>
+          )}
           <button className="btn" onClick={() => openNew('corrida')}>🏃 Nova corrida</button>
           <button className="btn primary" onClick={() => openNew('compromisso')}><Icon name="plus" size={18} /> Novo compromisso</button>
         </div>
@@ -295,6 +306,7 @@ export default function Calendario() {
                 onCancel={() => setEditing(null)}
                 onDelete={editing.id ? () => remove(editing.id!) : undefined}
                 onDuplicate={editing.id ? () => setEditing({ ...editing, id: undefined, done: false, result: '', lastAlert: undefined }) : undefined}
+                onExport={editing.id ? () => exportOne(editing as CalEvent) : undefined}
               />
             ) : dayEvents.length ? (
               <ul className="list">
