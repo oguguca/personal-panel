@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alertMessage, countInMonth, describeAlert, dueAlerts, eventTime, eventsByDay, formatPace, monthGrid, nextAlert, paceOf, parseDuration, toICS, upcoming, whenText } from './calendar';
+import { alertMessage, canAlertNow, countInMonth, describeAlert, dueAlerts, eventTime, eventsByDay, formatPace, monthGrid, nextAlert, paceOf, parseDuration, toICS, upcoming, whenText } from './calendar';
 import type { CalEvent } from './types';
 
 const at = (d: number, h = 0, m = 0) => new Date(2026, 10, d, h, m).getTime(); // novembro de 2026
@@ -147,5 +147,16 @@ describe('exportar para outra agenda (.ics)', () => {
     expect(ics).toContain('DTSTART;VALUE=DATE:20261115');
     expect(ics).toContain('DTEND;VALUE=DATE:20261116');
     expect(ics).not.toContain('VALARM');
+  });
+});
+
+describe('avisos à noite', () => {
+  it('no horário ativo sempre pode avisar', () => {
+    expect(canAlertNow(race(), at(10, 12), true)).toBe(true);
+  });
+
+  it('fora do horário só avisa se o evento for nas próximas 24 h', () => {
+    expect(canAlertNow(race(), at(12, 23), false)).toBe(false); // faltam ~2 dias e 8 h
+    expect(canAlertNow(race(), at(14, 23), false)).toBe(true); // corrida amanhã às 07:00
   });
 });
