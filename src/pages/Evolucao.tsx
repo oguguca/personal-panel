@@ -153,6 +153,10 @@ export default function Evolucao({ go }: PageProps) {
           <li>Água: +{XP.waterMin} ao bater o mínimo e +{XP.waterIdeal} no ideal. Cada refeição feita: +{XP.meal}. Tudo vai para Vitalidade.</li>
           <li>Treino feito: +{XP.workout} de Força, mais um bônus pela carga levantada. Cardio e pernas dão Resistência.</li>
           <li>Metas do dia (+{XP.goal} cada) e meta da renda (+{XP.record}) dão Disciplina.</li>
+          <li>
+            <button className="link" onClick={() => go('calendario')}>Calendário</button>: corrida marcada como feita dá +{XP.race} de Resistência
+            (+{XP.raceKm} por km); compromisso cumprido dá +{XP.event} de Disciplina.
+          </li>
           <li>Ranks dos atributos: E → D → C → B → A → S. Quanto maior o nível geral, mais forte a aura do personagem.</li>
         </ul>
       </section>
