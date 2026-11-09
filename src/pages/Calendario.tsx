@@ -42,12 +42,16 @@ function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate, onExport 
   const [f, setF] = useState<Draft>(initial);
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setF((x) => ({ ...x, [k]: v }));
   const [customDays, setCustomDays] = useState(!DAYS_BEFORE.includes(initial.alert?.daysBefore ?? 3));
+  const [error, setError] = useState('');
+  const race = f.kind === 'corrida';
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!f.title.trim() || !f.date) return;
+    if (!f.title.trim()) return setError(race ? 'Dê um nome para a corrida.' : 'Dê um nome para o compromisso.');
+    if (!f.date) return setError('Escolha a data.');
+    if (race && f.distance && !(parseFloat(f.distance) > 0)) return setError('A distância precisa ser um número em km (ex.: 10).');
+    setError('');
     onSave({ ...f, title: f.title.trim(), lastAlert: f.id && f.alert === initial.alert ? f.lastAlert : undefined });
   };
-  const race = f.kind === 'corrida';
 
   return (
     <form className="cal-form" onSubmit={submit}>
@@ -58,7 +62,8 @@ function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate, onExport 
           </button>
         ))}
       </div>
-      <input className="input" autoFocus placeholder={race ? 'Ex.: "Corrida de São Silvestre"' : 'Ex.: "Dentista"'} value={f.title} onChange={(e) => set('title', e.target.value)} />
+      <input className="input" autoFocus placeholder={race ? 'Ex.: "Corrida de São Silvestre"' : 'Ex.: "Dentista"'} value={f.title} onChange={(e) => { set('title', e.target.value); setError(''); }} aria-invalid={!!error && !f.title.trim()} />
+      {error && <p className="cal-error" role="alert">{error}</p>}
       <div className="row">
         <label className="field"><span>Data</span><input className="input" type="date" value={f.date} onChange={(e) => set('date', e.target.value)} required /></label>
         <label className="field"><span>Hora (opcional)</span><input className="input" type="time" value={f.time || ''} onChange={(e) => set('time', e.target.value)} /></label>
