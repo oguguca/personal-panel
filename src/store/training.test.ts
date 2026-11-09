@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MON, SUN, TUE, makeData, withDay } from '../test/fixtures';
-import { forecast, lastDone, nextAfter, suggestion, trainingConfig } from './training';
+import { forecast, lastDone, nextAfter, suggestion, trainingConfig, workoutLog } from './training';
 import type { Data } from './types';
 
 function gym(restDays: number[] = []): Data {
@@ -60,5 +60,26 @@ describe('ciclo de treino', () => {
     const f = forecast(data, MON, 2);
     expect(f[0]).toMatchObject({ workoutId: 'b', done: true });
     expect(f[1].workoutId).toBe('c');
+  });
+});
+
+describe('registro do treino feito (botão Já fiz hoje)', () => {
+  const w = { id: 'a', name: 'A - Peito', days: [], items: [{ id: 'i1', exId: 'supino-reto-barra', sets: 4, reps: '8-10', weight: '40' }] };
+
+  it('guarda nome, hora e uma cópia das cargas (sem o id do item)', () => {
+    expect(workoutLog(w, 'a', 123)).toEqual({
+      type: 'workout', workoutId: 'a', name: 'A - Peito', at: 123,
+      items: [{ exId: 'supino-reto-barra', sets: 4, reps: '8-10', weight: '40', minutes: undefined }],
+    });
+  });
+
+  it('a cópia não muda se o treino for editado depois', () => {
+    const log = workoutLog(w, 'a', 1);
+    w.items[0].weight = '50';
+    expect(log.items![0].weight).toBe('40');
+  });
+
+  it('treino apagado vira "Treino" sem itens', () => {
+    expect(workoutLog(undefined, 'x', 1)).toMatchObject({ name: 'Treino', items: [] });
   });
 });
