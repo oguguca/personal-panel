@@ -125,10 +125,21 @@ export function dayGains(data: Data, key: DayKey): { gains: Gain[]; muscles: Rec
   const day = data.days[key];
   const out: Gain[] = [];
   const muscles: Record<string, number> = {};
-  if (!day) return { gains: out, muscles };
-  const s = data.settings;
   const add = (attr: AttrId, xp: number, label: string) => xp > 0 && out.push({ attr, xp: Math.round(xp), label });
 
+  // Calendário: corridas e compromissos marcados como feitos naquele dia
+  for (const ev of data.events || []) {
+    if (ev.date !== key || !ev.done) continue;
+    if (ev.kind === 'compromisso') {
+      add('disc', XP.event, `Compromisso: ${ev.title}`);
+      continue;
+    }
+    const km = parseFloat(ev.distance || '') || 0;
+    add('resist', XP.race + Math.min(170, km * XP.raceKm), `Corrida: ${ev.title}${km ? ` (${km} km)` : ''}`);
+  }
+
+  if (!day) return { gains: out, muscles }; // dia sem o app aberto: só conta o calendário
+  const s = data.settings;
   for (const t of day.tasks || []) {
     if (!t.done || t.movedTo) continue;
     if (t.attr && ATTR_BY_ID[t.attr]) add(t.attr, XP.task, t.title);
@@ -144,17 +155,6 @@ export function dayGains(data: Data, key: DayKey): { gains: Gain[]; muscles: Rec
   const goals = data.dailyGoals.filter((g) => goalDone(g, day.goals?.[g.id])).length;
   if (goals) add('disc', goals * XP.goal, `${goals} meta(s) do dia`);
   if (s.recordGoalMin && recordTotal(day) >= s.recordGoalMin) add('disc', XP.record, 'Meta da renda');
-
-  // Calendário: corridas e compromissos marcados como feitos naquele dia
-  for (const ev of data.events || []) {
-    if (ev.date !== key || !ev.done) continue;
-    if (ev.kind === 'compromisso') {
-      add('disc', XP.event, `Compromisso: ${ev.title}`);
-      continue;
-    }
-    const km = parseFloat(ev.distance || '') || 0;
-    add('resist', XP.race + Math.min(170, km * XP.raceKm), `Corrida: ${ev.title}${km ? ` (${km} km)` : ''}`);
-  }
 
   const tr = day.training;
   if (tr?.type === 'rest') add('vit', XP.rest, 'Descanso');
@@ -222,7 +222,9 @@ export function computeGame(data: Data, today: DayKey): Game {
   let workouts = 0;
   let volume = 0;
 
-  for (const key of Object.keys(data.days).sort()) {
+  // dias com dados + dias com eventos do calendário cumpridos (mesmo sem abrir o app)
+  const keys = new Set([...Object.keys(data.days), ...(data.events || []).filter((e) => e.done).map((e) => e.date)]);
+  for (const key of [...keys].sort()) {
     if (key > today) continue;
     const { gains, muscles: m } = dayGains(data, key);
     for (const g of gains) {
@@ -232,7 +234,7 @@ export function computeGame(data: Data, today: DayKey): Game {
     }
     for (const [id, v] of Object.entries(m)) muscles[id] = (muscles[id] || 0) + v;
 
-    const tr = data.days[key].training;
+    const tr = data.days[key]?.training;
     if (tr?.type === 'workout') {
       workouts++;
       for (const it of trainingItems(data, tr)) {
