@@ -169,6 +169,7 @@ export default function Calendario() {
   const next = upcoming(shown, today, 6);
   const dayEvents = byDay[selected] || [];
   const races = events.filter((e) => e.kind === 'corrida');
+  const nextRace = upcoming(races, today, 1)[0];
   const racesDone = races.filter((e) => e.done || e.date < today);
   const kmDone = racesDone.reduce((s, e) => s + (parseFloat(e.distance || '') || 0), 0);
   const paces = racesDone.map((e) => paceOf(e)).filter((p): p is number => p !== null);
@@ -293,6 +294,16 @@ export default function Calendario() {
         </section>
 
         <div className="cal-side">
+          {nextRace && (
+            <section className="card cal-countdown">
+              <span className="cal-countdown-num">{daysUntil(nextRace.date, today) || 'HOJE'}</span>
+              <div>
+                <span className="muted small">{daysUntil(nextRace.date, today) ? (daysUntil(nextRace.date, today) === 1 ? 'dia para a próxima corrida' : 'dias para a próxima corrida') : 'é dia de corrida!'}</span>
+                <b>🏃 {nextRace.title}</b>
+                <span className="muted small">{[formatShort(nextRace.date), nextRace.time, nextRace.distance && `${nextRace.distance} km`].filter(Boolean).join(' · ')}</span>
+              </div>
+            </section>
+          )}
           <section className="card">
             <div className="card-head">
               <h2>{formatLong(selected)}</h2>

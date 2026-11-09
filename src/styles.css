@@ -796,3 +796,7 @@ button.meta-item:hover { color: var(--text); }
 .cal-title small { font-size: 0.75rem; font-weight: 500; }
 .cal-results { margin-top: 10px; }
 .cal-results .item { cursor: pointer; }
+.cal-countdown { flex-direction: row; align-items: center; gap: 14px; background: linear-gradient(135deg, #f97316, #db2777); color: #fff; border: 0; }
+.cal-countdown .muted { color: rgba(255,255,255,.85); }
+.cal-countdown > div { display: flex; flex-direction: column; min-width: 0; }
+.cal-countdown-num { font-size: 2.4rem; font-weight: 900; line-height: 1; min-width: 56px; text-align: center; }
