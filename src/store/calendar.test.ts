@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alertMessage, countInMonth, describeAlert, dueAlerts, eventTime, eventsByDay, formatPace, monthGrid, nextAlert, paceOf, parseDuration, upcoming, whenText } from './calendar';
+import { alertMessage, countInMonth, describeAlert, dueAlerts, eventTime, eventsByDay, formatPace, monthGrid, nextAlert, paceOf, parseDuration, toICS, upcoming, whenText } from './calendar';
 import type { CalEvent } from './types';
 
 const at = (d: number, h = 0, m = 0) => new Date(2026, 10, d, h, m).getTime(); // novembro de 2026
@@ -126,5 +126,26 @@ describe('casos de borda dos alertas', () => {
 
   it('evento de ontem', () => {
     expect(whenText(race(), '2026-11-16')).toBe('foi ontem');
+  });
+});
+
+describe('exportar para outra agenda (.ics)', () => {
+  it('evento com hora: início, fim 1 h depois, local, distância e alarme', () => {
+    const ics = toICS([race({ place: 'Parque, portão 2', notes: 'Retirar kit' })]);
+    expect(ics.startsWith('BEGIN:VCALENDAR')).toBe(true);
+    expect(ics).toContain('SUMMARY:🏃 Corrida da Ponte');
+    expect(ics).toContain('DTSTART:20261115T070000');
+    expect(ics).toContain('DTEND:20261115T080000');
+    expect(ics).toContain('LOCATION:Parque\\, portão 2');
+    expect(ics).toContain('DESCRIPTION:10 km\\nRetirar kit');
+    expect(ics).toContain('TRIGGER:-P3D');
+    expect(ics.split('\r\n').at(-1)).toBe('END:VCALENDAR');
+  });
+
+  it('evento sem hora vira dia inteiro e sem alerta não tem alarme', () => {
+    const ics = toICS([race({ time: '', alert: null, kind: 'compromisso', title: 'Feriado' })]);
+    expect(ics).toContain('DTSTART;VALUE=DATE:20261115');
+    expect(ics).toContain('DTEND;VALUE=DATE:20261116');
+    expect(ics).not.toContain('VALARM');
   });
 });
