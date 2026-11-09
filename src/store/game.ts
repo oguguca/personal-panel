@@ -103,6 +103,7 @@ export const XP = {
   workout: 30,
   race: 40, // corrida do calendário concluída (+ bônus por km)
   raceKm: 4,
+  event: 6, // compromisso do calendário cumprido
 };
 
 export const num = (v: unknown) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
@@ -144,9 +145,13 @@ export function dayGains(data: Data, key: DayKey): { gains: Gain[]; muscles: Rec
   if (goals) add('disc', goals * XP.goal, `${goals} meta(s) do dia`);
   if (s.recordGoalMin && recordTotal(day) >= s.recordGoalMin) add('disc', XP.record, 'Meta da renda');
 
-  // Corridas do calendário marcadas como feitas naquele dia
+  // Calendário: corridas e compromissos marcados como feitos naquele dia
   for (const ev of data.events || []) {
-    if (ev.date !== key || !ev.done || ev.kind !== 'corrida') continue;
+    if (ev.date !== key || !ev.done) continue;
+    if (ev.kind === 'compromisso') {
+      add('disc', XP.event, `Compromisso: ${ev.title}`);
+      continue;
+    }
     const km = parseFloat(ev.distance || '') || 0;
     add('resist', XP.race + Math.min(170, km * XP.raceKm), `Corrida: ${ev.title}${km ? ` (${km} km)` : ''}`);
   }
