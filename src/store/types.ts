@@ -254,6 +254,7 @@ export interface CalEvent {
   place?: string;
   distance?: string; // corridas: '5', '10', '21', '42' (km)
   result?: string; // corridas: tempo final ('52:30' ou '1:45:10')
+  link?: string; // site da inscrição ou do evento
   notes?: string;
   alert?: EventAlert | null;
   lastAlert?: number; // último aviso enviado (ms)

@@ -85,6 +85,7 @@ function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate, onExport 
           </div>
         </label>
       )}
+      <label className="field"><span>{race ? 'Link da inscrição (opcional)' : 'Link (opcional)'}</span><input className="input" type="url" placeholder="https://…" value={f.link || ''} onChange={(e) => set('link', e.target.value.trim())} /></label>
       <label className="field"><span>Observações (opcional)</span><textarea className="input" rows={2} placeholder={race ? 'Kit, horário de chegada, pace…' : ''} value={f.notes || ''} onChange={(e) => set('notes', e.target.value)} /></label>
 
       <div className="cal-alert">
@@ -146,6 +147,7 @@ function EventItem({ ev, today, onEdit, onToggle }: { ev: CalEvent; today: DayKe
         </span>
         {ev.notes && <span className="muted small cal-notes">{ev.notes}</span>}
       </button>
+      {/^https?:\/\//.test(ev.link || '') &&<a className="cal-link" href={ev.link} target="_blank" rel="noreferrer" title={ev.link}>{ev.kind === 'corrida' ? 'Inscrição' : 'Link'} ↗</a>}
       <span className="cal-event-side">
         {!ev.done && !past && <span className="badge primary">{whenText(ev, today)}</span>}
         {ev.alert && !ev.done && !past && <span className="cal-bell" title={describeAlert(ev)}>🔔</span>}
