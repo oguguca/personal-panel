@@ -150,6 +150,11 @@ function EventItem({ ev, today, onEdit, onToggle }: { ev: CalEvent; today: DayKe
       {/^https?:\/\//.test(ev.link || '') &&<a className="cal-link" href={ev.link} target="_blank" rel="noreferrer" title={ev.link}>{ev.kind === 'corrida' ? 'Inscrição' : 'Link'} ↗</a>}
       <span className="cal-event-side">
         {!ev.done && !past && <span className="badge primary">{whenText(ev, today)}</span>}
+        {!ev.done && past && (
+          <span className="badge warning" title="Clique no ícone à esquerda para marcar como feito">
+            {ev.kind === 'corrida' ? 'Correu? Marque ✓' : 'Feito? Marque ✓'}
+          </span>
+        )}
         {ev.alert && !ev.done && !past && <span className="cal-bell" title={describeAlert(ev)}>🔔</span>}
       </span>
     </li>
