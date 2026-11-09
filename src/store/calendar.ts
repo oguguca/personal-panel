@@ -169,3 +169,11 @@ export function toICS(events: CalEvent[]): string {
   lines.push('END:VCALENDAR');
   return lines.join('\r\n');
 }
+
+/**
+ * Pode avisar agora? Fora do horário ativo (noite) só avisa se o evento for
+ * nas próximas 24 h — para não acordar ninguém por algo da semana que vem.
+ */
+export function canAlertNow(ev: CalEvent, now: number, inActiveHours: boolean): boolean {
+  return inActiveHours || eventTime(ev) - now <= DAY;
+}
