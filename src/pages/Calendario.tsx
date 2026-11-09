@@ -13,6 +13,7 @@ import { uid } from '../store/model';
 import type { CalEvent, DayKey, EventKind } from '../store/types';
 
 const KIND = EVENT_KINDS;
+const FILTER_KEY = 'painel-pessoal:calendario-filtro'; // lembra o filtro escolhido
 
 const monthName = (y: number, m: number) => {
   const s = new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -168,7 +169,18 @@ export default function Calendario() {
   const [ym, setYm] = useState<[number, number]>([t.getFullYear(), t.getMonth()]);
   const [selected, setSelected] = useState<DayKey>(today);
   const [editing, setEditing] = useState<Draft | null>(null);
-  const [filter, setFilter] = useState<'todos' | EventKind>('todos');
+  const [filter, setFilterState] = useState<'todos' | EventKind>(() => {
+    try {
+      const v = localStorage.getItem(FILTER_KEY);
+      return v === 'compromisso' || v === 'corrida' ? v : 'todos';
+    } catch {
+      return 'todos';
+    }
+  });
+  const setFilter = (v: 'todos' | EventKind) => {
+    setFilterState(v);
+    try { localStorage.setItem(FILTER_KEY, v); } catch { /* sem armazenamento: só não lembra */ }
+  };
 
   const shown = filter === 'todos' ? events : events.filter((e) => e.kind === filter);
   const byDay = useMemo(() => eventsByDay(shown), [shown]);
