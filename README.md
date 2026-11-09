@@ -32,7 +32,9 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   Rank da academia (mesmos nomes) usa os treinos feitos e a evolução das cargas.
 - **Calendário**: mês interativo para marcar **compromissos** e **corridas** (hora, local, distância, observações).
   Alerta opcional: começa X dias antes (1, 2, 3, 4, 5, 7, 14 ou outro) e repete a cada 1 h, 3 h, 6 h, 12 h, 1 ou 2 dias até a hora do evento.
-  Lista dos próximos eventos e resumo das corridas (feitas, marcadas e km).
+  Lista dos próximos eventos e resumo das corridas (feitas, marcadas, km, melhor pace e maior distância).
+  Corridas guardam o tempo final (mm:ss ou h:mm:ss) e o app calcula o pace. Botão Duplicar para provas que se repetem.
+  Atalhos: setas ← → trocam o mês e Esc fecha o formulário. A tela Hoje mostra o que vem pela frente.
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.
@@ -62,7 +64,7 @@ npm test            # testes da lógica com Vitest
 npm run test:watch  # testes rodando a cada alteração
 ```
 
-Os testes ficam ao lado do código (`src/store/*.test.ts`) e cobrem a lógica do app: virada do dia,
+Os testes ficam ao lado do código (`src/store/*.test.ts`) e cobrem a lógica do app: virada do dia, alertas do calendário e pace,
 tarefas recorrentes e adiadas, busca de alimentos e macros, gasto calórico, ciclo de treino, XP/níveis
 da aba Evolução e backup. A cada push, o GitHub Actions (`.github/workflows/ci.yml`) roda tipos, testes e build.
 
