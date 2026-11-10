@@ -35,6 +35,8 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   Lista dos próximos eventos e resumo das corridas (feitas, marcadas, km, melhor pace e maior distância).
   Corridas guardam o tempo final (mm:ss ou h:mm:ss) e o app calcula o pace. Botão Duplicar para provas que se repetem.
   Atalhos: setas ← → trocam o mês e Esc fecha o formulário. A tela Hoje mostra o que vem pela frente.
+  Contagem regressiva para a próxima corrida, link da inscrição e **exportar para o Google Agenda/celular** (arquivo .ics).
+  Corridas e compromissos marcados como feitos dão XP na aba Evolução (Resistência e Disciplina).
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.
