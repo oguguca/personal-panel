@@ -79,8 +79,8 @@ export interface Effort {
 export function effortsOf(runs: Run[], events: CalEvent[]): Effort[] {
   const fromRuns = runs.filter((r) => r.km > 0 && r.seconds > 0).map((r) => ({ date: r.date, km: r.km, seconds: r.seconds, title: RUN_TYPES[r.type].label, race: r.type === 'prova' }));
   const fromRaces = events
-    .filter((e) => e.kind === 'corrida' && e.result && parseFloat(e.distance || '') > 0)
-    .map((e) => ({ date: e.date, km: parseFloat(e.distance!), seconds: parseDuration(e.result) || 0, title: e.title, race: true }))
+    .filter((e) => e.kind === 'corrida' && e.result && raceKm(e) > 0)
+    .map((e) => ({ date: e.date, km: raceKm(e), seconds: parseDuration(e.result) || 0, title: e.title, race: true }))
     .filter((e) => e.seconds > 0);
   return [...fromRuns, ...fromRaces];
 }
@@ -133,3 +133,30 @@ export function weekStreak(runs: Run[], today: DayKey): number {
   }
   return n;
 }
+
+/** Distância de prova limpa ("4km" -> 4). */
+export const raceKm = (ev: Pick<CalEvent, 'distance'>) => parseFloat(String(ev.distance || '').replace(',', '.')) || 0;
+export const fmtDist = (ev: Pick<CalEvent, 'distance'>) => (raceKm(ev) ? fmtKm(raceKm(ev)) : '');
+
+/**
+ * Tudo o que você correu: treinos da aba Corrida + provas já feitas do Calendário
+ * (prova registrada também como treino do tipo "prova" no mesmo dia não conta duas vezes).
+ */
+export function activitiesOf(runs: Run[], events: CalEvent[], today: DayKey): Run[] {
+  const raceDays = new Set(runs.filter((r) => r.type === 'prova').map((r) => r.date));
+  const races: Run[] = events
+    .filter((e) => e.kind === 'corrida' && (e.done || e.date < today) && e.date <= today && raceKm(e) > 0 && !raceDays.has(e.date))
+    .map((e) => ({ id: `prova-${e.id}`, date: e.date, km: raceKm(e), seconds: parseDuration(e.result) || 0, type: 'prova' as const, notes: e.title }));
+  return [...runs, ...races];
+}
+
+/** Pace de cada prova feita (para o gráfico de evolução), da mais antiga para a mais nova. */
+export function racePaces(events: CalEvent[], today: DayKey): { ev: CalEvent; pace: number }[] {
+  return events
+    .filter((e) => e.kind === 'corrida' && e.date <= today && raceKm(e) > 0 && parseDuration(e.result))
+    .map((e) => ({ ev: e, pace: parseDuration(e.result)! / raceKm(e) }))
+    .sort((a, b) => a.ev.date.localeCompare(b.ev.date));
+}
+
+/** Previsão para qualquer distância a partir do melhor esforço (Riegel). */
+export const predictFor = (base: Effort, km: number) => base.seconds * Math.pow(km / base.km, 1.06);

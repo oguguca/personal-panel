@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  avgPace, effortsOf, formatDurationSec, monthKm, personalRecords, predictions, runPace, shoeKm, weekKm, weekStart, weekStreak, weeklyKm,
+  activitiesOf, avgPace, effortsOf, formatDurationSec, predictFor, racePaces, monthKm, personalRecords, predictions, runPace, shoeKm, weekKm, weekStart, weekStreak, weeklyKm,
 } from './running';
 import type { CalEvent, Run } from './types';
 
@@ -70,5 +70,29 @@ describe('tênis', () => {
   it('soma os km das corridas com o tênis e o que ele já tinha', () => {
     const shoe = { id: 's', name: 'Tênis', limitKm: 700, startKm: 100 };
     expect(shoeKm(shoe, [run('2026-11-01', 10, 3000, { shoeId: 's' }), run('2026-11-02', 5, 1500)])).toBe(110);
+  });
+});
+
+describe('provas contam como corrida', () => {
+  const ev = (patch: Partial<CalEvent>): CalEvent => ({ id: 'e', title: 'Batman Run', date: '2026-09-19', kind: 'corrida', distance: '4km', result: '00:44:04', done: true, ...patch });
+
+  it('distância digitada com "km" é lida certo', () => {
+    expect(effortsOf([], [ev({})])[0]).toMatchObject({ km: 4, seconds: 2644 });
+  });
+
+  it('provas feitas entram nos km; futuras e repetidas como treino não', () => {
+    const acts = activitiesOf(
+      [run('2026-11-01', 5, 1650, { type: 'prova' })],
+      [ev({}), ev({ id: 'f', date: '2026-12-13', done: false }), ev({ id: 'g', date: '2026-11-01', distance: '5' })],
+      '2026-11-10',
+    );
+    expect(acts.map((a) => a.km)).toEqual([5, 4]);
+  });
+
+  it('pace das provas em ordem de data e previsão para qualquer distância', () => {
+    const list = racePaces([ev({ id: 'b', date: '2026-11-01', distance: '5', result: '55:00' }), ev({})], '2026-11-10');
+    expect(list.map((x) => x.ev.id)).toEqual(['e', 'b']);
+    expect(Math.round(list[0].pace)).toBe(661);
+    expect(predictFor({ date: '', km: 5, seconds: 1500, title: '', race: false }, 5)).toBe(1500);
   });
 });

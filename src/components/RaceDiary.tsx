@@ -7,6 +7,7 @@ import { DEFAULT_ALERT, RACE_DISTANCES, formatPace, parseDuration, whenText } fr
 import { formatLong, formatShort } from '../store/dates';
 import { deleteImage, saveImage, useImage } from '../store/images';
 import { uid } from '../store/model';
+import { fmtDist } from '../store/running';
 import type { CalEvent } from '../store/types';
 
 const paceText = (ev: Pick<CalEvent, 'result' | 'distance'>) => {
@@ -20,22 +21,23 @@ function Img({ id, alt, className, onClick }: { id: string; alt: string; classNa
   return url ? <img src={url} alt={alt} className={className} onClick={onClick} loading="lazy" /> : <span className={`${className || ''} img-loading`} />;
 }
 
-/** Cartão da prova na lista. */
-export function RaceCard({ ev, today, onOpen }: { ev: CalEvent; today: string; onOpen: () => void }) {
+/** Pôster da prova no mural (imagem, título por cima; o relato aparece ao passar o mouse). */
+export function RaceCard({ ev, today, onOpen, index = 0 }: { ev: CalEvent; today: string; onOpen: () => void; index?: number }) {
   const pace = paceText(ev);
   const future = ev.date >= today && !ev.done;
+  const km = fmtDist(ev);
   return (
-    <button className="race-card" onClick={onOpen}>
-      <span className="race-cover">
-        {ev.cover ? <Img id={ev.cover} alt={`Imagem de ${ev.title}`} /> : <span className="race-cover-empty">🏅</span>}
-        {future && <span className="badge warning race-tag">{whenText(ev, today)}</span>}
-        {!!ev.photos?.length && <span className="race-photos-count">📷 {ev.photos.length}</span>}
+    <button className={`race-poster ${ev.cover ? '' : 'no-cover'}`} onClick={onOpen} style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}>
+      {ev.cover ? <Img id={ev.cover} alt={`Imagem de ${ev.title}`} className="race-poster-img" /> : <span className="race-poster-empty">🏅</span>}
+      <span className="race-poster-top">
+        {future ? <span className="race-chip warn">{whenText(ev, today)}</span> : ev.result ? <span className="race-chip">⏱ {ev.result}</span> : <span />}
+        {!!ev.photos?.length && <span className="race-chip dark">📷 {ev.photos.length}</span>}
       </span>
-      <span className="race-info">
+      <span className="race-poster-info">
         <b>{ev.title}</b>
-        <span className="muted small">{formatShort(ev.date)}{ev.distance ? ` · ${ev.distance} km` : ''}{ev.place ? ` · ${ev.place}` : ''}</span>
-        {ev.result && <span className="race-result">⏱ {ev.result}{pace ? ` · ${pace}` : ''}</span>}
-        {ev.story && <span className="muted small race-excerpt">{ev.story}</span>}
+        <span className="small">{formatShort(ev.date)}{km ? ` · ${km}` : ''}{pace ? ` · ${pace}` : ''}</span>
+        {ev.place && <span className="small race-poster-place">📍 {ev.place}</span>}
+        <span className="race-poster-story small">{ev.story || (future ? 'Clique para ver os detalhes da prova.' : '✍️ Clique para contar como foi.')}</span>
       </span>
     </button>
   );
@@ -217,7 +219,7 @@ export function RaceModal({ ev, onClose }: { ev: CalEvent | null; onClose: () =>
               <button className="btn" onClick={() => { setF(current); setEditing(true); }}><Icon name="edit" size={16} /> Editar</button>
             </div>
             <div className="race-stats">
-              {shown.distance && <div><b>{shown.distance} km</b><span className="muted small">distância</span></div>}
+              {fmtDist(shown) && <div><b>{fmtDist(shown)}</b><span className="muted small">distância</span></div>}
               {shown.result && <div><b>{shown.result}</b><span className="muted small">tempo</span></div>}
               {pace && <div><b>{pace}</b><span className="muted small">pace</span></div>}
               {shown.date >= today && !shown.done && <div><b>{whenText(shown, today)}</b><span className="muted small">largada</span></div>}

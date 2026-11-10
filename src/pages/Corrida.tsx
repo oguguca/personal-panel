@@ -1,16 +1,18 @@
-// Aba Corrida: registrar treinos e provas, km da semana/mês, recordes, previsão, gráfico e tênis.
-import { useMemo, useState, type FormEvent } from 'react';
+// Aba Corrida: topo com km e próxima prova, abas (visão geral, provas, treinos, tênis),
+// recordes em medalhas, previsão interativa, evolução do pace e mural de provas.
+import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
 import BarChart from '../components/BarChart';
 import Icon from '../components/Icon';
 import { RaceCard, RaceModal } from '../components/RaceDiary';
 import { Empty, Progress } from '../components/ui';
 import { useStore } from '../store/StoreContext';
-import { formatPace, parseDuration, upcoming, whenText } from '../store/calendar';
-import { addDays, formatShort } from '../store/dates';
+import { daysUntil, formatPace, parseDuration, upcoming } from '../store/calendar';
+import { addDays, formatShort, parseKey } from '../store/dates';
 import { uid } from '../store/model';
 import {
   DISTANCES, FEELS, QUICK_KM, RUN_TYPES, SHOE_LIMIT_KM,
-  avgPace, effortsOf, fmtKm, formatDurationSec, monthKm, personalRecords, predictions, runPace, shoeKm, weekKm, weekStreak, weeklyKm,
+  activitiesOf, avgPace, effortsOf, fmtDist, fmtKm, formatDurationSec, monthKm, personalRecords, predictFor, predictions,
+  raceKm, racePaces, runPace, shoeKm, weekKm, weekStreak, weeklyKm, type Effort,
 } from '../store/running';
 import type { CalEvent, Run, RunType, Shoe } from '../store/types';
 import type { PageProps } from './types';
@@ -112,33 +114,124 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
   );
 }
 
+
+// ---------------------------------------------------------------------------
+type Tab = 'geral' | 'provas' | 'treinos' | 'tenis';
+const TABS: { id: Tab; label: string; icon: string }[] = [
+  { id: 'geral', label: 'Visão geral', icon: '📊' },
+  { id: 'provas', label: 'Provas', icon: '🏅' },
+  { id: 'treinos', label: 'Treinos', icon: '👟' },
+  { id: 'tenis', label: 'Tênis', icon: '🥾' },
+];
+const TAB_KEY = 'painel-pessoal:corrida-aba';
+
+/** Gráfico da evolução do pace prova a prova (menor = mais rápido, por isso o eixo é invertido). */
+function PaceChart({ points, onOpen }: { points: { ev: CalEvent; pace: number }[]; onOpen: (ev: CalEvent) => void }) {
+  const [hover, setHover] = useState<number | null>(null);
+  if (points.length < 2) return <Empty>Com 2 provas com tempo, aparece aqui a evolução do seu pace.</Empty>;
+  const W = 640, H = 200, P = 34;
+  const paces = points.map((p) => p.pace);
+  const min = Math.min(...paces) - 15, max = Math.max(...paces) + 15;
+  const x = (i: number) => P + (i * (W - P * 2)) / (points.length - 1);
+  const y = (pace: number) => P / 2 + ((pace - min) / (max - min)) * (H - P * 1.5); // mais rápido = mais alto
+  const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.pace)}`).join(' ');
+  const best = paces.indexOf(Math.min(...paces));
+  const first = paces[0], last = paces[paces.length - 1];
+  const diff = Math.round(first - last);
+  return (
+    <div className="pace-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Evolução do pace nas provas">
+        <defs>
+          <linearGradient id="pace-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#f97316" stopOpacity="0.35" />
+            <stop offset="1" stopColor="#f97316" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={`${path} L${x(points.length - 1)},${H} L${x(0)},${H} Z`} fill="url(#pace-fill)" />
+        <path d={path} fill="none" stroke="#f97316" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          <g key={p.ev.id} className="pace-dot" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => onOpen(p.ev)}>
+            <circle cx={x(i)} cy={y(p.pace)} r={hover === i ? 9 : 6} fill={i === best ? '#facc15' : '#f97316'} stroke="var(--surface)" strokeWidth="3" />
+            <text x={x(i)} y={H - 4} textAnchor="middle" className="pace-label">{formatShort(p.ev.date)}</text>
+          </g>
+        ))}
+      </svg>
+      {hover !== null && (
+        <div className="pace-tip" style={{ left: `${(x(hover) / W) * 100}%`, top: `${(y(points[hover].pace) / H) * 100}%` }}>
+          <b>{points[hover].ev.title}</b>
+          <span>{formatPace(points[hover].pace)} · {points[hover].ev.result}</span>
+        </div>
+      )}
+      <p className="muted small">
+        {diff > 0 ? <>🚀 Seu pace melhorou <b>{formatDurationSec(diff)} por km</b> desde a primeira prova.</> : diff < 0 ? <>Seu pace ficou {formatDurationSec(-diff)}/km mais lento que na primeira prova — bora treinar!</> : 'Pace estável.'}
+        {' '}⭐ = melhor pace. Clique num ponto para abrir a prova.
+      </p>
+    </div>
+  );
+}
+
+/** Medalha de recorde (dourada quando conquistada). */
+function RecordMedal({ label, pr, km }: { label: string; pr: (Effort & { time: number }) | null; km: number }) {
+  return (
+    <div className={`pr-medal ${pr ? 'won' : ''}`} title={pr ? `${pr.title} em ${formatShort(pr.date)}` : 'Ainda sem marca nessa distância'}>
+      <span className="pr-disc">{label}</span>
+      {pr ? (
+        <>
+          <b>{formatDurationSec(pr.time)}</b>
+          <span className="small">{formatPace(pr.time / km)}</span>
+          <span className="muted small">{formatShort(pr.date)}{pr.race ? ' · prova' : ''}</span>
+        </>
+      ) : (
+        <span className="muted small">bloqueado 🔒</span>
+      )}
+    </div>
+  );
+}
+
 export default function Corrida({ go }: PageProps) {
   const { data, today, update } = useStore();
   const { runs, shoes, monthGoalKm } = data.running;
+  const [tab, setTabState] = useState<Tab>(() => {
+    try {
+      const v = localStorage.getItem(TAB_KEY) as Tab | null;
+      return v && TABS.some((t) => t.id === v) ? v : 'geral';
+    } catch {
+      return 'geral';
+    }
+  });
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    try { localStorage.setItem(TAB_KEY, t); } catch { /* só não lembra a aba */ }
+  };
   const [editing, setEditing] = useState<Draft | null>(null);
-  const [newShoe, setNewShoe] = useState('');
-  const [goalEdit, setGoalEdit] = useState(false);
-  const [showAll, setShowAll] = useState(false);
   const [race, setRace] = useState<CalEvent | 'nova' | null>(null);
   const [raceTab, setRaceTab] = useState<'feitas' | 'proximas'>('feitas');
+  const [showAll, setShowAll] = useState(false);
+  const [newShoe, setNewShoe] = useState('');
+  const [goalEdit, setGoalEdit] = useState(false);
+  const [predKm, setPredKm] = useState(10);
+
+  const acts = useMemo(() => activitiesOf(runs, data.events, today), [runs, data.events, today]);
+  const efforts = useMemo(() => effortsOf(runs, data.events), [runs, data.events]);
+  const prs = useMemo(() => personalRecords(efforts), [efforts]);
+  const pred = useMemo(() => predictions(efforts, today), [efforts, today]);
+  const paces = useMemo(() => racePaces(data.events, today), [data.events, today]);
   const races = data.events.filter((e) => e.kind === 'corrida');
   const racesDone = races.filter((e) => e.done || e.date < today).sort((a, b) => b.date.localeCompare(a.date));
   const racesNext = races.filter((e) => !(e.done || e.date < today)).sort((a, b) => a.date.localeCompare(b.date));
   const raceList = raceTab === 'feitas' ? racesDone : racesNext;
+  const nextRace = upcoming(races, today, 1)[0];
+  const sortedRuns = useMemo(() => [...runs].sort((a, b) => b.date.localeCompare(a.date)), [runs]);
+  const weeks = weeklyKm(acts, today, 10);
+  const totalKm = acts.reduce((s, r) => s + r.km, 0);
+  const wk = weekKm(acts, today);
+  const mk = monthKm(acts, today);
+  const pace = avgPace(acts, today, 90);
+  const streak = weekStreak(acts, today);
+  const lastShoe = sortedRuns.find((r) => r.shoeId)?.shoeId || '';
+  const days = nextRace ? daysUntil(nextRace.date, today) : 0;
 
-  const sorted = useMemo(() => [...runs].sort((a, b) => b.date.localeCompare(a.date)), [runs]);
-  const efforts = useMemo(() => effortsOf(runs, data.events), [runs, data.events]);
-  const prs = useMemo(() => personalRecords(efforts), [efforts]);
-  const pred = useMemo(() => predictions(efforts, today), [efforts, today]);
-  const weeks = weeklyKm(runs, today, 10);
-  const nextRace = upcoming(data.events.filter((e) => e.kind === 'corrida'), today, 1)[0];
-  const wk = weekKm(runs, today);
-  const mk = monthKm(runs, today);
-  const pace = avgPace(runs, today);
-  const streak = weekStreak(runs, today);
-  const lastShoe = sorted.find((r) => r.shoeId)?.shoeId || '';
-
-  const save = (r: Omit<Run, 'id'> & { id?: string }) => {
+  const saveRun = (r: Omit<Run, 'id'> & { id?: string }) => {
     update((d) => {
       if (r.id) {
         const i = d.running.runs.findIndex((x) => x.id === r.id);
@@ -147,7 +240,7 @@ export default function Corrida({ go }: PageProps) {
     });
     setEditing(null);
   };
-  const remove = (id: string) => {
+  const removeRun = (id: string) => {
     if (!window.confirm('Apagar esta corrida?')) return;
     update((d) => { d.running.runs = d.running.runs.filter((x) => x.id !== id); });
     setEditing(null);
@@ -159,201 +252,218 @@ export default function Corrida({ go }: PageProps) {
     setNewShoe('');
   };
   const patchShoe = (id: string, fn: (s: Shoe) => void) => update((d) => { const s = d.running.shoes.find((x) => x.id === id); if (s) fn(s); });
+  const newRun = () => { setTab('treinos'); setEditing(toDraft(null, today, lastShoe)); };
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>Corrida</h1>
-          <p className="muted">
-            {runs.length ? `${runs.length} corrida(s) registrada(s)${streak > 1 ? ` · 🔥 ${streak} semanas seguidas correndo` : ''}` : 'Registre seus treinos e acompanhe sua evolução.'}
-          </p>
-        </div>
-        {!editing && <button className="btn primary" onClick={() => setEditing(toDraft(null, today, lastShoe))}><Icon name="plus" size={18} /> Registrar corrida</button>}
-      </header>
-
-      {editing && (
-        <RunForm
-          key={editing.id || 'nova'}
-          initial={editing}
-          shoes={shoes}
-          today={today}
-          onSave={save}
-          onCancel={() => setEditing(null)}
-          onDelete={editing.id ? () => remove(editing.id!) : undefined}
-        />
-      )}
-
-      <section className="run-stats">
-        <div className="card run-stat"><span className="muted small">Esta semana</span><b>{fmtKm(wk)}</b></div>
-        <div className="card run-stat">
-          <span className="muted small">
-            Este mês {monthGoalKm ? `· meta ${fmtKm(monthGoalKm)}` : ''}
-            <button className="link small" onClick={() => setGoalEdit(!goalEdit)}>{monthGoalKm ? 'mudar' : 'definir meta'}</button>
-          </span>
-          <b>{fmtKm(mk)}</b>
-          {monthGoalKm > 0 && <Progress value={mk} max={monthGoalKm} variant={mk >= monthGoalKm ? 'success' : ''} />}
-          {goalEdit && (
-            <div className="row">
-              <input className="input w-num" type="number" min={0} placeholder="km" defaultValue={monthGoalKm || ''}
-                onKeyDown={(e) => { if (e.key === 'Enter') { update((d) => { d.running.monthGoalKm = Math.max(0, Number((e.target as HTMLInputElement).value) || 0); }); setGoalEdit(false); } }} />
-              <span className="muted small">Enter para salvar (0 = sem meta)</span>
-            </div>
-          )}
-        </div>
-        <div className="card run-stat"><span className="muted small">Pace médio (30 dias)</span><b>{pace ? formatPace(pace) : '—'}</b></div>
-        <div className="card run-stat"><span className="muted small">Total</span><b>{fmtKm(runs.reduce((s, r) => s + r.km, 0))}</b></div>
-      </section>
-
-      <section className="card">
-        <div className="card-head">
-          <h2>🏅 Minhas provas</h2>
-          <button className="btn sm primary" onClick={() => setRace('nova')}><Icon name="plus" size={14} /> Adicionar prova</button>
-        </div>
-        <div className="segmented" style={{ alignSelf: 'flex-start' }}>
-          <button className={raceTab === 'feitas' ? 'on' : ''} onClick={() => setRaceTab('feitas')}>Já fui ({racesDone.length})</button>
-          <button className={raceTab === 'proximas' ? 'on' : ''} onClick={() => setRaceTab('proximas')}>Próximas ({racesNext.length})</button>
-        </div>
-        {raceList.length ? (
-          <div className="race-grid">
-            {raceList.map((ev) => <RaceCard key={ev.id} ev={ev} today={today} onOpen={() => setRace(ev)} />)}
+    <div className="page run-page">
+      {/* ---------- topo ---------- */}
+      <section className="run-hero">
+        <div className="run-hero-main">
+          <span className="run-hero-kicker">🏃 Corrida</span>
+          <div className="run-hero-km"><b>{totalKm.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</b><span>km corridos</span></div>
+          <div className="run-hero-chips">
+            <span>🏅 {racesDone.length} {racesDone.length === 1 ? 'prova' : 'provas'}</span>
+            <span>👟 {runs.length} {runs.length === 1 ? 'treino' : 'treinos'}</span>
+            {prs['5k'] && <span>⚡ 5K em {formatDurationSec(prs['5k'].time)}</span>}
+            {streak > 1 && <span>🔥 {streak} semanas seguidas</span>}
           </div>
+          <div className="run-hero-actions">
+            <button className="btn run-btn-light" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
+            <button className="btn run-btn-ghost" onClick={() => setRace('nova')}>🏅 Adicionar prova</button>
+          </div>
+        </div>
+        {nextRace ? (
+          <button className="run-countdown" onClick={() => setRace(nextRace)} title="Abrir a prova">
+            <span className="run-countdown-label">próxima prova</span>
+            <span className="run-countdown-num">{days || 'HOJE'}</span>
+            <span className="run-countdown-unit">{days ? (days === 1 ? 'dia' : 'dias') : 'é dia de prova!'}</span>
+            <b>{nextRace.title}</b>
+            <span className="small">{formatShort(nextRace.date)}{fmtDist(nextRace) ? ` · ${fmtDist(nextRace)}` : ''}</span>
+            {pred && raceKm(nextRace) > 0 && <span className="run-countdown-pred">previsão {formatDurationSec(predictFor(pred.base, raceKm(nextRace)))}</span>}
+          </button>
         ) : (
-          <Empty>
-            {raceTab === 'feitas'
-              ? 'Adicione as provas que você já correu: tempo, foto da corrida, suas fotos e como foi.'
-              : 'Nenhuma prova marcada. Adicione uma ou marque no Calendário.'}
-          </Empty>
+          <button className="run-countdown empty" onClick={() => go('calendario')}>
+            <span className="run-countdown-num">+</span>
+            <span className="small">Marque a próxima prova no Calendário</span>
+          </button>
         )}
       </section>
-      {race && <RaceModal ev={race === 'nova' ? null : race} onClose={() => setRace(null)} />}
 
-      <div className="grid">
-        <section className="card">
-          <div className="card-head">
-            <h2>🏅 Próxima prova</h2>
-            <button className="link" onClick={() => go('calendario')}>Calendário</button>
-          </div>
-          {nextRace ? (
-            <div className="run-next">
-              <b>{nextRace.title}</b>
-              <span className="muted">{formatShort(nextRace.date)}{nextRace.time ? ` às ${nextRace.time}` : ''}{nextRace.distance ? ` · ${nextRace.distance} km` : ''}</span>
-              <span className="badge warning">{whenText(nextRace, today)}</span>
-              {pred && nextRace.distance && (
-                <span className="muted small">
-                  Previsão: <b>{formatDurationSec(pred.base.seconds * Math.pow(parseFloat(nextRace.distance) / pred.base.km, 1.06))}</b>
-                </span>
+      <nav className="run-tabs" role="tablist">
+        {TABS.map((t) => (
+          <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''} onClick={() => setTab(t.id)}>
+            <span>{t.icon}</span> {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* ---------- visão geral ---------- */}
+      {tab === 'geral' && (
+        <div className="run-panel" key="geral">
+          <section className="run-tiles">
+            <div className="run-tile"><span className="run-tile-icon">📅</span><span className="muted small">Esta semana</span><b>{fmtKm(wk)}</b></div>
+            <div className="run-tile">
+              <span className="run-tile-icon">🗓️</span>
+              <span className="muted small">Este mês{monthGoalKm ? ` · meta ${fmtKm(monthGoalKm)}` : ''}</span>
+              <b>{fmtKm(mk)}</b>
+              {monthGoalKm > 0 && <Progress value={mk} max={monthGoalKm} variant={mk >= monthGoalKm ? 'success' : ''} />}
+              {goalEdit ? (
+                <input className="input w-num" type="number" min={0} autoFocus placeholder="km" defaultValue={monthGoalKm || ''}
+                  onBlur={() => setGoalEdit(false)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { update((d) => { d.running.monthGoalKm = Math.max(0, Number((e.target as HTMLInputElement).value) || 0); }); setGoalEdit(false); } }} />
+              ) : (
+                <button className="link small" onClick={() => setGoalEdit(true)}>{monthGoalKm ? 'mudar meta' : 'definir meta'}</button>
               )}
             </div>
+            <div className="run-tile"><span className="run-tile-icon">⏱️</span><span className="muted small">Pace médio (90 dias)</span><b>{pace ? formatPace(pace) : '—'}</b></div>
+            <div className="run-tile"><span className="run-tile-icon">🏁</span><span className="muted small">Maior distância</span><b>{fmtKm(Math.max(0, ...acts.map((a) => a.km)))}</b></div>
+          </section>
+
+          <section className="card">
+            <div className="card-head"><h2>🏆 Recordes pessoais</h2><span className="muted small">treinos + provas</span></div>
+            <div className="pr-row">
+              {DISTANCES.map((d) => <RecordMedal key={d.key} label={d.key.toUpperCase()} pr={prs[d.key]} km={d.km} />)}
+            </div>
+          </section>
+
+          <div className="run-two">
+            <section className="card">
+              <div className="card-head"><h2>📈 Evolução do pace nas provas</h2></div>
+              <PaceChart points={paces} onOpen={(ev) => setRace(ev)} />
+            </section>
+
+            <section className="card run-predict">
+              <div className="card-head"><h2>🔮 Quanto tempo eu faria?</h2></div>
+              {pred ? (
+                <>
+                  <div className="run-predict-value">
+                    <b>{formatDurationSec(predictFor(pred.base, predKm))}</b>
+                    <span>{formatPace(predictFor(pred.base, predKm) / predKm)}</span>
+                  </div>
+                  <label className="run-predict-slider">
+                    <span>Distância: <b>{fmtKm(predKm)}</b></span>
+                    <input type="range" min={1} max={42.2} step={0.1} value={predKm} onChange={(e) => setPredKm(Number(e.target.value))} />
+                  </label>
+                  <div className="chips">
+                    {DISTANCES.map((d) => (
+                      <button key={d.key} className={`chip ${Math.abs(predKm - d.km) < 0.15 ? 'on' : ''}`} onClick={() => setPredKm(Math.round(d.km * 10) / 10)}>{d.key.toUpperCase()}</button>
+                    ))}
+                  </div>
+                  <p className="muted small">Base: {fmtKm(pred.base.km)} em {formatDurationSec(pred.base.seconds)} ({pred.base.title}, {formatShort(pred.base.date)}). Fórmula de Riegel — é uma estimativa.</p>
+                </>
+              ) : (
+                <Empty>Registre uma corrida de 3 km ou mais (com tempo) para ver a previsão.</Empty>
+              )}
+            </section>
+          </div>
+
+          <section className="card">
+            <div className="card-head"><h2>km por semana</h2><span className="muted small">últimas 10 semanas · treinos + provas</span></div>
+            <BarChart
+              items={weeks.map((w) => ({ key: w.start, label: formatShort(w.start), value: Math.round(w.km * 10) / 10, title: `Semana de ${formatShort(w.start)}: ${fmtKm(w.km)}` }))}
+              max={Math.max(10, ...weeks.map((w) => Math.ceil(w.km)))}
+              color="#f97316"
+              format={(v) => `${v}`}
+            />
+          </section>
+        </div>
+      )}
+
+      {/* ---------- provas ---------- */}
+      {tab === 'provas' && (
+        <div className="run-panel" key="provas">
+          <div className="run-panel-head">
+            <div className="segmented">
+              <button className={raceTab === 'feitas' ? 'on' : ''} onClick={() => setRaceTab('feitas')}>Já fui ({racesDone.length})</button>
+              <button className={raceTab === 'proximas' ? 'on' : ''} onClick={() => setRaceTab('proximas')}>Próximas ({racesNext.length})</button>
+            </div>
+            <button className="btn primary" onClick={() => setRace('nova')}><Icon name="plus" size={16} /> Adicionar prova</button>
+          </div>
+          {raceList.length ? (
+            <div className="race-wall">
+              {raceList.map((ev, i) => <RaceCard key={ev.id} ev={ev} today={today} onOpen={() => setRace(ev)} index={i} />)}
+            </div>
           ) : (
-            <Empty>Nenhuma prova marcada. Adicione no <button className="link" onClick={() => go('calendario')}>Calendário</button>.</Empty>
+            <section className="card run-empty">
+              <span>🏅</span>
+              <b>{raceTab === 'feitas' ? 'Seu mural de provas está vazio' : 'Nenhuma prova marcada'}</b>
+              <p className="muted">{raceTab === 'feitas' ? 'Adicione as provas que você já correu: tempo, imagem da corrida, suas fotos e como foi.' : 'Adicione a próxima prova e o app avisa antes.'}</p>
+              <button className="btn primary" onClick={() => setRace('nova')}>Adicionar prova</button>
+            </section>
           )}
-        </section>
+        </div>
+      )}
 
-        <section className="card">
-          <div className="card-head"><h2>🏆 Recordes pessoais</h2></div>
-          <ul className="list">
-            {DISTANCES.map((d) => {
-              const pr = prs[d.key];
-              return (
-                <li key={d.key} className="item">
-                  <span className="item-title">{d.label}</span>
-                  {pr ? (
-                    <>
-                      <span className="muted small">{formatShort(pr.date)}{pr.race ? ' · prova' : ''}</span>
-                      <span className="badge success">{formatDurationSec(pr.time)} · {formatPace(pr.time / d.km)}</span>
-                    </>
-                  ) : <span className="muted small">sem marca ainda</span>}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-
-        <section className="card">
-          <div className="card-head"><h2>🔮 Previsão de tempo</h2></div>
-          {pred ? (
-            <>
-              <ul className="list">
-                {DISTANCES.map((d) => (
-                  <li key={d.key} className="item">
-                    <span className="item-title">{d.label}</span>
-                    <span className="badge primary">{formatDurationSec(pred.times[d.key])} · {formatPace(pred.times[d.key] / d.km)}</span>
+      {/* ---------- treinos ---------- */}
+      {tab === 'treinos' && (
+        <div className="run-panel" key="treinos">
+          {editing ? (
+            <RunForm key={editing.id || 'nova'} initial={editing} shoes={shoes} today={today} onSave={saveRun} onCancel={() => setEditing(null)} onDelete={editing.id ? () => removeRun(editing.id!) : undefined} />
+          ) : (
+            <div className="run-panel-head">
+              <span className="muted">{runs.length ? `${runs.length} treino(s) · clique num treino para editar` : 'Registre seus treinos de corrida.'}</span>
+              <button className="btn primary" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
+            </div>
+          )}
+          {sortedRuns.length ? (
+            <section className="card">
+              <ul className="run-log">
+                {sortedRuns.slice(0, showAll ? sortedRuns.length : 12).map((r) => (
+                  <li key={r.id}>
+                    <button className={`run-log-item t-${r.type}`} onClick={() => setEditing(toDraft(r, today))}>
+                      <span className="run-log-date"><b>{parseKey(r.date).getDate()}</b><small>{parseKey(r.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</small></span>
+                      <span className="run-log-main">
+                        <b>{fmtKm(r.km)} <span className="muted">em {formatDurationSec(r.seconds)}</span></b>
+                        <span className="muted small">{RUN_TYPES[r.type].icon} {RUN_TYPES[r.type].label}{r.feel ? ` · ${FEELS[r.feel - 1]}` : ''}{r.notes ? ` · ${r.notes}` : ''}</span>
+                      </span>
+                      <span className="run-log-pace">{runPace(r)}</span>
+                    </button>
                   </li>
                 ))}
               </ul>
-              <p className="muted small">Com base em {fmtKm(pred.base.km)} em {formatDurationSec(pred.base.seconds)} ({formatShort(pred.base.date)}), fórmula de Riegel. É uma estimativa.</p>
-            </>
-          ) : (
-            <Empty>Registre uma corrida de 3 km ou mais para ver a previsão.</Empty>
+              {sortedRuns.length > 12 && <button className="btn sm" onClick={() => setShowAll(!showAll)}>{showAll ? 'Mostrar menos' : `Ver todos (${sortedRuns.length})`}</button>}
+            </section>
+          ) : !editing && (
+            <section className="card run-empty">
+              <span>👟</span>
+              <b>Nenhum treino ainda</b>
+              <p className="muted">Registre distância e tempo; o pace, os recordes e a previsão aparecem sozinhos.</p>
+              <button className="btn primary" onClick={newRun}>Registrar treino</button>
+            </section>
           )}
-        </section>
-      </div>
+        </div>
+      )}
 
-      <section className="card">
-        <div className="card-head"><h2>km por semana</h2><span className="muted small">últimas 10 semanas</span></div>
-        <BarChart
-          items={weeks.map((w) => ({ key: w.start, label: formatShort(w.start), value: Math.round(w.km * 10) / 10, title: `Semana de ${formatShort(w.start)}: ${fmtKm(w.km)}` }))}
-          max={Math.max(10, ...weeks.map((w) => Math.ceil(w.km)))}
-          color="#f97316"
-          format={(v) => `${v}`}
-        />
-      </section>
+      {/* ---------- tênis ---------- */}
+      {tab === 'tenis' && (
+        <div className="run-panel" key="tenis">
+          <div className="shoe-grid">
+            {shoes.map((s) => {
+              const km = shoeKm(s, runs);
+              const pct = Math.min(100, (km / s.limitKm) * 100);
+              const worn = km >= s.limitKm;
+              return (
+                <div key={s.id} className={`card shoe-card ${s.retired ? 'retired' : ''} ${worn ? 'worn' : ''}`}>
+                  <div className="shoe-ring" style={{ '--pct': `${pct}%` } as CSSProperties}>
+                    <span><b>{Math.round(km)}</b><small>de {s.limitKm} km</small></span>
+                  </div>
+                  <b className="shoe-name">{s.name}</b>
+                  <span className={`badge ${s.retired ? '' : worn || pct >= 85 ? 'warning' : 'success'}`}>{s.retired ? 'aposentado' : worn ? 'hora de trocar' : pct >= 85 ? `quase na hora · ${Math.round(s.limitKm - km)} km` : `${Math.round(s.limitKm - km)} km de vida`}</span>
+                  <button className="link small" onClick={() => patchShoe(s.id, (x) => { x.retired = !x.retired; })}>{s.retired ? 'Voltar a usar' : 'Aposentar'}</button>
+                </div>
+              );
+            })}
+            <form className="card shoe-card shoe-new" onSubmit={addShoe}>
+              <span className="shoe-new-icon">👟</span>
+              <input className="input" placeholder="Novo tênis (ex.: Nike Pegasus 41)" value={newShoe} onChange={(e) => setNewShoe(e.target.value)} />
+              <button className="btn primary" type="submit"><Icon name="plus" size={16} /> Adicionar</button>
+              <span className="muted small">Tênis de corrida duram de 500 a 800 km. Escolha o tênis ao registrar cada treino.</span>
+            </form>
+          </div>
+        </div>
+      )}
 
-      <div className="run-bottom">
-        <section className="card">
-          <div className="card-head"><h2>Histórico</h2><span className="muted small">clique para editar</span></div>
-          {sorted.length ? (
-            <ul className="list">
-              {sorted.slice(0, showAll ? sorted.length : 10).map((r) => (
-                <li key={r.id} className="item run-item" onClick={() => setEditing(toDraft(r, today))} title="Clique para editar">
-                  <span className="run-type">{RUN_TYPES[r.type].icon}</span>
-                  <span className="item-title">
-                    <b>{fmtKm(r.km)}</b> em {formatDurationSec(r.seconds)}
-                    <span className="muted small"> · {formatShort(r.date)} · {RUN_TYPES[r.type].label}{r.feel ? ` ${FEELS[r.feel - 1]}` : ''}</span>
-                  </span>
-                  <span className="badge primary">{runPace(r)}</span>
-                </li>
-              ))}
-              {sorted.length > 10 && (
-                <li><button className="btn sm" onClick={() => setShowAll(!showAll)}>{showAll ? 'Mostrar menos' : `Ver todas (${sorted.length})`}</button></li>
-              )}
-            </ul>
-          ) : (
-            <Empty>Nenhuma corrida ainda. Clique em Registrar corrida.</Empty>
-          )}
-        </section>
-
-        <section className="card">
-          <div className="card-head"><h2>👟 Tênis</h2></div>
-          {shoes.length > 0 && (
-            <ul className="list run-shoes">
-              {shoes.map((s) => {
-                const km = shoeKm(s, runs);
-                const worn = km >= s.limitKm;
-                return (
-                  <li key={s.id} className={`run-shoe ${s.retired ? 'retired' : ''}`}>
-                    <div className="row" style={{ justifyContent: 'space-between' }}>
-                      <b>{s.name}{s.retired ? ' (aposentado)' : ''}</b>
-                      <span className={`badge ${worn ? 'warning' : ''}`}>{fmtKm(km)} de {fmtKm(s.limitKm)}</span>
-                    </div>
-                    <Progress value={km} max={s.limitKm} variant={worn ? 'warning' : ''} />
-                    <div className="row">
-                      {worn && !s.retired && <span className="muted small">Hora de trocar: o amortecimento já gastou.</span>}
-                      <button className="link small" onClick={() => patchShoe(s.id, (x) => { x.retired = !x.retired; })}>{s.retired ? 'Voltar a usar' : 'Aposentar'}</button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          <form className="row" onSubmit={addShoe}>
-            <input className="input" placeholder="Novo tênis (ex.: Nike Pegasus 41)" value={newShoe} onChange={(e) => setNewShoe(e.target.value)} />
-            <button className="btn" type="submit"><Icon name="plus" size={16} /> Adicionar</button>
-          </form>
-          <p className="muted small">Tênis de corrida duram de 500 a 800 km. O app avisa quando passar de {SHOE_LIMIT_KM} km.</p>
-        </section>
-      </div>
+      {race && <RaceModal ev={race === 'nova' ? null : race} onClose={() => setRace(null)} />}
     </div>
   );
 }

@@ -841,10 +841,6 @@ button.meta-item:hover { color: var(--text); }
 .meal-time-field .input { width: 120px; font-size: 1.05rem; font-weight: 700; color: var(--text); background: var(--surface); }
 
 /* ---------- Corrida ---------- */
-.run-stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-.run-stat { gap: 4px; }
-.run-stat b { font-size: 1.6rem; }
-.run-stat .link { margin-left: 6px; }
 .run-form { gap: 12px; border-color: #f97316; }
 .run-date { width: auto !important; flex: none; padding: 4px 8px; }
 .run-main { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
@@ -853,33 +849,12 @@ button.meta-item:hover { color: var(--text); }
 :root[data-theme='dark'] .run-pace { background: rgba(251,146,60,.16); color: #fdba74; }
 .run-pace b { font-size: 1.2rem; white-space: nowrap; }
 .run-feel { font-size: 1.2rem; padding: 2px 10px; }
-.run-next { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-.run-next b { font-size: 1.15rem; }
-.run-item { cursor: pointer; }
-.run-type { font-size: 1.1rem; }
-.run-shoes { gap: 12px; margin-bottom: 12px; }
-.run-shoe { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; background: var(--surface-2); }
-.run-shoe.retired { opacity: 0.55; }
 @media (max-width: 560px) { .run-main { grid-template-columns: 1fr 1fr; } .run-pace { grid-column: 1 / -1; } }
-.run-bottom { display: grid; gap: 16px; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); align-items: start; }
 @media (max-width: 900px) { .run-bottom { grid-template-columns: 1fr; } }
 
 /* ---------- Diário das provas ---------- */
-.race-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
-.race-card {
-  display: flex; flex-direction: column; text-align: left; padding: 0; overflow: hidden; cursor: pointer; font: inherit; color: inherit;
-  border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); transition: transform .15s, box-shadow .15s;
-}
-.race-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
-.race-cover { position: relative; display: block; aspect-ratio: 16 / 10; background: linear-gradient(135deg, #f97316, #db2777); overflow: hidden; }
-.race-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .race-cover-empty { display: grid; place-items: center; width: 100%; height: 100%; font-size: 2.6rem; }
 .race-cover-empty.big { font-size: 4rem; }
-.race-tag { position: absolute; top: 8px; left: 8px; }
-.race-photos-count { position: absolute; bottom: 8px; right: 8px; padding: 2px 8px; border-radius: 99px; background: rgba(0,0,0,.6); color: #fff; font-size: 0.75rem; }
-.race-info { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px 12px; min-width: 0; }
-.race-result { font-weight: 700; color: #f97316; font-size: 0.9rem; }
-.race-excerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .img-loading { display: block; width: 100%; height: 100%; background: var(--surface-2); }
 
 .race-overlay { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.6); animation: rc-fade .15s ease-out; }
@@ -916,3 +891,173 @@ button.meta-item:hover { color: var(--text); }
 .race-lb-nav.right { right: 20px; }
 .race-lb-count { position: absolute; bottom: 18px; color: #fff; font-size: 0.9rem; }
 @media (max-width: 560px) { .race-hero { aspect-ratio: 16 / 9; } .race-gallery { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); } }
+
+/* ---------- Corrida: novo visual ---------- */
+.run-page { --run: #f97316; --run2: #ec4899; --run-soft: rgba(249,115,22,.14); }
+
+/* topo */
+.run-hero {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: stretch;
+  padding: 24px; border-radius: 22px; color: #fff;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.18), transparent 50%),
+    linear-gradient(120deg, #f97316 0%, #ef4444 45%, #db2777 100%);
+  box-shadow: 0 18px 40px -18px rgba(239,68,68,.6);
+}
+.run-hero::after {
+  content: ''; position: absolute; right: -60px; bottom: -80px; width: 320px; height: 320px; border-radius: 50%;
+  border: 40px solid rgba(255,255,255,.07); pointer-events: none;
+}
+.run-hero-main { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.run-hero-kicker { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.9; }
+.run-hero-km { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.run-hero-km b { font-size: clamp(2.6rem, 6vw, 4rem); line-height: 0.95; font-weight: 900; letter-spacing: -0.03em; }
+.run-hero-km span { font-size: 1.1rem; font-weight: 700; opacity: 0.9; }
+.run-hero-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.run-hero-chips span { padding: 5px 11px; border-radius: 99px; background: rgba(255,255,255,.18); font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(4px); }
+.run-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.run-btn-light { background: #fff; color: #c2410c; border-color: #fff; font-weight: 800; }
+.run-btn-light:hover { background: #fff7ed; }
+.run-btn-ghost { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.4); font-weight: 700; }
+.run-btn-ghost:hover { background: rgba(255,255,255,.22); }
+.run-countdown {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center;
+  padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,.3); background: rgba(15,10,30,.28); color: #fff; font: inherit; cursor: pointer;
+  backdrop-filter: blur(6px); transition: transform .2s, background .2s;
+}
+.run-countdown:hover { transform: translateY(-3px) rotate(-1deg); background: rgba(15,10,30,.4); }
+.run-countdown-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
+.run-countdown-num { font-size: 3.6rem; font-weight: 900; line-height: 1; }
+.run-countdown-unit { font-size: 0.9rem; font-weight: 700; opacity: 0.9; margin-bottom: 6px; }
+.run-countdown b { font-size: 1.05rem; }
+.run-countdown-pred { margin-top: 6px; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,.18); font-size: 0.78rem; font-weight: 700; }
+.run-countdown.empty { opacity: 0.9; }
+
+/* abas */
+.run-tabs { display: flex; gap: 6px; padding: 5px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); overflow-x: auto; }
+.run-tabs button {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; padding: 10px 14px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--muted); font: inherit; font-weight: 700; cursor: pointer; transition: background .2s, color .2s;
+}
+.run-tabs button:hover { color: var(--text); background: var(--surface-2); }
+.run-tabs button.on { color: #fff; background: linear-gradient(120deg, var(--run), var(--run2)); box-shadow: 0 6px 16px -6px rgba(239,68,68,.6); }
+.run-panel { display: flex; flex-direction: column; gap: 16px; animation: run-in .35s ease-out; }
+.run-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+@keyframes run-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* números */
+.run-tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.run-tile {
+  position: relative; display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 16px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border); transition: transform .2s, border-color .2s;
+}
+.run-tile:hover { transform: translateY(-2px); border-color: var(--run); }
+.run-tile b { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.02em; }
+.run-tile-icon { position: absolute; right: 12px; top: 10px; font-size: 1.6rem; opacity: 0.25; }
+.run-tile .link { align-self: flex-start; }
+
+/* recordes */
+.pr-row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.pr-medal {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 16px 10px; border-radius: 16px; text-align: center;
+  background: var(--surface-2); border: 1px dashed var(--border); filter: grayscale(1); opacity: 0.6; transition: transform .2s;
+}
+.pr-medal.won { filter: none; opacity: 1; border-style: solid; border-color: rgba(250,204,21,.5); background: linear-gradient(160deg, rgba(250,204,21,.16), transparent 60%), var(--surface-2); }
+.pr-medal.won:hover { transform: translateY(-3px) scale(1.02); }
+.pr-disc {
+  width: 64px; height: 64px; display: grid; place-items: center; margin-bottom: 6px; border-radius: 50%; font-weight: 900; font-size: 0.95rem; color: #713f12;
+  background: radial-gradient(circle at 35% 30%, #fef9c3, #facc15 55%, #a16207); box-shadow: 0 0 0 4px rgba(250,204,21,.25), 0 6px 14px rgba(161,98,7,.4);
+}
+.pr-medal b { font-size: 1.2rem; }
+
+/* gráfico de pace e previsão */
+.run-two { display: grid; gap: 16px; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); align-items: start; }
+.pace-chart { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.pace-chart svg { width: 100%; height: auto; overflow: visible; }
+.pace-dot { cursor: pointer; }
+.pace-dot circle { transition: r .15s; }
+.pace-label { font-size: 11px; fill: var(--muted); }
+.pace-tip {
+  position: absolute; transform: translate(-50%, calc(-100% - 14px)); pointer-events: none; display: flex; flex-direction: column; align-items: center;
+  padding: 6px 10px; border-radius: 10px; background: var(--text); color: var(--bg, #0b0e1f); font-size: 0.8rem; white-space: nowrap; box-shadow: var(--shadow);
+}
+.run-predict { gap: 12px; }
+.run-predict-value { display: flex; flex-direction: column; align-items: center; padding: 14px; border-radius: 14px; background: var(--run-soft); color: var(--run); }
+.run-predict-value b { font-size: 2.4rem; font-weight: 900; line-height: 1.05; }
+.run-predict-value span { font-weight: 700; }
+.run-predict-slider { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; }
+.run-predict-slider input { width: 100%; accent-color: var(--run); cursor: pointer; }
+
+/* mural de provas */
+.race-wall { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.race-poster {
+  position: relative; display: block; aspect-ratio: 3 / 4; padding: 0; overflow: hidden; border-radius: 18px; border: 0; cursor: pointer; text-align: left;
+  font: inherit; color: #fff; background: linear-gradient(150deg, #f97316, #db2777); box-shadow: 0 10px 30px -14px rgba(0,0,0,.6);
+  animation: run-in .4s ease-out both; transition: transform .25s, box-shadow .25s;
+}
+.race-poster:hover, .race-poster:focus-visible { transform: translateY(-5px); box-shadow: 0 22px 40px -16px rgba(0,0,0,.7); }
+.race-poster-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.race-poster:hover .race-poster-img { transform: scale(1.06); }
+.race-poster-empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 4rem; padding-bottom: 30%; }
+.race-poster::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, transparent 25%, transparent 45%, rgba(0,0,0,.88) 100%); }
+.race-poster-top { position: absolute; z-index: 1; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; gap: 6px; }
+.race-chip { padding: 4px 10px; border-radius: 99px; background: #fff; color: #c2410c; font-size: 0.78rem; font-weight: 800; }
+.race-chip.warn { background: #facc15; color: #713f12; }
+.race-chip.dark { background: rgba(0,0,0,.55); color: #fff; }
+.race-poster-info { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 2px; padding: 14px; }
+.race-poster-info b { font-size: 1.12rem; line-height: 1.2; }
+.race-poster-place { opacity: 0.85; }
+.race-poster-story {
+  max-height: 0; overflow: hidden; opacity: 0; transition: max-height .35s ease, opacity .3s ease, margin .3s;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+}
+.race-poster:hover .race-poster-story, .race-poster:focus-visible .race-poster-story { max-height: 6.5em; opacity: 0.92; margin-top: 6px; }
+
+/* treinos */
+.run-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.run-log-item {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; border: 1px solid transparent; border-left: 4px solid var(--run);
+  background: var(--surface-2); color: inherit; font: inherit; text-align: left; cursor: pointer; transition: border-color .2s, transform .15s;
+}
+.run-log-item:hover { border-color: var(--border); transform: translateX(3px); }
+.run-log-item.t-longo { border-left-color: #3b82f6; }
+.run-log-item.t-tiro { border-left-color: #eab308; }
+.run-log-item.t-ritmo { border-left-color: #a855f7; }
+.run-log-item.t-prova { border-left-color: #22c55e; }
+.run-log-date { width: 46px; flex: none; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.run-log-date b { font-size: 1.3rem; }
+.run-log-date small { text-transform: uppercase; font-size: 0.68rem; font-weight: 700; color: var(--muted); }
+.run-log-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.run-log-main .muted { font-weight: 500; }
+.run-log-pace { padding: 4px 10px; border-radius: 99px; background: var(--run-soft); color: var(--run); font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
+
+/* tênis */
+.shoe-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.shoe-card { align-items: center; text-align: center; gap: 8px; transition: transform .2s; }
+.shoe-card:hover { transform: translateY(-3px); }
+.shoe-card.retired { opacity: 0.55; }
+.shoe-ring {
+  width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(var(--run) var(--pct), var(--surface-2) 0);
+}
+.shoe-card.worn .shoe-ring { background: conic-gradient(#ef4444 var(--pct), var(--surface-2) 0); }
+.shoe-ring > span { width: 92px; height: 92px; border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.shoe-ring b { font-size: 1.5rem; }
+.shoe-ring small { color: var(--muted); font-size: 0.7rem; }
+.shoe-name { font-size: 1.05rem; }
+.shoe-new { border-style: dashed; justify-content: center; }
+.shoe-new-icon { font-size: 2.4rem; }
+
+/* vazio */
+.run-empty { align-items: center; text-align: center; gap: 8px; padding: 36px 20px; }
+.run-empty > span { font-size: 3rem; }
+.run-empty p { margin: 0; max-width: 420px; }
+
+@media (max-width: 900px) {
+  .run-hero { grid-template-columns: 1fr; }
+  .run-two { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .run-panel, .race-poster { animation: none; }
+  .race-poster, .race-poster-img, .run-countdown, .run-tile, .pr-medal, .shoe-card, .run-log-item { transition: none; }
+}
