@@ -124,7 +124,7 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
           <li>Dia com {RANK.activeXp}+ XP = <b>vitória</b>: ganha PR (XP × {RANK.rate}, até {RANK.maxDay} por dia).</li>
           <li>Dias seguidos dão <b>combo</b>: +5% por dia, até +50%.</li>
           <li>Dia parado (menos de {RANK.idleXp} XP) = <b>derrota</b>: −{RANK.loss} PR e a sequência zera. Dia de descanso do treino não conta como derrota.</li>
-          <li>{RANK.divPR} PR sobe uma divisão. Os primeiros ranks têm 3 divisões (III → I), os do meio 4 (IV → I) e os mais altos 5 (V → I). Depois da I vem o próximo rank. Do Toguro (frango) ao Ganley (topo).</li>
+          <li>{RANK.divPR} PR sobe uma divisão. Os primeiros ranks têm 3 divisões (III → I), os do meio 4 (IV → I) e os mais altos 5 (V → I). Depois da I vem o próximo rank. Do Gordo (começo) ao Ganley (topo).</li>
           <li>O <b>rank</b> é da temporada (zera um pouco todo mês). O <b>nível do personagem</b> é outra coisa: soma todo o XP desde sempre e nunca cai.</li>
           <li>Nova temporada: reset suave, você começa com {Math.round(RANK.carry * 100)}% dos pontos da anterior.</li>
         </ul>

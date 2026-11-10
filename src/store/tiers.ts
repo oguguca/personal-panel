@@ -1,4 +1,4 @@
-// Ranks com nomes de marombeiros e fisiculturistas (do Toguro, rank "frango", até o Ganley, o topo).
+// Ranks com nomes de marombeiros e fisiculturistas (do Gordo, o começo, até o Ganley, o topo).
 // Para trocar um nome, edite aqui: vale para o rank da temporada e o da academia.
 // Imagem opcional de cada rank: coloque em public/ranks/<slug>.png (ex.: ganley.png).
 // Essa pasta não vai para o GitHub.
@@ -11,8 +11,8 @@ export interface Tier {
 }
 
 export const TIERS: Tier[] = [
-  { name: 'Toguro', divisions: 3, colors: ['#d1d5db', '#6b7280', '#30363f'] },
-  { name: 'Marombeiro', divisions: 3, colors: ['#f6c9a4', '#c2733d', '#6b3412'] },
+  { name: 'Gordo', divisions: 3, colors: ['#d1d5db', '#6b7280', '#30363f'] },
+  { name: 'Toguro', divisions: 3, colors: ['#f6c9a4', '#c2733d', '#6b3412'] },
   { name: 'Balestrin', divisions: 3, colors: ['#f8fafc', '#a8b3c4', '#4f5a6b'] },
   { name: 'Jorlan', divisions: 4, colors: ['#fff4b8', '#f2b711', '#8a5a00'] },
   { name: 'Cariani', divisions: 4, colors: ['#d5fbf3', '#2dd4bf', '#0d5f58'] },

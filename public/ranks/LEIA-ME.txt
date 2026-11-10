@@ -1,6 +1,6 @@
 Coloque aqui uma imagem para cada rank (PNG, quadrada, o rosto no centro):
 
-toguro.png  marombeiro.png  balestrin.png  jorlan.png  cariani.png
+gordo.png  toguro.png  balestrin.png  jorlan.png  cariani.png
 stronda.png  brandao.png  cbum.png  ganley.png
 
 A imagem aparece dentro do emblema. Sem imagem, o emblema mostra só a divisão.

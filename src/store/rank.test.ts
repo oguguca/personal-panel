@@ -11,11 +11,11 @@ const active = (data: Data, key: DayKey, tasks = 2) =>
 
 describe('posição no rank', () => {
   it('cada 80 PR sobe uma divisão; os primeiros ranks têm III → II → I', () => {
-    expect(rankFromPR(0).label).toBe('Toguro III');
-    expect(rankFromPR(79).label).toBe('Toguro III');
-    expect(rankFromPR(80).label).toBe('Toguro II');
-    expect(rankFromPR(200)).toMatchObject({ label: 'Toguro I', into: 40, need: 80 });
-    expect(rankFromPR(240).label).toBe('Marombeiro III');
+    expect(rankFromPR(0).label).toBe('Gordo III');
+    expect(rankFromPR(79).label).toBe('Gordo III');
+    expect(rankFromPR(80).label).toBe('Gordo II');
+    expect(rankFromPR(200)).toMatchObject({ label: 'Gordo I', into: 40, need: 80 });
+    expect(rankFromPR(240).label).toBe('Toguro III');
     expect(rankFromPR(480).label).toBe('Balestrin III');
   });
 
@@ -124,9 +124,9 @@ describe('temporada', () => {
 
 describe('rank da academia com divisões', () => {
   it('divide cada rank em III, II e I', () => {
-    expect(gymTier(0)).toMatchObject({ name: 'Toguro', div: 3 });
-    expect(gymTier(150)).toMatchObject({ name: 'Toguro', div: 2 });
-    expect(gymTier(250)).toMatchObject({ name: 'Toguro', div: 1 });
+    expect(gymTier(0)).toMatchObject({ name: 'Gordo', div: 3 });
+    expect(gymTier(150)).toMatchObject({ name: 'Gordo', div: 2 });
+    expect(gymTier(250)).toMatchObject({ name: 'Gordo', div: 1 });
     expect(gymTier(99999)).toMatchObject({ name: 'Ganley', div: 0 });
   });
 });
