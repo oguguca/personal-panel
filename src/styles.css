@@ -1014,22 +1014,6 @@ button.meta-item:hover { color: var(--text); }
 .race-poster:hover .race-poster-story, .race-poster:focus-visible .race-poster-story { max-height: 6.5em; opacity: 0.92; margin-top: 6px; }
 
 /* treinos */
-.run-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.run-log-item {
-  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; border: 1px solid transparent; border-left: 4px solid var(--run);
-  background: var(--surface-2); color: inherit; font: inherit; text-align: left; cursor: pointer; transition: border-color .2s, transform .15s;
-}
-.run-log-item:hover { border-color: var(--border); transform: translateX(3px); }
-.run-log-item.t-longo { border-left-color: #3b82f6; }
-.run-log-item.t-tiro { border-left-color: #eab308; }
-.run-log-item.t-ritmo { border-left-color: #a855f7; }
-.run-log-item.t-prova { border-left-color: #22c55e; }
-.run-log-date { width: 46px; flex: none; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-.run-log-date b { font-size: 1.3rem; }
-.run-log-date small { text-transform: uppercase; font-size: 0.68rem; font-weight: 700; color: var(--muted); }
-.run-log-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.run-log-main .muted { font-weight: 500; }
-.run-log-pace { padding: 4px 10px; border-radius: 99px; background: var(--run-soft); color: var(--run); font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
 
 /* tênis */
 .shoe-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
@@ -1059,13 +1043,68 @@ button.meta-item:hover { color: var(--text); }
 }
 @media (prefers-reduced-motion: reduce) {
   .run-panel, .race-poster { animation: none; }
-  .race-poster, .race-poster-img, .run-countdown, .run-tile, .pr-medal, .shoe-card, .run-log-item { transition: none; }
+  .race-poster, .race-poster-img, .run-countdown, .run-tile, .pr-medal, .shoe-card, .run-card { transition: none; }
 }
-.run-log-place { color: var(--run); font-weight: 600; }
-.run-log-thumbs { display: flex; align-items: center; gap: 4px; flex: none; }
-.run-log-thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; cursor: zoom-in; display: block; transition: transform .15s; }
-.run-log-thumb:hover { transform: scale(1.08); }
-.run-log-more { font-size: 0.78rem; font-weight: 700; color: var(--muted); padding: 0 4px; }
 .run-photos { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-@media (max-width: 560px) { .run-log-thumb { width: 40px; height: 40px; } .run-log-thumbs .run-log-thumb:nth-child(n+2) { display: none; } }
 a.btn { text-decoration: none; }
+
+/* ---------- Corrida: feed de treinos ---------- */
+.run-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.run-feed { display: flex; flex-direction: column; gap: 22px; max-width: 760px; width: 100%; margin: 0 auto; }
+.run-month { display: flex; flex-direction: column; gap: 12px; }
+.run-month-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 4px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.run-month-head h3 { margin: 0; font-size: 1.05rem; }
+.run-card {
+  --tc: var(--run);
+  display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: 20px; background: var(--surface);
+  border: 1px solid var(--border); box-shadow: 0 10px 30px -22px rgba(0,0,0,.6); position: relative; overflow: hidden;
+  animation: run-in .35s ease-out both; transition: border-color .2s, transform .2s;
+}
+.run-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--tc); }
+.run-card:hover { border-color: color-mix(in srgb, var(--tc) 55%, var(--border)); }
+.run-card.t-longo { --tc: #3b82f6; }
+.run-card.t-tiro { --tc: #eab308; }
+.run-card.t-ritmo { --tc: #a855f7; }
+.run-card.t-prova { --tc: #22c55e; }
+.run-card-head { display: flex; align-items: center; gap: 12px; }
+.run-card-icon { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 14px; font-size: 1.4rem; background: color-mix(in srgb, var(--tc) 18%, transparent); }
+.run-card-when { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.run-card-when b { font-size: 1rem; }
+.run-card-when > span { display: flex; align-items: center; gap: 8px; }
+.run-type-chip { padding: 1px 9px; border-radius: 99px; font-weight: 700; font-size: 0.75rem; color: var(--tc, var(--run)); background: color-mix(in srgb, var(--tc, var(--run)) 16%, transparent); }
+.run-type-chip.t-leve { --tc: #f97316; }
+.run-type-chip.t-longo { --tc: #3b82f6; }
+.run-type-chip.t-tiro { --tc: #ca8a04; }
+.run-type-chip.t-ritmo { --tc: #a855f7; }
+.run-type-chip.t-prova { --tc: #16a34a; }
+.run-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-radius: 14px; background: var(--surface-2); }
+.run-card-stats div { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
+.run-card-stats div + div { border-left: 1px solid var(--border); }
+.run-card-stats span { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.run-card-stats b { font-size: 1.45rem; font-weight: 900; letter-spacing: -0.02em; }
+.run-card-stats div:last-child b { color: var(--tc); }
+.run-card-notes { margin: 0; font-size: 0.97rem; line-height: 1.6; white-space: pre-wrap; }
+.run-card-photos { display: grid; gap: 6px; border-radius: 14px; overflow: hidden; }
+.run-card-photos.n1 { grid-template-columns: 1fr; }
+.run-card-photos.n2 { grid-template-columns: 1fr 1fr; }
+.run-card-photos.n3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.run-card-photos.n3 .run-card-photo:first-child { grid-row: span 2; }
+.run-card-photo { position: relative; display: block; padding: 0; border: 0; background: var(--surface-2); cursor: zoom-in; overflow: hidden; min-height: 0; }
+.run-card-photos.n1 .run-card-photo { aspect-ratio: 16 / 9; }
+.run-card-photos.n2 .run-card-photo { aspect-ratio: 4 / 3; }
+.run-card-photos.n3 .run-card-photo { aspect-ratio: auto; height: 100%; }
+.run-card-photos.n3 { height: 320px; }
+.run-card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
+.run-card-photo:hover img { transform: scale(1.05); }
+.run-card-more { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.55); color: #fff; font-size: 1.6rem; font-weight: 900; }
+.run-card-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.88rem; color: var(--muted); }
+.run-card-foot a { color: var(--run); font-weight: 650; text-decoration: none; }
+.run-card-foot a:hover { text-decoration: underline; }
+@media (max-width: 560px) {
+  .run-card { padding: 14px; }
+  .run-card-stats b { font-size: 1.15rem; }
+  .run-card-stats div { padding: 10px; }
+  .run-card-photos.n3 { height: 220px; }
+}
+.run-panel-feed { max-width: 760px; width: 100%; margin: 0 auto; }
+.run-panel-feed .run-feed { max-width: none; }

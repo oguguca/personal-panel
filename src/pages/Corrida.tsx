@@ -173,6 +173,55 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
 }
 
 
+/** Card de um treino no feed (estilo app de corrida). */
+function RunCard({ r, shoe, onEdit, onPhoto, index }: { r: Run; shoe?: string; onEdit: () => void; onPhoto: (i: number) => void; index: number }) {
+  const d = parseKey(r.date);
+  const when = d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const photos = r.photos || [];
+  const map = r.place ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.place)}` : '';
+  return (
+    <article className={`run-card t-${r.type}`} style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}>
+      <header className="run-card-head">
+        <span className="run-card-icon">{RUN_TYPES[r.type].icon}</span>
+        <div className="run-card-when">
+          <b>{when.charAt(0).toUpperCase() + when.slice(1)}</b>
+          <span className="muted small">
+            <span className={`run-type-chip t-${r.type}`}>{RUN_TYPES[r.type].label}</span>
+            {r.feel ? <span title="Como foi">{FEELS[r.feel - 1]}</span> : null}
+          </span>
+        </div>
+        <button className="icon-btn" onClick={onEdit} title="Editar treino"><Icon name="edit" size={18} /></button>
+      </header>
+
+      <div className="run-card-stats">
+        <div><span>Distância</span><b>{fmtKm(r.km)}</b></div>
+        <div><span>Tempo</span><b>{formatDurationSec(r.seconds)}</b></div>
+        <div><span>Pace</span><b>{runPace(r)}</b></div>
+      </div>
+
+      {r.notes && <p className="run-card-notes">{r.notes}</p>}
+
+      {photos.length > 0 && (
+        <div className={`run-card-photos n${Math.min(photos.length, 3)}`}>
+          {photos.slice(0, 3).map((id, i) => (
+            <button key={id} className="run-card-photo" onClick={() => onPhoto(i)} aria-label={`Ver foto ${i + 1}`}>
+              <Photo id={id} alt={`Foto ${i + 1} do treino`} />
+              {i === 2 && photos.length > 3 && <span className="run-card-more">+{photos.length - 3}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(r.place || shoe) && (
+        <footer className="run-card-foot">
+          {r.place && (map ? <a href={map} target="_blank" rel="noreferrer" title="Abrir no mapa">📍 {r.place}</a> : <span>📍 {r.place}</span>)}
+          {shoe && <span>👟 {shoe}</span>}
+        </footer>
+      )}
+    </article>
+  );
+}
+
 // ---------------------------------------------------------------------------
 type Tab = 'geral' | 'provas' | 'treinos' | 'tenis';
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -345,6 +394,7 @@ export default function Corrida({ go }: PageProps) {
   const [predKm, setPredKm] = useState(10);
   const [picking, setPicking] = useState<Shoe | null>(null);
   const [lb, setLb] = useState<{ ids: string[]; i: number } | null>(null);
+  const [typeFilter, setTypeFilter] = useState<'todos' | RunType>('todos');
 
   const acts = useMemo(() => activitiesOf(runs, data.events, today), [runs, data.events, today]);
   const efforts = useMemo(() => effortsOf(runs, data.events), [runs, data.events]);
@@ -365,6 +415,23 @@ export default function Corrida({ go }: PageProps) {
   const streak = weekStreak(acts, today);
   const lastShoe = sortedRuns.find((r) => r.shoeId)?.shoeId || '';
   const days = nextRace ? daysUntil(nextRace.date, today) : 0;
+  // feed de treinos: filtro por tipo e grupos por mês
+  const filteredRuns = typeFilter === 'todos' ? sortedRuns : sortedRuns.filter((r) => r.type === typeFilter);
+  const months = useMemo(() => {
+    const out: { key: string; label: string; km: number; runs: Run[] }[] = [];
+    for (const r of filteredRuns.slice(0, showAll ? filteredRuns.length : 12)) {
+      const key = r.date.slice(0, 7);
+      let m = out.find((x) => x.key === key);
+      if (!m) {
+        const l = parseKey(r.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        m = { key, label: l.charAt(0).toUpperCase() + l.slice(1), km: 0, runs: [] };
+        out.push(m);
+      }
+      m.runs.push(r);
+    }
+    for (const m of out) m.km = filteredRuns.filter((r) => r.date.startsWith(m.key)).reduce((t, r) => t + r.km, 0);
+    return out;
+  }, [filteredRuns, showAll]);
 
   const saveRun = (r: Omit<Run, 'id'> & { id?: string }) => {
     update((d) => {
@@ -532,42 +599,42 @@ export default function Corrida({ go }: PageProps) {
 
       {/* ---------- treinos ---------- */}
       {tab === 'treinos' && (
-        <div className="run-panel" key="treinos">
+        <div className="run-panel run-panel-feed" key="treinos">
           {editing ? (
             <RunForm key={editing.id || 'nova'} initial={editing} shoes={shoes} today={today} onSave={saveRun} onCancel={() => setEditing(null)} onDelete={editing.id ? () => removeRun(editing.id!) : undefined} />
           ) : (
             <div className="run-panel-head">
-              <span className="muted">{runs.length ? `${runs.length} treino(s) · clique num treino para editar` : 'Registre seus treinos de corrida.'}</span>
+              <span className="muted">{runs.length ? `${runs.length} ${runs.length === 1 ? 'treino' : 'treinos'} · ${fmtKm(runs.reduce((t, r) => t + r.km, 0))} · ✏️ para editar` : 'Registre seus treinos de corrida.'}</span>
               <button className="btn primary" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
             </div>
           )}
+          {sortedRuns.length > 0 && (
+            <div className="run-filter chips">
+              <button className={`chip ${typeFilter === 'todos' ? 'on' : ''}`} onClick={() => setTypeFilter('todos')}>Todos · {sortedRuns.length}</button>
+              {(Object.keys(RUN_TYPES) as RunType[]).filter((t) => sortedRuns.some((r) => r.type === t)).map((t) => (
+                <button key={t} className={`chip ${typeFilter === t ? 'on' : ''}`} onClick={() => setTypeFilter(t)}>
+                  {RUN_TYPES[t].icon} {RUN_TYPES[t].label} · {sortedRuns.filter((r) => r.type === t).length}
+                </button>
+              ))}
+            </div>
+          )}
           {sortedRuns.length ? (
-            <section className="card">
-              <ul className="run-log">
-                {sortedRuns.slice(0, showAll ? sortedRuns.length : 12).map((r) => (
-                  <li key={r.id}>
-                    <button className={`run-log-item t-${r.type}`} onClick={() => setEditing(toDraft(r, today))}>
-                      <span className="run-log-date"><b>{parseKey(r.date).getDate()}</b><small>{parseKey(r.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</small></span>
-                      <span className="run-log-main">
-                        <b>{fmtKm(r.km)} <span className="muted">em {formatDurationSec(r.seconds)}</span></b>
-                        <span className="muted small">{RUN_TYPES[r.type].icon} {RUN_TYPES[r.type].label}{r.feel ? ` · ${FEELS[r.feel - 1]}` : ''}{r.notes ? ` · ${r.notes}` : ''}</span>
-                        {r.place && <span className="small run-log-place">📍 {r.place}</span>}
-                      </span>
-                      {!!r.photos?.length && (
-                        <span className="run-log-thumbs">
-                          {r.photos.slice(0, 3).map((id, i) => (
-                            <Photo key={id} id={id} alt={`Foto ${i + 1} do treino`} className="run-log-thumb" onClick={(e) => { e.stopPropagation(); setLb({ ids: r.photos!, i }); }} />
-                          ))}
-                          {r.photos.length > 3 && <span className="run-log-more">+{r.photos.length - 3}</span>}
-                        </span>
-                      )}
-                      <span className="run-log-pace">{runPace(r)}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {sortedRuns.length > 12 && <button className="btn sm" onClick={() => setShowAll(!showAll)}>{showAll ? 'Mostrar menos' : `Ver todos (${sortedRuns.length})`}</button>}
-            </section>
+            <div className="run-feed">
+              {months.map((m) => (
+                <section key={m.key} className="run-month">
+                  <div className="run-month-head">
+                    <h3>{m.label}</h3>
+                    <span className="muted small">{m.runs.length} {m.runs.length === 1 ? 'treino' : 'treinos'} · {fmtKm(m.km)}</span>
+                  </div>
+                  {m.runs.map((r, i) => (
+                    <RunCard key={r.id} r={r} index={i} shoe={shoes.find((x) => x.id === r.shoeId)?.name}
+                      onEdit={() => { setEditing(toDraft(r, today)); document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      onPhoto={(i2) => setLb({ ids: r.photos!, i: i2 })} />
+                  ))}
+                </section>
+              ))}
+              {filteredRuns.length > 12 && <button className="btn" onClick={() => setShowAll(!showAll)}>{showAll ? 'Mostrar menos' : `Ver todos (${filteredRuns.length})`}</button>}
+            </div>
           ) : !editing && (
             <section className="card run-empty">
               <span>👟</span>
