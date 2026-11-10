@@ -259,6 +259,10 @@ export interface CalEvent {
   distance?: string; // corridas: '5', '10', '21', '42' (km)
   result?: string; // corridas: tempo final ('52:30' ou '1:45:10')
   link?: string; // site da inscrição ou do evento
+  /** Diário da prova (aba Corrida): relato e fotos (ids das imagens salvas no IndexedDB). */
+  story?: string;
+  cover?: string;
+  photos?: string[];
   notes?: string;
   alert?: EventAlert | null;
   lastAlert?: number; // último aviso enviado (ms)

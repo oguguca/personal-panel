@@ -2,6 +2,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import BarChart from '../components/BarChart';
 import Icon from '../components/Icon';
+import { RaceCard, RaceModal } from '../components/RaceDiary';
 import { Empty, Progress } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import { formatPace, parseDuration, upcoming, whenText } from '../store/calendar';
@@ -11,7 +12,7 @@ import {
   DISTANCES, FEELS, QUICK_KM, RUN_TYPES, SHOE_LIMIT_KM,
   avgPace, effortsOf, fmtKm, formatDurationSec, monthKm, personalRecords, predictions, runPace, shoeKm, weekKm, weekStreak, weeklyKm,
 } from '../store/running';
-import type { Run, RunType, Shoe } from '../store/types';
+import type { CalEvent, Run, RunType, Shoe } from '../store/types';
 import type { PageProps } from './types';
 
 type Draft = { id?: string; date: string; km: string; time: string; type: RunType; feel: number; shoeId: string; notes: string };
@@ -118,6 +119,12 @@ export default function Corrida({ go }: PageProps) {
   const [newShoe, setNewShoe] = useState('');
   const [goalEdit, setGoalEdit] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [race, setRace] = useState<CalEvent | 'nova' | null>(null);
+  const [raceTab, setRaceTab] = useState<'feitas' | 'proximas'>('feitas');
+  const races = data.events.filter((e) => e.kind === 'corrida');
+  const racesDone = races.filter((e) => e.done || e.date < today).sort((a, b) => b.date.localeCompare(a.date));
+  const racesNext = races.filter((e) => !(e.done || e.date < today)).sort((a, b) => a.date.localeCompare(b.date));
+  const raceList = raceTab === 'feitas' ? racesDone : racesNext;
 
   const sorted = useMemo(() => [...runs].sort((a, b) => b.date.localeCompare(a.date)), [runs]);
   const efforts = useMemo(() => effortsOf(runs, data.events), [runs, data.events]);
@@ -198,6 +205,29 @@ export default function Corrida({ go }: PageProps) {
         <div className="card run-stat"><span className="muted small">Total</span><b>{fmtKm(runs.reduce((s, r) => s + r.km, 0))}</b></div>
       </section>
 
+      <section className="card">
+        <div className="card-head">
+          <h2>🏅 Minhas provas</h2>
+          <button className="btn sm primary" onClick={() => setRace('nova')}><Icon name="plus" size={14} /> Adicionar prova</button>
+        </div>
+        <div className="segmented" style={{ alignSelf: 'flex-start' }}>
+          <button className={raceTab === 'feitas' ? 'on' : ''} onClick={() => setRaceTab('feitas')}>Já fui ({racesDone.length})</button>
+          <button className={raceTab === 'proximas' ? 'on' : ''} onClick={() => setRaceTab('proximas')}>Próximas ({racesNext.length})</button>
+        </div>
+        {raceList.length ? (
+          <div className="race-grid">
+            {raceList.map((ev) => <RaceCard key={ev.id} ev={ev} today={today} onOpen={() => setRace(ev)} />)}
+          </div>
+        ) : (
+          <Empty>
+            {raceTab === 'feitas'
+              ? 'Adicione as provas que você já correu: tempo, foto da corrida, suas fotos e como foi.'
+              : 'Nenhuma prova marcada. Adicione uma ou marque no Calendário.'}
+          </Empty>
+        )}
+      </section>
+      {race && <RaceModal ev={race === 'nova' ? null : race} onClose={() => setRace(null)} />}
+
       <div className="grid">
         <section className="card">
           <div className="card-head">
@@ -264,6 +294,7 @@ export default function Corrida({ go }: PageProps) {
         <div className="card-head"><h2>km por semana</h2><span className="muted small">últimas 10 semanas</span></div>
         <BarChart
           items={weeks.map((w) => ({ key: w.start, label: formatShort(w.start), value: Math.round(w.km * 10) / 10, title: `Semana de ${formatShort(w.start)}: ${fmtKm(w.km)}` }))}
+          max={Math.max(10, ...weeks.map((w) => Math.ceil(w.km)))}
           color="#f97316"
           format={(v) => `${v}`}
         />

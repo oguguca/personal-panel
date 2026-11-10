@@ -41,6 +41,8 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   Km da semana e do mês (com meta), pace médio, semanas seguidas correndo, gráfico de km por semana,
   **recordes pessoais** (5K, 10K, meia e maratona, incluindo as provas do Calendário), **previsão de tempo** (fórmula de Riegel),
   próxima prova e **quilometragem dos tênis** (avisa a hora de trocar). Cada corrida dá XP de Resistência.
+  **Minhas provas**: diário das corridas que você foi (e das próximas) com imagem da corrida, relato de como foi
+  e suas fotos durante a prova (galeria com tela cheia). As fotos ficam no computador (IndexedDB), reduzidas para ocupar pouco espaço.
 - **Renda** (antiga Gravação): registre os minutos gravados no dia (botões rápidos ou valor digitado) e acompanhe a meta diária e a sequência de dias batendo a meta.
 - **Histórico**: dias anteriores e gráficos de 7/30 dias. Tudo zera à meia-noite, mas o histórico fica guardado.
 - **Configurações**: tema claro/escuro, água, refeições, notificações, iniciar com o Windows e backup.

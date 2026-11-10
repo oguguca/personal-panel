@@ -8,6 +8,7 @@ import {
   EVENT_KINDS, countInMonth, daysUntil, describeAlert, eventsByDay, formatPace, monthGrid, paceOf, parseDuration, toICS, upcoming, whenText,
 } from '../store/calendar';
 import { saveTextFile } from '../platform';
+import { deleteImage } from '../store/images';
 import { formatLong, formatShort, parseKey, WEEKDAYS_NAME } from '../store/dates';
 import { uid } from '../store/model';
 import type { CalEvent, DayKey, EventKind } from '../store/types';
@@ -239,6 +240,7 @@ export default function Calendario() {
   const remove = (id: string) => {
     const ev = events.find((e) => e.id === id);
     if (ev && !window.confirm(`Apagar "${ev.title}"?`)) return;
+    [ev?.cover, ...(ev?.photos || [])].forEach((img) => img && deleteImage(img)); // fotos do diário da prova
     update((x) => { x.events = x.events.filter((e) => e.id !== id); });
     setEditing(null);
   };
