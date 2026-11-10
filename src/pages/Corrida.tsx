@@ -1,9 +1,11 @@
 // Aba Corrida: topo com km e próxima prova, abas (visão geral, provas, treinos, tênis),
 // recordes em medalhas, previsão interativa, evolução do pace e mural de provas.
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import BarChart from '../components/BarChart';
 import Icon from '../components/Icon';
+import { Lightbox, Photo } from '../components/Photos';
 import { RaceCard, RaceModal } from '../components/RaceDiary';
+import { deleteImage, saveImage } from '../store/images';
 import { Empty, Progress } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import { daysUntil, formatPace, parseDuration, upcoming } from '../store/calendar';
@@ -17,12 +19,12 @@ import {
 import type { CalEvent, Run, RunType, Shoe } from '../store/types';
 import type { PageProps } from './types';
 
-type Draft = { id?: string; date: string; km: string; time: string; type: RunType; feel: number; shoeId: string; notes: string };
+type Draft = { id?: string; date: string; km: string; time: string; type: RunType; feel: number; shoeId: string; notes: string; place: string; photos: string[] };
 
 const toDraft = (r: Run | null, today: string, shoeId = ''): Draft =>
   r
-    ? { id: r.id, date: r.date, km: String(r.km).replace('.', ','), time: formatDurationSec(r.seconds), type: r.type, feel: r.feel || 0, shoeId: r.shoeId || '', notes: r.notes || '' }
-    : { date: today, km: '', time: '', type: 'leve', feel: 0, shoeId, notes: '' };
+    ? { id: r.id, date: r.date, km: String(r.km).replace('.', ','), time: formatDurationSec(r.seconds), type: r.type, feel: r.feel || 0, shoeId: r.shoeId || '', notes: r.notes || '', place: r.place || '', photos: r.photos || [] }
+    : { date: today, km: '', time: '', type: 'leve', feel: 0, shoeId, notes: '', place: '', photos: [] };
 
 function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
   initial: Draft;
@@ -42,9 +44,41 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
     e.preventDefault();
     if (!(km > 0)) return setError('Informe a distância em km (ex.: 5 ou 7,5).');
     if (!secs) return setError('Informe o tempo em mm:ss ou h:mm:ss (ex.: 32:15).');
-    onSave({ id: f.id, date: f.date, km: Math.round(km * 100) / 100, seconds: secs, type: f.type, feel: f.feel || undefined, shoeId: f.shoeId || undefined, notes: f.notes.trim() || undefined });
+    removed.current.forEach((id) => deleteImage(id));
+    added.current = [];
+    onSave({
+      id: f.id, date: f.date, km: Math.round(km * 100) / 100, seconds: secs, type: f.type, feel: f.feel || undefined, shoeId: f.shoeId || undefined,
+      notes: f.notes.trim() || undefined, place: f.place.trim() || undefined, photos: f.photos.length ? f.photos : undefined,
+    });
   };
   const yesterday = addDays(today, -1);
+  // fotos: as novas são apagadas se cancelar; as tiradas só somem de vez ao salvar
+  const added = useRef<string[]>([]);
+  const removed = useRef<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const addPhotos = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setBusy(true);
+    try {
+      const ids: string[] = [];
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue;
+        const id = await saveImage(file);
+        ids.push(id);
+        added.current.push(id);
+      }
+      setF((x) => ({ ...x, photos: [...x.photos, ...ids] }));
+    } catch {
+      setError('Não consegui abrir essa imagem. Tente JPG ou PNG.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const cancel = () => {
+    added.current.forEach((id) => deleteImage(id));
+    onCancel();
+  };
+  const mapUrl = f.place.trim() ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.place.trim())}` : '';
 
   return (
     <form className="card run-form" onSubmit={submit}>
@@ -103,11 +137,35 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
           </select>
         </label>
       )}
+      <label className="field">
+        <span>📍 Local (opcional)</span>
+        <div className="row">
+          <input className="input" placeholder="Ex.: Parque Ibirapuera, São Paulo" value={f.place} onChange={(e) => set('place', e.target.value)} />
+          {mapUrl && <a className="btn sm" href={mapUrl} target="_blank" rel="noreferrer">Ver no mapa ↗</a>}
+        </div>
+      </label>
+      <div className="field">
+        <span>📷 Fotos do treino (opcional)</span>
+        <div className="race-gallery edit run-photos">
+          {f.photos.map((id) => (
+            <span key={id} className="race-photo">
+              <Photo id={id} alt="Foto do treino" />
+              <button type="button" className="race-photo-del" onClick={() => { removed.current.push(id); set('photos', f.photos.filter((p) => p !== id)); }} title="Tirar foto">×</button>
+            </span>
+          ))}
+          <label className="race-photo-add">
+            <Icon name="plus" size={22} />
+            <span className="small">Adicionar fotos</span>
+            <input type="file" accept="image/*" multiple hidden onChange={(e) => { addPhotos(e.target.files); e.target.value = ''; }} />
+          </label>
+        </div>
+        {busy && <span className="muted small">Salvando as fotos…</span>}
+      </div>
       <label className="field"><span>Observações (opcional)</span><textarea className="input" rows={2} placeholder="Percurso, clima, tiros 6×400 m…" value={f.notes} onChange={(e) => set('notes', e.target.value)} /></label>
       {error && <p className="cal-error" role="alert">{error}</p>}
       <div className="row">
-        <button className="btn primary" type="submit"><Icon name="check" size={16} /> Salvar</button>
-        <button className="btn" type="button" onClick={onCancel}>Cancelar</button>
+        <button className="btn primary" type="submit" disabled={busy}><Icon name="check" size={16} /> Salvar</button>
+        <button className="btn" type="button" onClick={cancel}>Cancelar</button>
         {onDelete && <button className="btn danger" type="button" onClick={onDelete} style={{ marginLeft: 'auto' }}><Icon name="trash" size={16} /> Apagar</button>}
       </div>
     </form>
@@ -286,6 +344,7 @@ export default function Corrida({ go }: PageProps) {
   const [goalEdit, setGoalEdit] = useState(false);
   const [predKm, setPredKm] = useState(10);
   const [picking, setPicking] = useState<Shoe | null>(null);
+  const [lb, setLb] = useState<{ ids: string[]; i: number } | null>(null);
 
   const acts = useMemo(() => activitiesOf(runs, data.events, today), [runs, data.events, today]);
   const efforts = useMemo(() => effortsOf(runs, data.events), [runs, data.events]);
@@ -318,6 +377,7 @@ export default function Corrida({ go }: PageProps) {
   };
   const removeRun = (id: string) => {
     if (!window.confirm('Apagar esta corrida?')) return;
+    runs.find((x) => x.id === id)?.photos?.forEach((p) => deleteImage(p)); // fotos do treino
     update((d) => { d.running.runs = d.running.runs.filter((x) => x.id !== id); });
     setEditing(null);
   };
@@ -491,7 +551,16 @@ export default function Corrida({ go }: PageProps) {
                       <span className="run-log-main">
                         <b>{fmtKm(r.km)} <span className="muted">em {formatDurationSec(r.seconds)}</span></b>
                         <span className="muted small">{RUN_TYPES[r.type].icon} {RUN_TYPES[r.type].label}{r.feel ? ` · ${FEELS[r.feel - 1]}` : ''}{r.notes ? ` · ${r.notes}` : ''}</span>
+                        {r.place && <span className="small run-log-place">📍 {r.place}</span>}
                       </span>
+                      {!!r.photos?.length && (
+                        <span className="run-log-thumbs">
+                          {r.photos.slice(0, 3).map((id, i) => (
+                            <Photo key={id} id={id} alt={`Foto ${i + 1} do treino`} className="run-log-thumb" onClick={(e) => { e.stopPropagation(); setLb({ ids: r.photos!, i }); }} />
+                          ))}
+                          {r.photos.length > 3 && <span className="run-log-more">+{r.photos.length - 3}</span>}
+                        </span>
+                      )}
                       <span className="run-log-pace">{runPace(r)}</span>
                     </button>
                   </li>
@@ -544,6 +613,7 @@ export default function Corrida({ go }: PageProps) {
       )}
 
       {race && <RaceModal ev={race === 'nova' ? null : race} onClose={() => setRace(null)} />}
+      {lb && <Lightbox ids={lb.ids} index={lb.i} onChange={(i) => setLb({ ...lb, i })} onClose={() => setLb(null)} />}
       {picking && <ShoePicker shoe={picking} acts={acts} shoes={shoes} onClose={() => setPicking(null)} />}
     </div>
   );

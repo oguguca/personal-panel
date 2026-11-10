@@ -283,6 +283,8 @@ export interface Run {
   feel?: number; // 1 (péssimo) a 5 (ótimo)
   shoeId?: string;
   notes?: string;
+  place?: string; // onde correu
+  photos?: string[]; // ids das fotos (IndexedDB)
 }
 
 export interface Shoe {

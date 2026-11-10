@@ -1061,3 +1061,11 @@ button.meta-item:hover { color: var(--text); }
   .run-panel, .race-poster { animation: none; }
   .race-poster, .race-poster-img, .run-countdown, .run-tile, .pr-medal, .shoe-card, .run-log-item { transition: none; }
 }
+.run-log-place { color: var(--run); font-weight: 600; }
+.run-log-thumbs { display: flex; align-items: center; gap: 4px; flex: none; }
+.run-log-thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; cursor: zoom-in; display: block; transition: transform .15s; }
+.run-log-thumb:hover { transform: scale(1.08); }
+.run-log-more { font-size: 0.78rem; font-weight: 700; color: var(--muted); padding: 0 4px; }
+.run-photos { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+@media (max-width: 560px) { .run-log-thumb { width: 40px; height: 40px; } .run-log-thumbs .run-log-thumb:nth-child(n+2) { display: none; } }
+a.btn { text-decoration: none; }

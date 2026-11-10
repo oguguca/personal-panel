@@ -37,7 +37,7 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   Atalhos: setas ← → trocam o mês e Esc fecha o formulário. A tela Hoje mostra o que vem pela frente.
   Contagem regressiva para a próxima corrida, link da inscrição e **exportar para o Google Agenda/celular** (arquivo .ics).
   Corridas e compromissos marcados como feitos dão XP na aba Evolução (Resistência e Disciplina).
-- **Corrida**: registre treinos e provas (distância, tempo, tipo, sensação, tênis) com pace automático.
+- **Corrida**: registre treinos e provas (distância, tempo, tipo, sensação, tênis, local com link para o mapa e fotos) com pace automático.
   Km da semana e do mês (com meta), pace médio, semanas seguidas correndo, gráfico de km por semana,
   **recordes pessoais** (5K, 10K, meia e maratona, incluindo as provas do Calendário), **previsão de tempo** (fórmula de Riegel),
   próxima prova e **quilometragem dos tênis** (avisa a hora de trocar). Cada corrida dá XP de Resistência.
