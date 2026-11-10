@@ -811,3 +811,19 @@ button.meta-item:hover { color: var(--text); }
   .cal-event { flex-wrap: wrap; }
   .cal-event-side { flex-direction: row; width: 100%; justify-content: flex-end; }
 }
+
+/* ---------- Confirmar treino (painel de check) ---------- */
+.wcheck-overlay { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.55); animation: rc-fade .15s ease-out; }
+.wcheck { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow: auto; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.wcheck-date { width: auto !important; flex: none; padding: 4px 8px; }
+.wcheck-warn { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--warning-soft); color: var(--warning); font-size: 0.88rem; }
+.wcheck-warn span { flex: 1; min-width: 200px; }
+.wcheck-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.9rem; }
+.wcheck-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wcheck-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; transition: background .15s, border-color .15s, opacity .15s; opacity: 0.6; }
+.wcheck-item.on { opacity: 1; border-color: var(--success); background: var(--success-soft); }
+.wcheck-item input { position: absolute; opacity: 0; pointer-events: none; }
+.wcheck-item:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wcheck-box { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 7px; border: 2px solid var(--border); font-weight: 900; color: #fff; }
+.wcheck-item.on .wcheck-box { background: var(--success); border-color: var(--success); }
+.wcheck-name { display: flex; flex-direction: column; min-width: 0; }

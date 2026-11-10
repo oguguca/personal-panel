@@ -173,6 +173,8 @@ export interface TrainingLog {
   at: number;
   /** Cópia das cargas no dia (mede a evolução de força). */
   items?: Omit<WorkoutItem, 'id'>[];
+  /** Quantos exercícios o treino tinha (para mostrar "5 de 6 feitos"). */
+  planned?: number;
 }
 
 export interface Summary {

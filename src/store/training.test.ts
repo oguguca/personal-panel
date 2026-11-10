@@ -70,6 +70,7 @@ describe('registro do treino feito (botão Já fiz hoje)', () => {
     expect(workoutLog(w, 'a', 123)).toEqual({
       type: 'workout', workoutId: 'a', name: 'A - Peito', at: 123,
       items: [{ exId: 'supino-reto-barra', sets: 4, reps: '8-10', weight: '40', minutes: undefined }],
+      planned: 1,
     });
   });
 
@@ -81,5 +82,26 @@ describe('registro do treino feito (botão Já fiz hoje)', () => {
 
   it('treino apagado vira "Treino" sem itens', () => {
     expect(workoutLog(undefined, 'x', 1)).toMatchObject({ name: 'Treino', items: [] });
+  });
+});
+
+describe('painel de check do treino', () => {
+  const w = {
+    id: 'a', name: 'A - Peito', days: [],
+    items: [
+      { id: 'i1', exId: 'supino-reto-barra', sets: 4, reps: '10', weight: '40' },
+      { id: 'i2', exId: 'peck-deck', sets: 3, reps: '12', weight: '30' },
+      { id: 'i3', exId: 'triceps-corda', sets: 3, reps: '12', weight: '20' },
+    ],
+  };
+
+  it('guarda só os exercícios marcados, mas lembra quantos tinha', () => {
+    const log = workoutLog(w, 'a', 1, ['i1', 'i3']);
+    expect(log.items!.map((i) => i.exId)).toEqual(['supino-reto-barra', 'triceps-corda']);
+    expect(log.planned).toBe(3);
+  });
+
+  it('sem a lista conta o treino inteiro', () => {
+    expect(workoutLog(w, 'a', 1).items).toHaveLength(3);
   });
 });

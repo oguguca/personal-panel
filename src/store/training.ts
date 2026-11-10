@@ -93,7 +93,10 @@ export const slotLetter = (i: number) => 'ABCDEFG'[i] || String(i + 1);
  * Registro de "treino feito" do dia. Guarda uma cópia das cargas:
  * é assim que a aba Evolução mede a força ao longo do tempo (mesmo se o treino mudar depois).
  */
-export function workoutLog(workout: Workout | undefined, workoutId: string, at = Date.now()): TrainingLog {
-  const items = (workout?.items || []).map(({ exId, sets, reps, weight, minutes }) => ({ exId, sets, reps, weight, minutes }));
-  return { type: 'workout', workoutId, name: workout?.name || 'Treino', at, items };
+export function workoutLog(workout: Workout | undefined, workoutId: string, at = Date.now(), doneIds?: string[]): TrainingLog {
+  const all = workout?.items || [];
+  // doneIds = exercícios marcados no painel de check (sem a lista, conta o treino inteiro)
+  const done = doneIds ? all.filter((it) => doneIds.includes(it.id)) : all;
+  const items = done.map(({ exId, sets, reps, weight, minutes }) => ({ exId, sets, reps, weight, minutes }));
+  return { type: 'workout', workoutId, name: workout?.name || 'Treino', at, items, planned: all.length };
 }

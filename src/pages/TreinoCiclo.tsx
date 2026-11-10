@@ -1,19 +1,28 @@
 // Aba "Ciclo" do Treino: sequência de 1 a 7 treinos, dias de descanso e registro do dia.
+import { useEffect, useState } from 'react';
 import Icon from '../components/Icon';
+import { EXERCISE_BY_ID } from '../data/exercises';
 import { Empty } from '../components/ui';
 import { useStore } from '../store/StoreContext';
-import { WEEKDAYS_NAME, formatMedium, formatShort, weekday } from '../store/dates';
-import type { Workout } from '../store/types';
+import { WEEKDAYS_NAME, addDays, formatMedium, formatShort, weekday } from '../store/dates';
+import { emptyDay } from '../store/model';
+import type { DayKey, Workout } from '../store/types';
 import { MAX_ROTATION, forecast, nextAfter, slotLetter, suggestion, trainingConfig, workoutLog } from '../store/training';
 
 /** Ações de registro do dia (usadas aqui e na tela Hoje). */
 export function useTrainingActions() {
   const { today, update } = useStore();
   return {
-    done: (workoutId: string) =>
+    /** Marca o treino como feito em um dia (hoje por padrão) com os exercícios feitos. */
+    done: (workoutId: string, opts: { date?: DayKey; itemIds?: string[] } = {}) =>
       update((d) => {
-        d.days[today].training = workoutLog(d.workouts.find((x) => x.id === workoutId), workoutId);
+        const key = opts.date || today;
+        // dia que o app não abriu (ex.: esqueceu de marcar ontem): cria o dia vazio
+        d.days[key] ||= { ...emptyDay(), init: key !== today };
+        d.days[key].training = workoutLog(d.workouts.find((x) => x.id === workoutId), workoutId, Date.now(), opts.itemIds);
       }),
+    /** Apaga o registro de treino/descanso de um dia. */
+    clear: (date: DayKey) => update((d) => { if (d.days[date]) delete d.days[date].training; }),
     rest: () => update((d) => { d.days[today].training = { type: 'rest', at: Date.now() }; }),
     undo: () => update((d) => { delete d.days[today].training; }),
   };
@@ -26,6 +35,13 @@ export function TodayTraining({ compact = false, onOpen }: { compact?: boolean; 
   const { rotation } = trainingConfig(data);
   const s = suggestion(data, today);
   const nameOf = (id: string | null | undefined) => data.workouts.find((w) => w.id === id)?.name || '—';
+  const [check, setCheck] = useState<{ id: string; date?: DayKey } | null>(null);
+  const dialog = check && <WorkoutCheck workoutId={check.id} date={check.date} onClose={() => setCheck(null)} />;
+  const forgot = (id: string | null | undefined) => (
+    <button className="link small" onClick={() => setCheck({ id: id || data.workouts[0].id, date: addDays(today, -1) })} title="Registrar um treino de ontem ou de outro dia">
+      Esqueceu de marcar um dia?
+    </button>
+  );
 
   if (!data.workouts.length) {
     return <Empty>Monte seus treinos para ver o treino do dia.{onOpen && <> <button className="link" onClick={onOpen}>Montar treino</button></>}</Empty>;
@@ -38,11 +54,15 @@ export function TodayTraining({ compact = false, onOpen }: { compact?: boolean; 
         <div className="today-train-main">
           <span className="today-train-emoji">{s.logged.type === 'workout' ? '✅' : '😴'}</span>
           <div>
-            <div className="today-train-title">{s.logged.type === 'workout' ? `Feito: ${s.logged.name || nameOf(s.logged.workoutId)}` : 'Descanso registrado'}</div>
+            <div className="today-train-title">{s.logged.type === 'workout' ? `Feito: ${s.logged.name || nameOf(s.logged.workoutId)}${s.logged.planned && (s.logged.items?.length ?? 0) < s.logged.planned ? ` (${s.logged.items?.length} de ${s.logged.planned} exercícios)` : ''}` : 'Descanso registrado'}</div>
             <div className="muted small">Próximo da sequência: <strong>{nameOf(next)}</strong></div>
           </div>
         </div>
-        <button className="btn sm" onClick={act.undo}><Icon name="undo" size={14} /> Desfazer</button>
+        <div className="row">
+          <button className="btn sm" onClick={act.undo}><Icon name="undo" size={14} /> Desfazer</button>
+          {!compact && forgot(s.logged.type === 'workout' ? s.logged.workoutId : next)}
+        </div>
+        {dialog}
       </div>
     );
   }
@@ -60,18 +80,20 @@ export function TodayTraining({ compact = false, onOpen }: { compact?: boolean; 
         </div>
       </div>
       <div className="row">
-        <button className="btn primary sm" onClick={() => target && act.done(target)}>
+        <button className="btn primary sm" onClick={() => target && setCheck({ id: target })}>
           <Icon name="check" size={14} /> {s.rest ? `Treinei ${nameOf(target)}` : `Fiz o ${nameOf(target)}`}
         </button>
         {!s.rest && <button className="btn sm" onClick={act.rest}>Descansei</button>}
         {s.rest && <button className="btn sm" onClick={act.rest}>Descansei ✓</button>}
         {!compact && data.workouts.length > 1 && (
-          <select className="input sm-select" value="" onChange={(e) => e.target.value && act.done(e.target.value)} aria-label="Fiz outro treino">
+          <select className="input sm-select" value="" onChange={(e) => e.target.value && setCheck({ id: e.target.value })} aria-label="Fiz outro treino">
             <option value="">Fiz outro treino…</option>
             {data.workouts.filter((w) => w.id !== target).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
         )}
+        {!compact && forgot(target)}
       </div>
+      {dialog}
     </div>
   );
 }
@@ -214,5 +236,124 @@ export default function TreinoCiclo({ goTab }: { goTab: (tab: string) => void })
         </div>
       </section>
     </>
+  );
+}
+
+/**
+ * Painel para confirmar um treino: escolhe o dia (hoje, ontem… para quando esquecer de marcar)
+ * e marca quais exercícios foram feitos. Só os marcados contam para XP e evolução das cargas.
+ */
+export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workoutId: string; date?: DayKey; onClose: () => void }) {
+  const { data, today } = useStore();
+  const act = useTrainingActions();
+  const [wid, setWid] = useState(workoutId);
+  const w = data.workouts.find((x) => x.id === wid);
+  const [date, setDate] = useState<DayKey>(initialDate || today);
+  const [checked, setChecked] = useState<Set<string>>(() => new Set(w?.items.map((i) => i.id)));
+  const existing = data.days[date]?.training;
+  const quick: [string, DayKey][] = [['Hoje', today], ['Ontem', addDays(today, -1)], ['Anteontem', addDays(today, -2)]];
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const pickWorkout = (id: string) => {
+    setWid(id);
+    setChecked(new Set(data.workouts.find((x) => x.id === id)?.items.map((i) => i.id)));
+  };
+  const toggle = (id: string) => setChecked((s) => {
+    const n = new Set(s);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
+    return n;
+  });
+  const all = w?.items.length || 0;
+  const confirm = () => {
+    act.done(wid, { date, itemIds: [...checked] });
+    onClose();
+  };
+
+  return (
+    <div className="wcheck-overlay" role="dialog" aria-modal="true" aria-label="Confirmar treino" onClick={onClose}>
+      <div className="card wcheck" onClick={(e) => e.stopPropagation()}>
+        <div className="card-head">
+          <h2>✅ Confirmar treino</h2>
+          <button className="icon-btn" onClick={onClose} title="Fechar"><Icon name="x" size={18} /></button>
+        </div>
+
+        {data.workouts.length > 1 && (
+          <label className="field">
+            <span>Treino</span>
+            <select className="input" value={wid} onChange={(e) => pickWorkout(e.target.value)}>
+              {data.workouts.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            </select>
+          </label>
+        )}
+
+        <div className="field">
+          <span>Quando você treinou?</span>
+          <div className="chips">
+            {quick.map(([label, key]) => (
+              <button key={key} type="button" className={`chip ${date === key ? 'on' : ''}`} onClick={() => setDate(key)}>{label}</button>
+            ))}
+            <input className="input wcheck-date" type="date" max={today} value={date} onChange={(e) => e.target.value && e.target.value <= today && setDate(e.target.value)} aria-label="Outra data" />
+          </div>
+          <span className="muted small">{formatMedium(date)}</span>
+        </div>
+
+        {existing && (
+          <div className="wcheck-warn">
+            <span>
+              Já tem registro nesse dia: <b>{existing.type === 'rest' ? 'descanso' : existing.name || 'treino'}</b>. Confirmar vai substituir.
+            </span>
+            <button className="btn sm danger" onClick={() => act.clear(date)}>Apagar registro</button>
+          </div>
+        )}
+
+        <div className="wcheck-head">
+          <span>Marque o que você fez <b>({checked.size} de {all})</b></span>
+          <button className="link small" onClick={() => setChecked(checked.size === all ? new Set() : new Set(w?.items.map((i) => i.id)))}>
+            {checked.size === all ? 'Desmarcar todos' : 'Marcar todos'}
+          </button>
+        </div>
+        {w && w.items.length ? (
+          <ul className="wcheck-list">
+            {w.items.map((it) => {
+              const ex = EXERCISE_BY_ID[it.exId];
+              const cardio = ex?.cat === 'Cardio';
+              const on = checked.has(it.id);
+              return (
+                <li key={it.id}>
+                  <label className={`wcheck-item ${on ? 'on' : ''}`}>
+                    <input type="checkbox" checked={on} onChange={() => toggle(it.id)} />
+                    <span className="wcheck-box">{on ? '✓' : ''}</span>
+                    <span className="wcheck-name">
+                      <b>{ex?.name || it.exId}</b>
+                      <span className="muted small">
+                        {cardio
+                          ? [it.minutes && `${it.minutes} min`, it.distance && `${it.distance} km`].filter(Boolean).join(' · ') || 'cardio'
+                          : [`${it.sets || 3}×${it.reps || 10}`, it.weight && `${it.weight} kg`].filter(Boolean).join(' · ')}
+                      </span>
+                    </span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <Empty>Esse treino não tem exercícios.</Empty>
+        )}
+
+        <div className="row">
+          <button className="btn primary" onClick={confirm} disabled={!checked.size}>
+            <Icon name="check" size={16} /> Confirmar {checked.size < all && checked.size ? `(${checked.size} de ${all})` : ''}
+          </button>
+          <button className="btn" onClick={onClose}>Cancelar</button>
+          {!checked.size && <span className="muted small">Não fez nenhum? Use "Descansei".</span>}
+        </div>
+      </div>
+    </div>
   );
 }

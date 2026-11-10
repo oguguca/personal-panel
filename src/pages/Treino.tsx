@@ -9,7 +9,7 @@ import { norm } from '../store/foods';
 import { uid } from '../store/model';
 import { slotLetter, suggestion, trainingConfig } from '../store/training';
 import type { Exercise, Workout, WorkoutItem } from '../store/types';
-import TreinoCiclo, { useTrainingActions } from './TreinoCiclo';
+import TreinoCiclo, { WorkoutCheck, useTrainingActions } from './TreinoCiclo';
 
 type SetItem = (id: string, k: 'sets' | 'reps' | 'weight' | 'minutes' | 'distance', v: string) => void;
 type Dispatch = (fn: (list: string[]) => string[]) => void;
@@ -258,8 +258,8 @@ function WorkoutCard({ w, isToday, doneToday, letter, onOpenCycle, onChange, onR
           {doneToday ? (
             <button className="btn sm" onClick={onUndo} title="Desmarcar o treino de hoje"><Icon name="undo" size={14} /> Desfazer</button>
           ) : (
-            <button className="btn sm primary" onClick={onDone} disabled={!w.items.length} title="Marca que você fez este treino hoje (o personagem refaz ele na aba Evolução)">
-              ✅ Já fiz hoje
+            <button className="btn sm primary" onClick={onDone} disabled={!w.items.length} title="Confirma o treino: escolha o dia (hoje, ontem…) e marque os exercícios feitos">
+              ✅ Já fiz
             </button>
           )}
           <button className="icon-btn" title="Renomear" onClick={() => setRenaming(true)}><Icon name="edit" size={18} /></button>
@@ -361,6 +361,7 @@ export default function Treino() {
   const sug = suggestion(data, today);
   const todayId = sug.logged ? sug.logged.workoutId : sug.workoutId ?? null; // em dia de descanso, nenhum
   const act = useTrainingActions();
+  const [check, setCheck] = useState<string | null>(null);
   const doneId = data.days[today]?.training?.type === 'workout' ? data.days[today].training!.workoutId : null;
 
   const createWorkout = () => {
@@ -392,6 +393,7 @@ export default function Treino() {
 
   return (
     <div className="page page-wide">
+      {check && <WorkoutCheck workoutId={check} onClose={() => setCheck(null)} />}
       <header className="page-header">
         <div>
           <h1>Treino</h1>
@@ -421,7 +423,7 @@ export default function Treino() {
                   w={w}
                   isToday={todayId === w.id}
                   doneToday={doneId === w.id}
-                  onDone={() => act.done(w.id)}
+                  onDone={() => setCheck(w.id)}
                   onUndo={act.undo}
                   letter={rotation.includes(w.id) ? slotLetter(rotation.indexOf(w.id)) : null}
                   onOpenCycle={() => setTab('ciclo')}
