@@ -43,4 +43,12 @@ describe('backup', () => {
     expect(old.recurring[0].attr).toBe('int');
     expect(old.days['2026-11-02'].tasks[0].attr).toBe('int');
   });
+
+  it('prova futura marcada como feita por engano volta a ser próxima', () => {
+    const back = parseBackup(JSON.stringify({ settings: {}, days: {}, events: [
+      { id: 'f', title: 'Atleta de Cristo Run', date: '2999-12-06', kind: 'corrida', done: true },
+      { id: 'p', title: 'Barça Run', date: '2020-08-31', kind: 'corrida', done: true },
+    ] }));
+    expect(back.events.map((e) => e.done)).toEqual([false, true]);
+  });
 });

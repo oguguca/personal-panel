@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  activitiesOf, avgPace, effortsOf, formatDurationSec, predictFor, racePaces, monthKm, personalRecords, predictions, runPace, shoeKm, weekKm, weekStart, weekStreak, weeklyKm,
+  activitiesOf, raceIsDone, avgPace, effortsOf, formatDurationSec, predictFor, racePaces, monthKm, personalRecords, predictions, runPace, shoeKm, weekKm, weekStart, weekStreak, weeklyKm,
 } from './running';
 import type { CalEvent, Run } from './types';
 
@@ -103,5 +103,15 @@ describe('tênis nas provas', () => {
     const ev: CalEvent = { id: 'p', title: 'Batman Run', date: '2026-09-19', kind: 'corrida', distance: '4', result: '44:04', done: true, shoeId: 's' };
     const acts = activitiesOf([run('2026-11-01', 10, 3000, { shoeId: 's' })], [ev], '2026-11-10');
     expect(shoeKm(shoe, acts)).toBe(14);
+  });
+});
+
+describe('prova futura nunca conta como feita', () => {
+  const ev = (date: string, done: boolean) => ({ date, done });
+  it('separa já fui de próximas pela data', () => {
+    expect(raceIsDone(ev('2026-11-01', false), '2026-11-10')).toBe(true); // já passou
+    expect(raceIsDone(ev('2026-12-06', true), '2026-11-10')).toBe(false); // futura marcada por engano
+    expect(raceIsDone(ev('2026-11-10', true), '2026-11-10')).toBe(true); // hoje e já corri
+    expect(raceIsDone(ev('2026-11-10', false), '2026-11-10')).toBe(false); // hoje, ainda vou correr
   });
 });

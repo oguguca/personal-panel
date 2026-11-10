@@ -115,7 +115,8 @@ export function RaceModal({ ev, onClose }: { ev: CalEvent | null; onClose: () =>
     const ev: CalEvent = {
       ...f,
       title: f.title.trim(),
-      done: past ? true : f.done,
+      // passou: feita; data futura: ainda não aconteceu (nunca conta como feita); hoje: como marcado
+      done: past ? true : f.date > today ? false : f.done,
       alert: isNew && !past ? { ...DEFAULT_ALERT } : f.alert,
     };
     update((d) => {

@@ -1,4 +1,5 @@
 // Persistência local (localStorage) + exportar/importar backup em JSON.
+import { dateKey } from './dates';
 import { defaultData, defaultSettings } from './model';
 import type { Data } from './types';
 
@@ -13,6 +14,9 @@ function normalize(raw: any): Data {
     raw = { ...raw, settings: { ...raw.settings, waterGoal: Math.max(raw.settings.waterGoal || 0, 4000), waterIdeal: 6000 } };
     if (String(raw.settings.waterQuick) === '200,300,500') raw.settings.waterQuick = [300, 500, 1000];
   }
+  // Correção: prova com data futura marcada como feita por engano volta a ser "próxima" (recebe alertas).
+  const todayKey = dateKey();
+  if (Array.isArray(raw.events)) for (const e of raw.events) if (e && e.done && e.date > todayKey && !e.result) e.done = false;
   // Migração: o atributo Idiomas foi removido; tarefas de idioma passam a contar como Intelecto.
   const fixAttr = (t: any) => { if (t && t.attr === 'lang') t.attr = 'int'; };
   if (Array.isArray(raw.recurring)) raw.recurring.forEach(fixAttr);

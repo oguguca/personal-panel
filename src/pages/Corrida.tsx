@@ -14,7 +14,7 @@ import { uid } from '../store/model';
 import {
   DISTANCES, FEELS, QUICK_KM, RUN_TYPES, SHOE_LIMIT_KM,
   activitiesOf, avgPace, effortsOf, fmtDist, fmtKm, formatDurationSec, monthKm, personalRecords, predictFor, predictions,
-  raceKm, racePaces, runPace, shoeKm, weekKm, weekStreak, weeklyKm, type Effort,
+  raceIsDone, raceKm, racePaces, runPace, shoeKm, weekKm, weekStreak, weeklyKm, type Effort,
 } from '../store/running';
 import type { CalEvent, Run, RunType, Shoe } from '../store/types';
 import type { PageProps } from './types';
@@ -402,8 +402,8 @@ export default function Corrida({ go }: PageProps) {
   const pred = useMemo(() => predictions(efforts, today), [efforts, today]);
   const paces = useMemo(() => racePaces(data.events, today), [data.events, today]);
   const races = data.events.filter((e) => e.kind === 'corrida');
-  const racesDone = races.filter((e) => e.done || e.date < today).sort((a, b) => b.date.localeCompare(a.date));
-  const racesNext = races.filter((e) => !(e.done || e.date < today)).sort((a, b) => a.date.localeCompare(b.date));
+  const racesDone = races.filter((e) => raceIsDone(e, today)).sort((a, b) => b.date.localeCompare(a.date));
+  const racesNext = races.filter((e) => !raceIsDone(e, today)).sort((a, b) => a.date.localeCompare(b.date));
   const raceList = raceTab === 'feitas' ? racesDone : racesNext;
   const nextRace = upcoming(races, today, 1)[0];
   const sortedRuns = useMemo(() => [...runs].sort((a, b) => b.date.localeCompare(a.date)), [runs]);

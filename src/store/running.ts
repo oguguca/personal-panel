@@ -145,7 +145,7 @@ export const fmtDist = (ev: Pick<CalEvent, 'distance'>) => (raceKm(ev) ? fmtKm(r
 export function activitiesOf(runs: Run[], events: CalEvent[], today: DayKey): Run[] {
   const raceDays = new Set(runs.filter((r) => r.type === 'prova').map((r) => r.date));
   const races: Run[] = events
-    .filter((e) => e.kind === 'corrida' && (e.done || e.date < today) && e.date <= today && raceKm(e) > 0 && !raceDays.has(e.date))
+    .filter((e) => e.kind === 'corrida' && raceIsDone(e, today) && raceKm(e) > 0 && !raceDays.has(e.date))
     .map((e) => ({ id: `prova-${e.id}`, date: e.date, km: raceKm(e), seconds: parseDuration(e.result) || 0, type: 'prova' as const, notes: e.title, shoeId: e.shoeId }));
   return [...runs, ...races];
 }
@@ -160,3 +160,6 @@ export function racePaces(events: CalEvent[], today: DayKey): { ev: CalEvent; pa
 
 /** Previsão para qualquer distância a partir do melhor esforço (Riegel). */
 export const predictFor = (base: Effort, km: number) => base.seconds * Math.pow(km / base.km, 1.06);
+
+/** A prova já aconteceu? (data passada, ou hoje marcada como feita). Prova futura nunca conta como feita. */
+export const raceIsDone = (ev: Pick<CalEvent, 'date' | 'done'>, today: DayKey) => ev.date < today || (!!ev.done && ev.date === today);
