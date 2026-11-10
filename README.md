@@ -27,7 +27,7 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   Vitalidade, Força, Disciplina, Resistência). Cada tarefa pode ter um atributo (o app sugere pelo título: "ler", "inglês"…).
   Tarefas, água, refeições, metas, renda e treinos dão XP; o personagem sobe de nível, ganha rank (E a S) e brilha mais.
   **Rank por temporada** (cada mês): cada dia é uma partida (vitória/derrota), PR, divisões III → I, combo de sequência e tela de promoção.
-  Os ranks têm nomes de marombeiros brasileiros: Gordo (começo), Toguro, Balestrin, Jorlan, Cariani, Stronda, Brandão, CBum e Ganley (topo).
+  Os ranks têm nomes de marombeiros brasileiros: Gordo (começo), Toguro, Cariani, Balestrin, Jorlan, Stronda, Brandão, CBum e Ganley (topo).
   Imagem de cada rank (opcional): coloque em `public/ranks/<nome>.png` (ex.: `ganley.png`, `cbum.png`). Essa pasta não vai para o GitHub.
   Rank da academia (mesmos nomes) usa os treinos feitos e a evolução das cargas.
 - **Calendário**: mês interativo para marcar **compromissos** e **corridas** (hora, local, distância, observações).

@@ -16,14 +16,14 @@ describe('posição no rank', () => {
     expect(rankFromPR(80).label).toBe('Gordo II');
     expect(rankFromPR(200)).toMatchObject({ label: 'Gordo I', into: 40, need: 80 });
     expect(rankFromPR(240).label).toBe('Toguro III');
-    expect(rankFromPR(480).label).toBe('Balestrin III');
+    expect(rankFromPR(480).label).toBe('Cariani III');
   });
 
   it('ranks do meio têm IV → I e os mais altos V → I', () => {
     expect(tierStartPR(3)).toBe(720);
-    expect(rankFromPR(720).label).toBe('Jorlan IV');
-    expect(rankFromPR(960).label).toBe('Jorlan I');
-    expect(rankFromPR(1040).label).toBe('Cariani IV');
+    expect(rankFromPR(720).label).toBe('Balestrin IV');
+    expect(rankFromPR(960).label).toBe('Balestrin I');
+    expect(rankFromPR(1040).label).toBe('Jorlan IV');
     expect(rankFromPR(1680).label).toBe('Brandão V');
     expect(rankFromPR(2400).label).toBe('CBum I');
   });

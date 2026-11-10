@@ -1,5 +1,5 @@
 // Emblema do rank (SVG próprio). Fica mais elaborado a cada rank:
-// escudo → asas (Jorlan) → coroa (Stronda) → joia (Brandão) → raios (CBum) → fogo (Ganley).
+// escudo → asas (Balestrin) → coroa (Stronda) → joia (Brandão) → raios (CBum) → fogo (Ganley).
 import { useEffect, useId, useState } from 'react';
 import { TIERS, tierSlug } from '../store/tiers';
 
