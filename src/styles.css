@@ -805,3 +805,11 @@ button.meta-item:hover { color: var(--text); }
 .cal-link { align-self: center; font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; white-space: nowrap; }
 .cal-link:hover { text-decoration: underline; }
 .cal-error { margin: -4px 0 0; color: var(--danger); font-size: 0.85rem; font-weight: 600; }
+@media (max-width: 640px) {
+  .cal-head h2 { min-width: 0; flex: 1; margin: 0; }
+  .cal-head .segmented { width: 100%; }
+  .cal-head .segmented button { flex: 1; justify-content: center; padding: 6px 8px; }
+  .cal-countdown-num { font-size: 1.9rem; min-width: 44px; }
+  .cal-event { flex-wrap: wrap; }
+  .cal-event-side { flex-direction: row; width: 100%; justify-content: flex-end; }
+}
