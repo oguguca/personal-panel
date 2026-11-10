@@ -49,6 +49,9 @@ const guessType = () => {
   return 'Ceia';
 };
 
+/** Atalhos de horário: agora ou um pouco antes (para quando comeu e esqueceu de registrar). */
+const EARLIER: [string, number][] = [['Agora', 0], ['15 min atrás', 15], ['30 min atrás', 30], ['1 h atrás', 60], ['2 h atrás', 120]];
+
 function NewMealForm({ onSave, onCancel }: { onSave: (name: string, time: string) => void; onCancel: () => void }) {
   const [name, setName] = useState(guessType);
   const [time, setTime] = useState(() => toHHMM(Date.now()));
@@ -65,10 +68,20 @@ function NewMealForm({ onSave, onCancel }: { onSave: (name: string, time: string
       </div>
       <div className="row">
         <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome (ex.: Pré-treino)" aria-label="Nome da refeição" />
-        <label className="row small muted" style={{ gap: 6 }}>
-          Comi às
-          <input className="input w-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+      </div>
+      <div className="meal-time">
+        <label className="meal-time-field">
+          <span>🕒 Comi às</span>
+          <input className="input" type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Horário em que comeu" />
         </label>
+        <div className="chips">
+          {EARLIER.map(([label, min]) => {
+            const v = toHHMM(Date.now() - min * 60000);
+            return (
+              <button type="button" key={label} className={`chip ${time === v ? 'on' : ''}`} onClick={() => setTime(v)}>{label}</button>
+            );
+          })}
+        </div>
       </div>
       <div className="row">
         <button className="btn primary" type="submit"><Icon name="check" size={16} /> Registrar e adicionar alimentos</button>

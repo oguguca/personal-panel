@@ -251,7 +251,9 @@ textarea.input { resize: vertical; min-height: 60px; }
 .time-inline {
   border: 0; background: transparent; color: inherit; font: inherit; font-weight: 700;
   padding: 0 0 0 4px; width: auto; cursor: pointer; outline: none;
+  border-bottom: 1px dashed currentColor; border-radius: 0;
 }
+.time-inline:hover, .time-inline:focus { border-bottom-style: solid; }
 .time-inline::-webkit-calendar-picker-indicator { display: none; }
 .macros { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.82rem; color: var(--muted); }
 .macros strong { color: var(--text); font-weight: 650; }
@@ -832,3 +834,8 @@ button.meta-item:hover { color: var(--text); }
 .wcheck-item:not(.on) .ex-anim { filter: grayscale(1); }
 .wcheck-name b { font-size: 1.02rem; }
 @media (max-width: 560px) { .ex-anim.wcheck-thumb, .wcheck-thumb-empty { width: 96px; } }
+
+/* Alimentação: horário da refeição */
+.meal-time { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.meal-time-field { display: flex; align-items: center; gap: 8px; font-weight: 650; }
+.meal-time-field .input { width: 120px; font-size: 1.05rem; font-weight: 700; color: var(--text); background: var(--surface); }
