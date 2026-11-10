@@ -1,6 +1,6 @@
 // Aba Corrida: topo com km e próxima prova, abas (visão geral, provas, treinos, tênis),
 // recordes em medalhas, previsão interativa, evolução do pace e mural de provas.
-import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from 'react';
 import BarChart from '../components/BarChart';
 import Icon from '../components/Icon';
 import { RaceCard, RaceModal } from '../components/RaceDiary';
@@ -188,6 +188,81 @@ function RecordMedal({ label, pr, km }: { label: string; pr: (Effort & { time: n
   );
 }
 
+/** Escolher quais corridas (provas e treinos) foram feitas com um tênis. */
+function ShoePicker({ shoe, acts, shoes, onClose }: { shoe: Shoe; acts: Run[]; shoes: Shoe[]; onClose: () => void }) {
+  const { update } = useStore();
+  const list = [...acts].sort((a, b) => b.date.localeCompare(a.date));
+  const nameOf = (id?: string) => shoes.find((s) => s.id === id)?.name;
+  const mine = list.filter((a) => a.shoeId === shoe.id);
+  const km = mine.reduce((s, a) => s + a.km, 0);
+
+  // marca/desmarca: provas guardam o tênis no evento do calendário; treinos, no próprio treino
+  const setShoe = (a: Run, on: boolean) => update((d) => {
+    const value = on ? shoe.id : undefined;
+    if (a.id.startsWith('prova-')) {
+      const ev = d.events.find((e) => `prova-${e.id}` === a.id);
+      if (ev) ev.shoeId = value;
+    } else {
+      const r = d.running.runs.find((x) => x.id === a.id);
+      if (r) r.shoeId = value;
+    }
+  });
+  const all = (on: boolean) => list.forEach((a) => (on ? !a.shoeId : a.shoeId === shoe.id) && setShoe(a, on));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="wcheck-overlay" role="dialog" aria-modal="true" aria-label={`Corridas com ${shoe.name}`} onClick={onClose}>
+      <div className="card wcheck" onClick={(e) => e.stopPropagation()}>
+        <div className="card-head">
+          <h2>👟 {shoe.name}</h2>
+          <button className="icon-btn" onClick={onClose} title="Fechar"><Icon name="x" size={18} /></button>
+        </div>
+        <p className="muted small" style={{ margin: 0 }}>
+          Marque as corridas que você fez com este tênis. <b>{mine.length}</b> marcada(s) · <b>{fmtKm(km)}</b>
+          {shoe.startKm ? ` (+ ${fmtKm(shoe.startKm)} de antes)` : ''}.
+        </p>
+        {list.length ? (
+          <>
+            <div className="row">
+              <button className="link small" onClick={() => all(true)}>Marcar as que estão sem tênis</button>
+              <button className="link small" onClick={() => all(false)}>Desmarcar todas</button>
+            </div>
+            <ul className="wcheck-list">
+              {list.map((a) => {
+                const on = a.shoeId === shoe.id;
+                const other = !on && a.shoeId ? nameOf(a.shoeId) : null;
+                return (
+                  <li key={a.id}>
+                    <label className={`wcheck-item ${on ? 'on' : ''}`}>
+                      <input type="checkbox" checked={on} onChange={() => setShoe(a, !on)} />
+                      <span className="wcheck-box">{on ? '✓' : ''}</span>
+                      <span className="wcheck-name">
+                        <b>{a.type === 'prova' && a.notes ? `🏅 ${a.notes}` : `${RUN_TYPES[a.type].icon} ${RUN_TYPES[a.type].label}`}</b>
+                        <span className="muted small">
+                          {formatShort(a.date)} · {fmtKm(a.km)}{a.seconds ? ` · ${formatDurationSec(a.seconds)}` : ''}
+                          {other ? ` · com ${other} (marcar troca)` : ''}
+                        </span>
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : (
+          <Empty>Nenhuma corrida ainda. Registre treinos ou adicione provas.</Empty>
+        )}
+        <div className="row"><button className="btn primary" onClick={onClose}><Icon name="check" size={16} /> Pronto</button></div>
+      </div>
+    </div>
+  );
+}
+
 export default function Corrida({ go }: PageProps) {
   const { data, today, update } = useStore();
   const { runs, shoes, monthGoalKm } = data.running;
@@ -210,6 +285,7 @@ export default function Corrida({ go }: PageProps) {
   const [newShoe, setNewShoe] = useState('');
   const [goalEdit, setGoalEdit] = useState(false);
   const [predKm, setPredKm] = useState(10);
+  const [picking, setPicking] = useState<Shoe | null>(null);
 
   const acts = useMemo(() => activitiesOf(runs, data.events, today), [runs, data.events, today]);
   const efforts = useMemo(() => effortsOf(runs, data.events), [runs, data.events]);
@@ -439,7 +515,7 @@ export default function Corrida({ go }: PageProps) {
         <div className="run-panel" key="tenis">
           <div className="shoe-grid">
             {shoes.map((s) => {
-              const km = shoeKm(s, runs);
+              const km = shoeKm(s, acts);
               const pct = Math.min(100, (km / s.limitKm) * 100);
               const worn = km >= s.limitKm;
               return (
@@ -449,7 +525,11 @@ export default function Corrida({ go }: PageProps) {
                   </div>
                   <b className="shoe-name">{s.name}</b>
                   <span className={`badge ${s.retired ? '' : worn || pct >= 85 ? 'warning' : 'success'}`}>{s.retired ? 'aposentado' : worn ? 'hora de trocar' : pct >= 85 ? `quase na hora · ${Math.round(s.limitKm - km)} km` : `${Math.round(s.limitKm - km)} km de vida`}</span>
-                  <button className="link small" onClick={() => patchShoe(s.id, (x) => { x.retired = !x.retired; })}>{s.retired ? 'Voltar a usar' : 'Aposentar'}</button>
+                  <span className="muted small">{acts.filter((a) => a.shoeId === s.id).length} corrida(s) com ele</span>
+                  <div className="row" style={{ justifyContent: 'center' }}>
+                    <button className="btn sm primary" onClick={() => setPicking(s)}>👟 Escolher corridas</button>
+                    <button className="link small" onClick={() => patchShoe(s.id, (x) => { x.retired = !x.retired; })}>{s.retired ? 'Voltar a usar' : 'Aposentar'}</button>
+                  </div>
                 </div>
               );
             })}
@@ -464,6 +544,7 @@ export default function Corrida({ go }: PageProps) {
       )}
 
       {race && <RaceModal ev={race === 'nova' ? null : race} onClose={() => setRace(null)} />}
+      {picking && <ShoePicker shoe={picking} acts={acts} shoes={shoes} onClose={() => setPicking(null)} />}
     </div>
   );
 }

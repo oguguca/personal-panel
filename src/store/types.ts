@@ -263,6 +263,8 @@ export interface CalEvent {
   story?: string;
   cover?: string;
   photos?: string[];
+  /** Tênis usado na prova (aba Corrida). */
+  shoeId?: string;
   notes?: string;
   alert?: EventAlert | null;
   lastAlert?: number; // último aviso enviado (ms)

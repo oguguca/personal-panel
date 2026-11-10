@@ -180,6 +180,15 @@ export function RaceModal({ ev, onClose }: { ev: CalEvent | null; onClose: () =>
                 {pace && <span className="badge success">Pace {pace}</span>}
               </div>
             </div>
+            {data.running.shoes.length > 0 && (
+              <label className="field">
+                <span>Tênis</span>
+                <select className="input" value={f.shoeId || ''} onChange={(e) => set('shoeId', e.target.value || undefined)}>
+                  <option value="">— nenhum —</option>
+                  {data.running.shoes.filter((s) => !s.retired || s.id === f.shoeId).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </label>
+            )}
             <label className="field">
               <span>Como foi a corrida?</span>
               <textarea className="input race-story-input" rows={7} placeholder="Conte como foi: o percurso, o clima, como você se sentiu, o que achou da organização, o momento mais marcante…" value={f.story || ''} onChange={(e) => set('story', e.target.value)} />

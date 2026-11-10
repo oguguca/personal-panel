@@ -96,3 +96,12 @@ describe('provas contam como corrida', () => {
     expect(predictFor({ date: '', km: 5, seconds: 1500, title: '', race: false }, 5)).toBe(1500);
   });
 });
+
+describe('tênis nas provas', () => {
+  it('prova com tênis soma na quilometragem dele', () => {
+    const shoe = { id: 's', name: 'Tênis', limitKm: 700 };
+    const ev: CalEvent = { id: 'p', title: 'Batman Run', date: '2026-09-19', kind: 'corrida', distance: '4', result: '44:04', done: true, shoeId: 's' };
+    const acts = activitiesOf([run('2026-11-01', 10, 3000, { shoeId: 's' })], [ev], '2026-11-10');
+    expect(shoeKm(shoe, acts)).toBe(14);
+  });
+});

@@ -119,7 +119,7 @@ export function predictions(efforts: Effort[], today: DayKey): { base: Effort; t
   return { base, times };
 }
 
-/** km rodados por um tênis (inclui o que ele já tinha antes). */
+/** km rodados por um tênis (inclui o que ele já tinha antes). Passe as atividades (treinos + provas). */
 export const shoeKm = (shoe: Shoe, runs: Run[]) => (shoe.startKm || 0) + sumKm(runs.filter((r) => r.shoeId === shoe.id));
 
 /** Sequência de semanas seguidas com pelo menos uma corrida (contando a atual se já correu). */
@@ -146,7 +146,7 @@ export function activitiesOf(runs: Run[], events: CalEvent[], today: DayKey): Ru
   const raceDays = new Set(runs.filter((r) => r.type === 'prova').map((r) => r.date));
   const races: Run[] = events
     .filter((e) => e.kind === 'corrida' && (e.done || e.date < today) && e.date <= today && raceKm(e) > 0 && !raceDays.has(e.date))
-    .map((e) => ({ id: `prova-${e.id}`, date: e.date, km: raceKm(e), seconds: parseDuration(e.result) || 0, type: 'prova' as const, notes: e.title }));
+    .map((e) => ({ id: `prova-${e.id}`, date: e.date, km: raceKm(e), seconds: parseDuration(e.result) || 0, type: 'prova' as const, notes: e.title, shoeId: e.shoeId }));
   return [...runs, ...races];
 }
 
