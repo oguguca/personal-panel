@@ -1,5 +1,6 @@
 // Aba "Ciclo" do Treino: sequência de 1 a 7 treinos, dias de descanso e registro do dia.
 import { useEffect, useState } from 'react';
+import ExercisePreview, { hasPreview } from '../components/ExercisePreview';
 import Icon from '../components/Icon';
 import { EXERCISE_BY_ID } from '../data/exercises';
 import { Empty } from '../components/ui';
@@ -329,6 +330,7 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
                   <label className={`wcheck-item ${on ? 'on' : ''}`}>
                     <input type="checkbox" checked={on} onChange={() => toggle(it.id)} />
                     <span className="wcheck-box">{on ? '✓' : ''}</span>
+                    {hasPreview(it.exId) ? <ExercisePreview id={it.exId} name={ex?.name} size="wcheck-thumb" /> : <span className="wcheck-thumb-empty">🏋️</span>}
                     <span className="wcheck-name">
                       <b>{ex?.name || it.exId}</b>
                       <span className="muted small">
