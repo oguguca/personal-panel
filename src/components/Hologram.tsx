@@ -172,16 +172,6 @@ export default function Hologram({ game, selected, onSelect }: { game: Game; sel
             <ellipse cx="100" cy="23" rx="14" ry="11" fill="url(#holo-spot)" />
             <path className="holo-organ" d="M88 24 C87 16 94 12 100 13 C106 12 113 16 112 24 C113 30 107 34 100 33 C93 34 87 30 88 24 Z M100 13 V33 M91 20 C94 21 95 24 93 26 M109 20 C106 21 105 24 107 26 M95 30 C97 28 98 29 98 31 M105 30 C103 28 102 29 102 31" />
           </g>
-          {/* fala (Idiomas): ondas saindo da boca */}
-          <g opacity={glowOf(lv('lang'))}>
-            <ellipse cx="100" cy="47" rx="6" ry="3" fill="url(#holo-spot)" />
-            {lv('lang') > 0 && (
-              <g className="holo-waves">
-                <path d="M110 44 C113 46 113 48 110 50" />
-                <path d="M114 41 C119 45 119 49 114 53" />
-              </g>
-            )}
-          </g>
           {/* coração (Vitalidade) */}
           <g opacity={glowOf(lv('vit'))} className="holo-heart">
             <circle cx="114" cy="108" r="13" fill="url(#holo-spot)" />

@@ -66,8 +66,7 @@ export interface Game {
 
 // anchor = ponto no desenho do corpo (viewBox 0 0 200 430) de onde sai a linha.
 export const ATTRS: Attr[] = [
-  { id: 'int', name: 'Intelecto', emoji: '🧠', part: 'Cérebro', anchor: [100, 22], side: 'right', how: 'Ler, estudar, cursos, aulas' },
-  { id: 'lang', name: 'Idiomas', emoji: '🗣️', part: 'Fala', anchor: [100, 47], side: 'left', how: 'Inglês, espanhol, qualquer idioma' },
+  { id: 'int', name: 'Intelecto', emoji: '🧠', part: 'Cérebro', anchor: [100, 22], side: 'left', how: 'Ler, estudar, cursos, aulas, idiomas' },
   { id: 'vit', name: 'Vitalidade', emoji: '❤️', part: 'Coração', anchor: [114, 108], side: 'right', how: 'Água, refeições, sono, descanso' },
   { id: 'forca', name: 'Força', emoji: '💪', part: 'Braços e peito', anchor: [44, 138], side: 'left', how: 'Treinos de musculação (carga conta)' },
   { id: 'disc', name: 'Disciplina', emoji: '🎯', part: 'Núcleo', anchor: [100, 172], side: 'right', how: 'Metas diárias, renda, tarefas em geral' },
@@ -77,8 +76,8 @@ export const ATTR_BY_ID = Object.fromEntries(ATTRS.map((a) => [a.id, a])) as Rec
 
 // Palavras que sugerem o atributo de uma tarefa (sem acento, minúsculas).
 const KEYWORDS: Partial<Record<AttrId, RegExp>> = {
-  lang: /ingl|espanh|frances|alema|italian|japon|corean|chines|idioma|duolingo|lingua|vocabul|english/,
-  int: /\bler\b|leitura|livro|\blivr|estud|curso|aula|faculdade|prova|revis|pesquis|podcast|artigo|programa|apostila/,
+  // idiomas contam como Intelecto
+  int: /ingl|espanh|frances|alema|italian|japon|corean|chines|idioma|duolingo|lingua|vocabul|english|\bler\b|leitura|livro|\blivr|estud|curso|aula|faculdade|prova|revis|pesquis|podcast|artigo|programa|apostila/,
   forca: /academia|muscula|\bgym\b|flexao|supino|agacha|barra fixa|treino de forca/,
   resist: /corr(er|ida)|caminh|bike|pedal|natac|cardio|esteira|trilha|futebol|bicicleta/,
   vit: /medit|dormir|\bsono\b|agua|vitamin|alonga|medico|dentista|yoga|salada|terapia/,

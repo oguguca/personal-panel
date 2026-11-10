@@ -13,6 +13,10 @@ function normalize(raw: any): Data {
     raw = { ...raw, settings: { ...raw.settings, waterGoal: Math.max(raw.settings.waterGoal || 0, 4000), waterIdeal: 6000 } };
     if (String(raw.settings.waterQuick) === '200,300,500') raw.settings.waterQuick = [300, 500, 1000];
   }
+  // Migração: o atributo Idiomas foi removido; tarefas de idioma passam a contar como Intelecto.
+  const fixAttr = (t: any) => { if (t && t.attr === 'lang') t.attr = 'int'; };
+  if (Array.isArray(raw.recurring)) raw.recurring.forEach(fixAttr);
+  if (raw.days && typeof raw.days === 'object') for (const d of Object.values<any>(raw.days)) (d?.tasks || []).forEach(fixAttr);
   return {
     ...base,
     ...raw,

@@ -33,4 +33,14 @@ describe('backup', () => {
     const old = parseBackup(JSON.stringify({ settings: { waterGoal: 2000, waterQuick: [200, 300, 500] }, days: {} }));
     expect(old.settings).toMatchObject({ waterGoal: 4000, waterIdeal: 6000, waterQuick: [300, 500, 1000] });
   });
+
+  it('migra tarefas do antigo atributo Idiomas para Intelecto', () => {
+    const old = parseBackup(JSON.stringify({
+      settings: {},
+      recurring: [{ id: 'r', title: 'Duolingo', days: [1], attr: 'lang' }],
+      days: { '2026-11-02': { tasks: [{ id: 't', title: 'Inglês', done: true, attr: 'lang' }] } },
+    }));
+    expect(old.recurring[0].attr).toBe('int');
+    expect(old.days['2026-11-02'].tasks[0].attr).toBe('int');
+  });
 });

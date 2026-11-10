@@ -41,7 +41,7 @@ export interface Settings {
 }
 
 /** Atributo de desenvolvimento pessoal (aba Evolução). */
-export type AttrId = 'int' | 'lang' | 'vit' | 'forca' | 'disc' | 'resist';
+export type AttrId = 'int' | 'vit' | 'forca' | 'disc' | 'resist';
 
 export interface Task {
   id: string;

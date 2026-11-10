@@ -17,13 +17,13 @@ describe('virada do dia (ensureDay)', () => {
     withDay(data, SUN, {
       tasks: [
         { id: 'a', title: 'Feita', done: true },
-        { id: 'b', title: 'Pendente', done: false, attr: 'lang' },
+        { id: 'b', title: 'Pendente', done: false, attr: 'int' },
       ],
     });
     data.lastDay = SUN;
     const mon = ensureDay(data, MON);
     expect(mon.tasks.map((t) => t.title)).toEqual(['Pendente']);
-    expect(mon.tasks[0]).toMatchObject({ carried: true, attr: 'lang' });
+    expect(mon.tasks[0]).toMatchObject({ carried: true, attr: 'int' });
     expect(data.days[SUN].tasks[1].movedTo).toBe(MON);
     expect(data.lastDay).toBe(MON);
   });

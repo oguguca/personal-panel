@@ -23,7 +23,7 @@ Feito com **Electron + Vite + React + TypeScript** (modo `strict`). Os dados fic
   (traduções em `scripts/translations/`). Também há aba de **ciclo e descanso**: sequência de 1 a 7 treinos,
   dias de descanso e previsão que segue o último treino feito. Para baixar/atualizar a lista e as fotos:
   `npm run exercises`.
-- **Evolução** (desenvolvimento pessoal em modo jogo): personagem holográfico com 6 atributos (Intelecto, Idiomas,
+- **Evolução** (desenvolvimento pessoal em modo jogo): personagem holográfico com 5 atributos (Intelecto,
   Vitalidade, Força, Disciplina, Resistência). Cada tarefa pode ter um atributo (o app sugere pelo título: "ler", "inglês"…).
   Tarefas, água, refeições, metas, renda e treinos dão XP; o personagem sobe de nível, ganha rank (E a S) e brilha mais.
   **Rank por temporada** (cada mês): cada dia é uma partida (vitória/derrota), PR, divisões III → I, combo de sequência e tela de promoção.

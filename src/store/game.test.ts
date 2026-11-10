@@ -6,8 +6,8 @@ describe('atributo sugerido pelo título da tarefa', () => {
   it.each([
     ['Ler 20 páginas', 'int'],
     ['Estudar para a prova', 'int'],
-    ['Inglês no Duolingo', 'lang'],
-    ['Aula de espanhol', 'lang'],
+    ['Inglês no Duolingo', 'int'],
+    ['Aula de espanhol', 'int'],
     ['Correr 5 km', 'resist'],
     ['Ir à academia', 'forca'],
     ['Meditar 10 min', 'vit'],
@@ -52,7 +52,7 @@ describe('XP do dia', () => {
       tasks: [
         { id: '1', title: 'Ler', done: true, attr: 'int' },
         { id: '2', title: 'Lavar louça', done: true },
-        { id: '3', title: 'Inglês', done: false, attr: 'lang' },
+        { id: '3', title: 'Inglês', done: false, attr: 'int' },
       ],
     });
     const { gains } = dayGains(data, MON);
