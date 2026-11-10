@@ -814,7 +814,7 @@ button.meta-item:hover { color: var(--text); }
 
 /* ---------- Confirmar treino (painel de check) ---------- */
 .wcheck-overlay { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.55); animation: rc-fade .15s ease-out; }
-.wcheck { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow: auto; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.wcheck { width: min(680px, 100%); max-height: calc(100vh - 32px); overflow: auto; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
 .wcheck-date { width: auto !important; flex: none; padding: 4px 8px; }
 .wcheck-warn { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--warning-soft); color: var(--warning); font-size: 0.88rem; }
 .wcheck-warn span { flex: 1; min-width: 200px; }
@@ -827,6 +827,8 @@ button.meta-item:hover { color: var(--text); }
 .wcheck-box { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 7px; border: 2px solid var(--border); font-weight: 900; color: #fff; }
 .wcheck-item.on .wcheck-box { background: var(--success); border-color: var(--success); }
 .wcheck-name { display: flex; flex-direction: column; min-width: 0; }
-.ex-anim.wcheck-thumb { width: 84px; flex: none; border-radius: 10px; }
-.wcheck-thumb-empty { width: 84px; aspect-ratio: 4 / 3; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--surface); font-size: 1.4rem; }
+.ex-anim.wcheck-thumb { width: 150px; flex: none; border-radius: 12px; }
+.wcheck-thumb-empty { width: 150px; aspect-ratio: 4 / 3; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--surface); font-size: 1.4rem; }
 .wcheck-item:not(.on) .ex-anim { filter: grayscale(1); }
+.wcheck-name b { font-size: 1.02rem; }
+@media (max-width: 560px) { .ex-anim.wcheck-thumb, .wcheck-thumb-empty { width: 96px; } }
