@@ -34,7 +34,7 @@ export function usePortrait(slug: string) {
   return url;
 }
 
-const ROMAN = ['★', 'I', 'II', 'III'];
+const ROMAN = ['★', 'I', 'II', 'III', 'IV', 'V'];
 const SHIELD = 'M0,-40 L31,-29 L29,6 C26,25 12,35 0,42 C-12,35 -26,25 -29,6 L-31,-29 Z';
 const WING = 'M20,-14 C38,-30 52,-26 60,-36 C60,-14 50,0 26,10 Z M22,2 C38,-4 48,0 56,-6 C52,10 40,20 24,20 Z';
 const CROWN = 'M-17,-36 L-12,-52 L-5,-41 L0,-56 L5,-41 L12,-52 L17,-36 Z';

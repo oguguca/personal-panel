@@ -1,5 +1,5 @@
 // Desenvolvimento pessoal em modo jogo: personagem, atributos, rank de academia e atividade.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Hologram from '../components/Hologram';
 import RankEmblem from '../components/RankEmblem';
 import RankedPanel, { RankChange } from '../components/Ranked';
@@ -8,6 +8,7 @@ import { useStore } from '../store/StoreContext';
 import { formatShort } from '../store/dates';
 import { ATTR_BY_ID, GYM_TIERS, XP, computeGame } from '../store/game';
 import { computeRanked } from '../store/rank';
+import { divLabel } from '../store/tiers';
 import type { AttrId } from '../store/types';
 import type { PageProps } from './types';
 
@@ -27,8 +28,14 @@ export default function Evolucao({ go }: PageProps) {
 
   const g = data.game || {};
   const step = ranked.season.rank.step;
+  // rankV 2 = divisões III/IV/V. Na primeira vez com a escala nova, aceita a posição sem tela de promoção.
+  const rankV = 2;
+  useEffect(() => {
+    if (g.rankV !== rankV) update((d) => { d.game = { ...(d.game || {}), rankV, seenStep: step, seenSeason: ranked.season.id }; });
+  }, [g.rankV, step, ranked.season.id, update]);
   const change: 'up' | 'down' | 'season' | null =
-    g.seenSeason && g.seenSeason !== ranked.season.id ? 'season'
+    g.rankV !== rankV ? null
+    : g.seenSeason && g.seenSeason !== ranked.season.id ? 'season'
     : g.seenStep === undefined ? (step > 0 ? 'up' : null)
     : step > g.seenStep ? 'up' : step < g.seenStep ? 'down' : null;
   const ackRank = () => update((d) => { d.game = { ...(d.game || {}), seenStep: step, seenSeason: ranked.season.id }; });
@@ -41,7 +48,7 @@ export default function Evolucao({ go }: PageProps) {
         <div>
           <h1>Evolução</h1>
           <p className="muted">
-            {ranked.season.rank.label} · Nível {game.total.level} · {game.total.title} · {game.total.xp.toLocaleString('pt-BR')} XP no total
+            Rank <b>{ranked.season.rank.label}</b> · Personagem nível {game.total.level} ({game.total.title}) · {game.total.xp.toLocaleString('pt-BR')} XP no total
           </p>
         </div>
       </header>
@@ -61,7 +68,7 @@ export default function Evolucao({ go }: PageProps) {
       <section className="card holo-card">
         <Hologram game={game} selected={selected} onSelect={(id) => setSelected(selected === id ? null : id)} />
         <div className="holo-total">
-          <span>Nível {game.total.level}</span>
+          <span>Personagem · nível {game.total.level}</span>
           <Progress value={game.total.into} max={game.total.need} />
           <span className="muted small">{game.total.need - game.total.into} XP para o nível {game.total.level + 1}</span>
         </div>
@@ -93,7 +100,7 @@ export default function Evolucao({ go }: PageProps) {
           <div className="gym-rank">
             <RankEmblem tier={tier.index} div={tier.div} size={84} title={tier.name} />
             <div className="gym-rank-info">
-              <b>{tier.name}{tier.div ? ` ${['', 'I', 'II', 'III'][tier.div]}` : ''}</b>
+              <b>{divLabel(tier.name, tier.div)}</b>
               <span className="muted small">
                 {tier.next ? `${tier.need - tier.into} XP de Força para ${tier.next.name}` : 'Rank máximo!'}
               </span>

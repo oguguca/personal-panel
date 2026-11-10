@@ -219,7 +219,7 @@ export interface Data {
   foodUsage: Record<string, FoodUsage>;
   workouts: Workout[];
   training: { rotation: string[]; restDays: number[] };
-  game?: { seenLevel?: number; seenStep?: number; seenSeason?: string };
+  game?: { seenLevel?: number; seenStep?: number; seenSeason?: string; rankV?: number };
   /** Calendário: compromissos e corridas. */
   events: CalEvent[];
   /** Aba Corrida: treinos de corrida, tênis e meta do mês. */

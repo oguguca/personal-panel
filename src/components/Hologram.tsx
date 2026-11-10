@@ -187,7 +187,7 @@ export default function Hologram({ game, selected, onSelect }: { game: Game; sel
       {left.map(({ a, y }) => <Callout key={a.id} a={a} y={y} side="left" selected={selected === a.id} onSelect={onSelect} />)}
       {right.map(({ a, y }) => <Callout key={a.id} a={a} y={y} side="right" selected={selected === a.id} onSelect={onSelect} />)}
 
-      <text className="holo-level" x={W / 2} y={H - 8} textAnchor="middle">NÍVEL {total} · {game.total.title.toUpperCase()}</text>
+      <text className="holo-level" x={W / 2} y={H - 8} textAnchor="middle">PERSONAGEM · NÍVEL {total} · {game.total.title.toUpperCase()}</text>
     </svg>
   );
 }

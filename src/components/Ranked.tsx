@@ -3,7 +3,8 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import RankEmblem, { RankArt } from './RankEmblem';
 import { formatShort, parseKey } from '../store/dates';
 import { GYM_TIERS } from '../store/game';
-import { RANK, TIERS, TOP, comboOf, type Match, type Ranked } from '../store/rank';
+import { RANK, TIERS, TOP, comboOf, tierStartPR, type Match, type Ranked } from '../store/rank';
+import { divLabel, firstDiv } from '../store/tiers';
 
 const RESULT: Record<Match['result'], { label: string; cls: string }> = {
   win: { label: 'Vitória', cls: 'win' },
@@ -21,7 +22,7 @@ const tierStyle = (tier: number) => {
 export default function RankedPanel({ ranked }: { ranked: Ranked }) {
   const { season, streak, bestStreak, daysLeft, past } = ranked;
   const r = season.rank;
-  const nextLabel = r.need ? (r.div > 1 ? `${r.name} ${['', 'I', 'II'][r.div - 1]}` : r.tier + 1 === TIERS.length - 1 ? TIERS[r.tier + 1].name : `${TIERS[r.tier + 1].name} III`) : null;
+  const nextLabel = r.need ? (r.div > 1 ? divLabel(r.name, r.div - 1) : divLabel(TIERS[r.tier + 1].name, firstDiv(r.tier + 1))) : null;
   const todayMatch = season.matches[season.matches.length - 1];
   const todayXp = todayMatch?.result === 'live' ? todayMatch.xp : 0;
   const toWin = Math.max(0, RANK.activeXp - todayXp);
@@ -90,7 +91,7 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
         <div className="ladder">
           {TIERS.map((t, i) => (
             <div key={t.name} className={`ladder-step ${i === r.tier ? 'on' : ''} ${i > r.tier ? 'off' : ''}`}>
-              <RankEmblem tier={i} div={i === r.tier ? r.div : i === TIERS.length - 1 ? 0 : 1} size={58} locked={i > r.tier} animate={false} />
+              <RankEmblem tier={i} div={i === r.tier ? r.div : i === TIERS.length - 1 ? 0 : firstDiv(i)} size={58} locked={i > r.tier} animate={false} />
               <span>{t.name}</span>
             </div>
           ))}
@@ -123,7 +124,8 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
           <li>Dia com {RANK.activeXp}+ XP = <b>vitória</b>: ganha PR (XP × {RANK.rate}, até {RANK.maxDay} por dia).</li>
           <li>Dias seguidos dão <b>combo</b>: +5% por dia, até +50%.</li>
           <li>Dia parado (menos de {RANK.idleXp} XP) = <b>derrota</b>: −{RANK.loss} PR e a sequência zera. Dia de descanso do treino não conta como derrota.</li>
-          <li>{RANK.divPR} PR sobe uma divisão (III → II → I). Depois de I vem o próximo rank. Do Toguro (frango) ao Ganley (topo).</li>
+          <li>{RANK.divPR} PR sobe uma divisão. Os primeiros ranks têm 3 divisões (III → I), os do meio 4 (IV → I) e os mais altos 5 (V → I). Depois da I vem o próximo rank. Do Toguro (frango) ao Ganley (topo).</li>
+          <li>O <b>rank</b> é da temporada (zera um pouco todo mês). O <b>nível do personagem</b> é outra coisa: soma todo o XP desde sempre e nunca cai.</li>
           <li>Nova temporada: reset suave, você começa com {Math.round(RANK.carry * 100)}% dos pontos da anterior.</li>
         </ul>
       </details>
@@ -162,7 +164,6 @@ function AllRanks({ current, onClose }: { current: number; onClose: () => void }
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, [onClose]);
-  const perTier = RANK.divisions * RANK.divPR;
   return (
     <div className="all-ranks" role="dialog" aria-modal="true" aria-label="Todos os ranks" onClick={onClose}>
       <div className="all-ranks-box" onClick={(e) => e.stopPropagation()}>
@@ -173,9 +174,10 @@ function AllRanks({ current, onClose }: { current: number; onClose: () => void }
         <div className="all-ranks-grid">
           {TIERS.map((t, i) => (
             <div key={t.name} className={`all-rank ${i === current ? 'on' : ''} ${i === TOP ? 'top' : ''}`} style={tierStyle(i)}>
-              <RankArt tier={i} div={i === TOP ? 0 : 1} size={i === TOP ? 200 : 130} animate={i === current || i === TOP} />
+              <RankArt tier={i} div={i === TOP ? 0 : firstDiv(i)} size={i === TOP ? 200 : 130} animate={i === current || i === TOP} />
               <b>{t.name}</b>
-              <span>{i === 0 ? 'Começo' : `${(i * perTier).toLocaleString('pt-BR')} PR`}</span>
+              <span>{i === 0 ? 'Começo' : `${tierStartPR(i).toLocaleString('pt-BR')} PR`}</span>
+              {t.divisions > 0 && <span className="all-rank-divs">{t.divisions} divisões · {divLabel('', t.divisions).trim()} → I</span>}
               <span className="all-rank-gym">Academia: {GYM_TIERS[i].min.toLocaleString('pt-BR')} XP de Força</span>
               {i === current && <span className="all-rank-you">Você está aqui</span>}
               {i === TOP && i !== current && <span className="all-rank-you top">Topo</span>}

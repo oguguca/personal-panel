@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { makeData, withDay } from '../test/fixtures';
 import { addDays } from './dates';
 import { gymTier } from './game';
-import { RANK, comboOf, computeRanked, rankFromPR } from './rank';
+import { RANK, comboOf, computeRanked, rankFromPR, tierStartPR } from './rank';
 import type { Data, DayKey } from './types';
 
 /** Dia com N tarefas de atributo feitas (25 XP cada). */
@@ -10,18 +10,33 @@ const active = (data: Data, key: DayKey, tasks = 2) =>
   withDay(data, key, { tasks: Array.from({ length: tasks }, (_, i) => ({ id: String(i), title: 'Ler', done: true, attr: 'int' as const })) });
 
 describe('posição no rank', () => {
-  it('cada 100 PR sobe uma divisão: III → II → I → próximo rank', () => {
+  it('cada 80 PR sobe uma divisão; os primeiros ranks têm III → II → I', () => {
     expect(rankFromPR(0).label).toBe('Toguro III');
-    expect(rankFromPR(99).label).toBe('Toguro III');
-    expect(rankFromPR(100).label).toBe('Toguro II');
-    expect(rankFromPR(250)).toMatchObject({ label: 'Toguro I', into: 50, need: 100 });
-    expect(rankFromPR(300).label).toBe('Marombeiro III');
-    expect(rankFromPR(900).label).toBe('Jorlan III');
-    expect(rankFromPR(1050).label).toBe('Jorlan II');
+    expect(rankFromPR(79).label).toBe('Toguro III');
+    expect(rankFromPR(80).label).toBe('Toguro II');
+    expect(rankFromPR(200)).toMatchObject({ label: 'Toguro I', into: 40, need: 80 });
+    expect(rankFromPR(240).label).toBe('Marombeiro III');
+    expect(rankFromPR(480).label).toBe('Balestrin III');
+  });
+
+  it('ranks do meio têm IV → I e os mais altos V → I', () => {
+    expect(tierStartPR(3)).toBe(720);
+    expect(rankFromPR(720).label).toBe('Jorlan IV');
+    expect(rankFromPR(960).label).toBe('Jorlan I');
+    expect(rankFromPR(1040).label).toBe('Cariani IV');
+    expect(rankFromPR(1680).label).toBe('Brandão V');
+    expect(rankFromPR(2400).label).toBe('CBum I');
+  });
+
+  it('a posição (step) só sobe: dá para comparar promoção e queda', () => {
+    const steps = [0, 80, 160, 240, 720, 800, 1680, 2480].map((p) => rankFromPR(p).step);
+    expect(steps).toEqual([...steps].sort((x, y) => x - y));
+    expect(new Set(steps).size).toBe(steps.length);
   });
 
   it('Ganley não tem divisão e não tem teto', () => {
-    expect(rankFromPR(8 * 300)).toMatchObject({ label: 'Ganley', div: 0, into: 0, need: 0 });
+    expect(tierStartPR(8)).toBe(2480);
+    expect(rankFromPR(2480)).toMatchObject({ label: 'Ganley', div: 0, into: 0, need: 0 });
     expect(rankFromPR(9999).label).toBe('Ganley');
   });
 

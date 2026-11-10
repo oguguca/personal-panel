@@ -3,15 +3,14 @@
 // Tudo é calculado a partir dos dados salvos, igual ao XP.
 import { addDays } from './dates';
 import { dayGains } from './game';
-import { TIERS } from './tiers';
+import { TIERS, divLabel } from './tiers';
 import type { Data, DayKey } from './types';
 
 export { TIERS, type Tier } from './tiers';
 export const TOP = TIERS.length - 1;
 
 export const RANK = {
-  divisions: 3, // III → II → I
-  divPR: 100, // PR por divisão
+  divPR: 80, // PR por divisão (cada rank tem 3, 4 ou 5 divisões: veja TIERS)
   activeXp: 40, // XP no dia para contar vitória
   idleXp: 10, // abaixo disso é derrota
   rate: 0.35, // PR por XP
@@ -21,7 +20,6 @@ export const RANK = {
   maxCombo: 10, // sequência máxima que conta para o multiplicador
 };
 
-const ROMAN = ['', 'I', 'II', 'III'];
 
 export interface RankPos {
   tier: number;
@@ -35,17 +33,27 @@ export interface RankPos {
   label: string; // "Ouro II"
 }
 
-/** Posição no rank a partir dos pontos (PR). */
+/** PR em que cada rank começa (rank 0 = 0 PR). */
+export function tierStartPR(tier: number): number {
+  let pr = 0;
+  for (let i = 0; i < tier; i++) pr += TIERS[i].divisions * RANK.divPR;
+  return pr;
+}
+
+/** Posição no rank a partir dos pontos (PR). Cada rank sobe da divisão mais alta (III, IV ou V) até a I. */
 export function rankFromPR(pr: number): RankPos {
-  const perTier = RANK.divisions * RANK.divPR;
-  const tier = Math.min(TOP, Math.floor(pr / perTier));
+  let tier = 0;
+  while (tier < TOP && pr >= tierStartPR(tier + 1)) tier++;
   const name = TIERS[tier].name;
+  const start = tierStartPR(tier);
+  const stepsBefore = TIERS.slice(0, tier).reduce((s, t) => s + t.divisions, 0);
   if (tier === TOP) {
-    return { tier, div: 0, step: TOP * RANK.divisions, pr, into: pr - TOP * perTier, need: 0, name, label: name };
+    return { tier, div: 0, step: stepsBefore, pr, into: pr - start, need: 0, name, label: name };
   }
-  const d = Math.floor((pr - tier * perTier) / RANK.divPR); // 0, 1, 2
-  const div = RANK.divisions - d;
-  return { tier, div, step: tier * RANK.divisions + d, pr, into: pr - tier * perTier - d * RANK.divPR, need: RANK.divPR, name, label: `${name} ${ROMAN[div]}` };
+  const n = TIERS[tier].divisions;
+  const d = Math.min(n - 1, Math.floor((pr - start) / RANK.divPR)); // 0 = divisão mais baixa
+  const div = n - d;
+  return { tier, div, step: stepsBefore + d, pr, into: pr - start - d * RANK.divPR, need: RANK.divPR, name, label: divLabel(name, div) };
 }
 
 /** Multiplicador da sequência: +5% por dia seguido, até +50%. */

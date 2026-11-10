@@ -1108,3 +1108,4 @@ a.btn { text-decoration: none; }
 }
 .run-panel-feed { max-width: 760px; width: 100%; margin: 0 auto; }
 .run-panel-feed .run-feed { max-width: none; }
+.all-rank-divs { font-size: 0.72rem; font-weight: 700; color: var(--t-light); opacity: 0.9; }

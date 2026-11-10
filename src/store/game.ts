@@ -214,7 +214,8 @@ export function gymTier(xp: number): Game['gym']['tier'] {
   const next = GYM_TIERS[i + 1];
   const into = xp - GYM_TIERS[i].min;
   const need = next ? next.min - GYM_TIERS[i].min : 0;
-  const div = next ? 3 - Math.min(2, Math.floor((into / need) * 3)) : 0;
+  const n = TIERS[i].divisions;
+  const div = next && n ? n - Math.min(n - 1, Math.floor((into / need) * n)) : 0;
   return { ...GYM_TIERS[i], index: i, div, next, into, need };
 }
 
