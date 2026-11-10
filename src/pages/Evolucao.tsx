@@ -157,6 +157,9 @@ export default function Evolucao({ go }: PageProps) {
             <button className="link" onClick={() => go('calendario')}>Calendário</button>: corrida marcada como feita dá +{XP.race} de Resistência
             (+{XP.raceKm} por km); compromisso cumprido dá +{XP.event} de Disciplina.
           </li>
+          <li>
+            <button className="link" onClick={() => go('corrida')}>Corrida</button>: cada corrida registrada dá +{XP.run} de Resistência (+{XP.runKm} por km).
+          </li>
           <li>Ranks dos atributos: E → D → C → B → A → S. Quanto maior o nível geral, mais forte a aura do personagem.</li>
         </ul>
       </section>

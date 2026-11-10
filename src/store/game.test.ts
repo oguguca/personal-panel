@@ -149,3 +149,18 @@ describe('XP do calendário', () => {
     expect(game.attrs.find((a) => a.id === 'resist')!.xp).toBe(XP.race + 10 * XP.raceKm);
   });
 });
+
+describe('XP da aba Corrida', () => {
+  it('cada corrida dá Resistência com bônus por km', () => {
+    const data = makeData({ running: { runs: [{ id: 'r', date: MON, km: 8, seconds: 2700, type: 'leve' }], shoes: [], monthGoalKm: 0 } });
+    expect(dayGains(data, MON).gains).toEqual([{ attr: 'resist', xp: XP.run + 8 * XP.runKm, label: 'Corrida de 8 km' }]);
+  });
+
+  it('prova registrada na aba Corrida e marcada no calendário não conta duas vezes', () => {
+    const data = makeData({
+      running: { runs: [{ id: 'r', date: MON, km: 10, seconds: 3000, type: 'prova' }], shoes: [], monthGoalKm: 0 },
+      events: [{ id: 'e', title: 'Corrida da Ponte', date: MON, kind: 'corrida', distance: '10', done: true }],
+    });
+    expect(dayGains(data, MON).gains).toHaveLength(1);
+  });
+});

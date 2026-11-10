@@ -222,6 +222,8 @@ export interface Data {
   game?: { seenLevel?: number; seenStep?: number; seenSeason?: string };
   /** Calendário: compromissos e corridas. */
   events: CalEvent[];
+  /** Aba Corrida: treinos de corrida, tênis e meta do mês. */
+  running: Running;
 }
 
 /** Exercício da biblioteca. m = músculos principais, s = secundários. */
@@ -261,4 +263,32 @@ export interface CalEvent {
   alert?: EventAlert | null;
   lastAlert?: number; // último aviso enviado (ms)
   done?: boolean;
+}
+
+export type RunType = 'leve' | 'longo' | 'tiro' | 'ritmo' | 'prova';
+
+/** Uma corrida registrada (treino ou prova). */
+export interface Run {
+  id: string;
+  date: DayKey;
+  km: number;
+  seconds: number; // tempo total
+  type: RunType;
+  feel?: number; // 1 (péssimo) a 5 (ótimo)
+  shoeId?: string;
+  notes?: string;
+}
+
+export interface Shoe {
+  id: string;
+  name: string;
+  limitKm: number; // quando trocar (ex.: 700 km)
+  startKm?: number; // km que já tinha antes de usar no app
+  retired?: boolean;
+}
+
+export interface Running {
+  runs: Run[];
+  shoes: Shoe[];
+  monthGoalKm: number; // 0 = sem meta
 }

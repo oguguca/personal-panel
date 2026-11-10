@@ -103,6 +103,8 @@ export const XP = {
   race: 40, // corrida do calendário concluída (+ bônus por km)
   raceKm: 4,
   event: 6, // compromisso do calendário cumprido
+  run: 10, // corrida registrada na aba Corrida (+ bônus por km)
+  runKm: 4,
 };
 
 export const num = (v: unknown) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
@@ -126,9 +128,15 @@ export function dayGains(data: Data, key: DayKey): { gains: Gain[]; muscles: Rec
   const muscles: Record<string, number> = {};
   const add = (attr: AttrId, xp: number, label: string) => xp > 0 && out.push({ attr, xp: Math.round(xp), label });
 
+  // Aba Corrida: cada corrida registrada dá Resistência
+  const runs = (data.running?.runs || []).filter((r) => r.date === key);
+  for (const r of runs) add('resist', XP.run + Math.min(170, r.km * XP.runKm), `Corrida de ${r.km.toLocaleString('pt-BR')} km`);
+  const loggedRace = runs.some((r) => r.type === 'prova');
+
   // Calendário: corridas e compromissos marcados como feitos naquele dia
   for (const ev of data.events || []) {
     if (ev.date !== key || !ev.done) continue;
+    if (ev.kind === 'corrida' && loggedRace) continue; // prova já registrada na aba Corrida: não conta duas vezes
     if (ev.kind === 'compromisso') {
       add('disc', XP.event, `Compromisso: ${ev.title}`);
       continue;
@@ -222,7 +230,11 @@ export function computeGame(data: Data, today: DayKey): Game {
   let volume = 0;
 
   // dias com dados + dias com eventos do calendário cumpridos (mesmo sem abrir o app)
-  const keys = new Set([...Object.keys(data.days), ...(data.events || []).filter((e) => e.done).map((e) => e.date)]);
+  const keys = new Set([
+    ...Object.keys(data.days),
+    ...(data.events || []).filter((e) => e.done).map((e) => e.date),
+    ...(data.running?.runs || []).map((r) => r.date),
+  ]);
   for (const key of [...keys].sort()) {
     if (key > today) continue;
     const { gains, muscles: m } = dayGains(data, key);

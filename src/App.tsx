@@ -13,6 +13,7 @@ import Alimentacao from './pages/Alimentacao';
 import Gravacao from './pages/Gravacao';
 import Treino from './pages/Treino';
 import Calendario from './pages/Calendario';
+import Corrida from './pages/Corrida';
 import Evolucao from './pages/Evolucao';
 import Historico from './pages/Historico';
 import Configuracoes from './pages/Configuracoes';
@@ -37,6 +38,7 @@ export const PAGES: Page[] = [
   { id: 'alimentacao', label: 'Alimentação', short: 'Refeições', icon: 'alimentacao', Comp: Alimentacao },
   { id: 'calendario', label: 'Calendário', short: 'Agenda', icon: 'calendario', Comp: Calendario },
   { id: 'treino', label: 'Treino', icon: 'treino', Comp: Treino },
+  { id: 'corrida', label: 'Corrida', icon: 'corrida', Comp: Corrida },
   { id: 'evolucao', label: 'Evolução', icon: 'evolucao', Comp: Evolucao },
   { id: 'gravacao', label: 'Renda', img: './renda.png', Comp: Gravacao },
   { id: 'historico', label: 'Histórico', icon: 'historico', Comp: Historico },

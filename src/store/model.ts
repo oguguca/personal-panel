@@ -45,6 +45,7 @@ export function defaultData(): Data {
     workouts: [], // { id, name, items: [{ id, exId, sets, reps, weight } | { id, exId, minutes, distance }] }
     training: { rotation: [], restDays: [] }, // ciclo (ordem dos treinos) e dias de descanso da semana
     events: [], // calendário: compromissos e corridas
+    running: { runs: [], shoes: [], monthGoalKm: 0 }, // aba Corrida
   };
 }
 

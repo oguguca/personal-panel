@@ -37,6 +37,11 @@ function normalize(raw: any): Data {
     },
     foodUsage: raw.foodUsage && typeof raw.foodUsage === 'object' ? raw.foodUsage : {},
     events: Array.isArray(raw.events) ? raw.events : [],
+    running: {
+      runs: Array.isArray(raw.running?.runs) ? raw.running.runs : [],
+      shoes: Array.isArray(raw.running?.shoes) ? raw.running.shoes : [],
+      monthGoalKm: Number(raw.running?.monthGoalKm) || 0,
+    },
   };
 }
 
