@@ -1243,3 +1243,15 @@ a.btn { text-decoration: none; }
 
 /* Tela Hoje: cards não esticam para a altura do vizinho (sem cards vazios enormes) */
 .home-grid { align-items: start; }
+
+/* Tela Hoje: 3 colunas que empilham sozinhas (um card alto não abre buraco no vizinho) */
+.home-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.home-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 1100px) {
+  .home-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-col:nth-child(3) { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+@media (max-width: 760px) {
+  .home-cols, .home-col:nth-child(3) { grid-template-columns: 1fr; }
+}
+.logged-line { margin-top: 2px; }

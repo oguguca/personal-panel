@@ -55,11 +55,14 @@ export function TodayTraining({ compact = false, onOpen }: { compact?: boolean; 
         <div className="today-train-main">
           <span className={`today-train-emoji ${s.logged.type === 'workout' ? 'ok' : 'rest'}`}><Icon name={s.logged.type === 'workout' ? 'check' : 'moon'} size={22} /></span>
           <div>
-            <div className="today-train-title">{s.logged.type === 'workout' ? `Feito: ${s.logged.name || nameOf(s.logged.workoutId)}${s.logged.planned && (s.logged.items?.length ?? 0) < s.logged.planned ? ` (${s.logged.items?.length} de ${s.logged.planned} exercícios)` : ''}` : 'Descanso registrado'}</div>
+            <div className="today-train-title">{s.logged.type === 'workout' ? `Feito: ${s.logged.name || nameOf(s.logged.workoutId)}` : 'Descanso registrado'}</div>
+            {s.logged.type === 'workout' && s.logged.planned && (s.logged.items?.length ?? 0) < s.logged.planned && (
+              <div className="muted small">{s.logged.items?.length} de {s.logged.planned} exercícios</div>
+            )}
             <div className="muted small">
               {s.logged.swap ? <><Icon name="repeat" size={13} /> Trocou a ordem: <strong>{nameOf(s.logged.swap)}</strong> fica para o próximo treino.</> : <>Próximo da sequência: <strong>{nameOf(next)}</strong></>}
             </div>
-            {s.logged.type === 'workout' && <LoggedSummary items={s.logged.items} />}
+            {s.logged.type === 'workout' && (compact ? <LoggedLine items={s.logged.items} /> : <LoggedSummary items={s.logged.items} />)}
           </div>
         </div>
         <div className="row">
@@ -255,6 +258,17 @@ function LoggedSummary({ items }: { items?: LoggedItem[] }) {
       {done.length > 6 && <span className="badge">+{done.length - 6}</span>}
     </div>
   );
+}
+
+/** Uma linha: "21 séries · 4.380 kg · 20 min de cardio". */
+function LoggedLine({ items }: { items?: LoggedItem[] }) {
+  const list = items || [];
+  const cardio = (i: LoggedItem) => EXERCISE_BY_ID[i.exId]?.cat === 'Cardio';
+  const sets = list.filter((i) => !cardio(i)).reduce((sum, i) => sum + setsOf(i), 0);
+  const volume = Math.round(list.filter((i) => !cardio(i)).reduce((sum, i) => sum + itemVolume(i), 0));
+  const min = Math.round(list.filter(cardio).reduce((sum, i) => sum + num(i.minutes), 0));
+  const parts = [sets && `${sets} séries`, volume && `${volume.toLocaleString('pt-BR')} kg levantados`, min && `${min} min de cardio`].filter(Boolean);
+  return parts.length ? <div className="muted small logged-line">{parts.join(' · ')}</div> : null;
 }
 
 /** "3×10 · até 50 kg", "3×10 · peso ?" ou "35 min · 5 km". */
