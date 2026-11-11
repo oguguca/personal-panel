@@ -1,3 +1,4 @@
+import RendaIcon from '../components/RendaIcon';
 import Icon from '../components/Icon';
 import WaterCup from '../components/WaterCup';
 import DeficitCard from '../components/DeficitCard';
@@ -226,7 +227,7 @@ export default function Hoje({ go }: PageProps) {
         {/* Gravação */}
         <div className="card">
           <div className="card-head">
-            <h2><img src="./renda.png" alt="" width="20" height="20" style={{ objectFit: 'contain' }} /> Renda</h2>
+            <h2><RendaIcon size={20} /> Renda</h2>
             <button className="link" onClick={() => go('gravacao')}>Abrir</button>
           </div>
           <div className="row" style={{ justifyContent: 'space-between' }}>

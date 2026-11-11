@@ -1,3 +1,4 @@
+import RendaIcon from '../components/RendaIcon';
 import { useMemo, useState } from 'react';
 import BarChart from '../components/BarChart';
 import Icon from '../components/Icon';
@@ -154,7 +155,7 @@ export default function Historico() {
           <div className="legend"><span><i style={{ background: 'var(--danger)' }} />kcal por dia</span><span>– – meta</span></div>
         </div>
         <div className="card">
-          <div className="card-head"><h2><img src="./renda.png" alt="" width="18" height="18" style={{ objectFit: 'contain' }} /> Renda · minutos gravados</h2></div>
+          <div className="card-head"><h2><RendaIcon size={18} /> Renda · minutos gravados</h2></div>
           <BarChart
             items={mk((s) => s.record || 0, (s) => `${s.record || 0} de ${s.recordGoal || data.settings.recordGoalMin} min`)}
             goal={data.settings.recordGoalMin}

@@ -1,3 +1,4 @@
+import RendaIcon from '../components/RendaIcon';
 import { useState, type FormEvent } from 'react';
 import type { Data, DayKey } from '../store/types';
 import Icon from '../components/Icon';
@@ -54,7 +55,7 @@ export default function Gravacao() {
       <header className="page-header">
         <div>
           <h1 className="row" style={{ gap: 12 }}>
-            <img src="./renda.png" alt="" width="34" height="34" style={{ objectFit: 'contain' }} />
+            <RendaIcon size={32} />
             Renda
           </h1>
           <p className="muted">Minutos gravados · meta diária de {formatDuration(goal)}</p>

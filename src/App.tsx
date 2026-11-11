@@ -1,3 +1,4 @@
+import RendaIcon from './components/RendaIcon';
 import Logo from './components/Logo';
 import { useEffect, useState } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -95,7 +96,7 @@ export default function App() {
             onClick={() => go(p.id)}
             aria-current={page === p.id || currentPage.parent === p.id ? 'page' : undefined}
           >
-            {p.img ? <img src={p.img} alt="" width="20" height="20" className="nav-img" /> : <Icon name={p.icon ?? 'hoje'} />}
+            {p.img ? <RendaIcon size={19} /> : <Icon name={p.icon ?? 'hoje'} />}
             <span className="nav-label">{p.label}</span>
             <span className="nav-short">{p.short || p.label}</span>
           </button>

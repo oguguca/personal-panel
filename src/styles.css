@@ -1494,3 +1494,7 @@ h2 { letter-spacing: -0.01em; }
 .shoe-photo:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
 .shoe-photo-remove { margin-top: -4px; }
 .pr-tile { text-align: left; align-items: stretch; }
+/* Logo da Renda na cor do texto (como os outros ícones) */
+.renda-icon {
+  display: inline-block; flex: none; background-color: currentColor;
+}
