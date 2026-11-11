@@ -97,8 +97,6 @@ h3 { font-size: 0.95rem; font-weight: 600; }
 .nav-item:hover { background: var(--surface-2); color: var(--text); }
 .nav-item.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
 .nav-short { display: none; }
-.nav-img { flex: none; object-fit: contain; opacity: 0.85; }
-.nav-item.active .nav-img, .nav-item:hover .nav-img { opacity: 1; }
 .content { flex: 1; overflow-y: auto; padding: 28px 32px 48px; }
 .page { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 .page-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
@@ -967,18 +965,6 @@ button.meta-item:hover { color: var(--text); }
 .run-tile .link { align-self: flex-start; }
 
 /* recordes */
-.pr-row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-.pr-medal {
-  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 16px 10px; border-radius: 16px; text-align: center;
-  background: var(--surface-2); border: 1px dashed var(--border); filter: grayscale(1); opacity: 0.6; transition: transform .2s;
-}
-.pr-medal.won { filter: none; opacity: 1; border-style: solid; border-color: rgba(250,204,21,.5); background: linear-gradient(160deg, rgba(250,204,21,.16), transparent 60%), var(--surface-2); }
-.pr-medal.won:hover { transform: translateY(-3px) scale(1.02); }
-.pr-disc {
-  width: 64px; height: 64px; display: grid; place-items: center; margin-bottom: 6px; border-radius: 50%; font-weight: 900; font-size: 0.95rem; color: #713f12;
-  background: radial-gradient(circle at 35% 30%, #fef9c3, #facc15 55%, #a16207); box-shadow: 0 0 0 4px rgba(250,204,21,.25), 0 6px 14px rgba(161,98,7,.4);
-}
-.pr-medal b { font-size: 1.2rem; }
 
 /* gráfico de pace e previsão */
 .run-two { display: grid; gap: 16px; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); align-items: start; }
@@ -1053,7 +1039,7 @@ button.meta-item:hover { color: var(--text); }
 }
 @media (prefers-reduced-motion: reduce) {
   .run-panel, .race-poster { animation: none; }
-  .race-poster, .race-poster-img, .run-countdown, .run-tile, .pr-medal, .shoe-card, .run-card { transition: none; }
+  .race-poster, .race-poster-img, .run-countdown, .run-tile, .shoe-card, .run-card { transition: none; }
 }
 .run-photos { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 a.btn { text-decoration: none; }
@@ -1428,7 +1414,6 @@ h2 { letter-spacing: -0.01em; }
 .run-predict-value { background: var(--primary-soft); color: var(--primary); }
 
 /* medalhas de recorde: dourado só na medalha conquistada */
-.pr-medal.won { border-color: color-mix(in srgb, var(--medal) 45%, transparent); background: var(--surface-2); }
 
 /* mural de provas: sem foto, um fundo grafite neutro (a foto é que dá a cor) */
 .race-poster { background: linear-gradient(160deg, #3a3a3c, #1c1c1e); }
