@@ -258,7 +258,7 @@ function LoggedSummary({ items }: { items?: LoggedItem[] }) {
 }
 
 /** "3×10 · até 50 kg", "3×10 · peso ?" ou "35 min · 5 km". */
-function describeItem(i: LoggedItem) {
+export function describeItem(i: LoggedItem) {
   if (EXERCISE_BY_ID[i.exId]?.cat === 'Cardio') return [num(i.minutes) && `${num(i.minutes)} min`, num(i.distance) && `${num(i.distance)} km`].filter(Boolean).join(' · ') || 'cardio';
   const reps = i.done?.length ? [...new Set(i.done.map((x) => x.reps))].join('/') : i.reps || 10;
   const kg = i.noWeight ? 'peso ?' : num(i.weight) ? `${i.done && new Set(i.done.map((x) => x.kg)).size > 1 ? 'até ' : ''}${num(i.weight)} kg` : '';
@@ -338,7 +338,7 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
   const { rotation } = trainingConfig(data);
   const due = dueOn(data, date);
   const canSwap = !!due && due !== wid && rotation.includes(wid);
-  const [swap, setSwap] = useState(true);
+  const [swap, setSwap] = useState(existing?.type === 'workout' && existing.workoutId === workoutId ? !!existing.swap : true);
   const dueName = data.workouts.find((x) => x.id === due)?.name || '—';
 
   useEffect(() => {

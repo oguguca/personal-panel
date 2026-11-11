@@ -9,6 +9,7 @@ import { norm } from '../store/foods';
 import { uid } from '../store/model';
 import { slotLetter, suggestion, trainingConfig } from '../store/training';
 import type { Exercise, Workout, WorkoutItem } from '../store/types';
+import TreinoHistorico from './TreinoHistorico';
 import TreinoCiclo, { WorkoutCheck, useTrainingActions } from './TreinoCiclo';
 
 type SetItem = (id: string, k: 'sets' | 'reps' | 'weight' | 'minutes' | 'distance', v: string) => void;
@@ -403,10 +404,13 @@ export default function Treino() {
           <button className={tab === 'treinos' ? 'on' : ''} onClick={() => setTab('treinos')}>Meus treinos</button>
           <button className={tab === 'ciclo' ? 'on' : ''} onClick={() => setTab('ciclo')}>Ciclo e descanso</button>
           <button className={tab === 'exercicios' ? 'on' : ''} onClick={() => setTab('exercicios')}>Exercícios</button>
+          <button className={tab === 'historico' ? 'on' : ''} onClick={() => setTab('historico')}>Histórico</button>
         </div>
       </header>
 
-      {tab === 'ciclo' ? (
+      {tab === 'historico' ? (
+        <TreinoHistorico />
+      ) : tab === 'ciclo' ? (
         <TreinoCiclo goTab={setTab} />
       ) : tab === 'exercicios' ? (
         <Library workouts={workouts} target={target} setTarget={setTarget} onAdd={addExercise} onCreate={createWorkout} />

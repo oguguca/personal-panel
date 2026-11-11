@@ -128,7 +128,7 @@ export function itemVolume(it: LoggedItem, fallbackKg = 0): number {
 }
 
 /** Carga do plano atual para um exercício (usada quando não lembra o peso). */
-const planKg = (data: Data, exId: string) => {
+export const planKg = (data: Data, exId: string) => {
   for (const w of data.workouts) for (const i of w.items) if (i.exId === exId && num(i.weight)) return num(i.weight);
   return 0;
 };
