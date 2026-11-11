@@ -3,7 +3,8 @@
 const { app, BrowserWindow, Tray, Menu, Notification, ipcMain, nativeImage, shell } = require('electron');
 const path = require('path');
 
-const APP_NAME = 'Painel Pessoal';
+// Nome que aparece na janela e na bandeja. O nome interno (package.json) continua o mesmo: é ele que guarda os dados.
+const APP_NAME = 'Parpi Day';
 const isDev = !app.isPackaged;
 const startHidden = process.argv.includes('--hidden');
 

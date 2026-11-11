@@ -1,13 +1,13 @@
 /* ---------- Tokens de cor (claro / escuro) ---------- */
 :root {
-  --bg: #f4f5fa;
-  --surface: #ffffff;
-  --surface-2: #f0f1f7;
-  --border: #e3e5ee;
-  --text: #1d2033;
-  --muted: #5f6480;
-  --primary: #4f46e5;
-  --primary-soft: #eceafd;
+  --bg: #f6f2ec;
+  --surface: #fffdfa;
+  --surface-2: #f1ebe3;
+  --border: #e6ddd2;
+  --text: #2a221c;
+  --muted: #6b5d51;
+  --primary: #b83a0a;
+  --primary-soft: #fdeee4;
   --primary-text: #ffffff;
   --accent: #0f766e;
   --water: #0369a1;
@@ -15,37 +15,39 @@
   --success: #15803d;
   --on-success: #ffffff;
   --success-soft: #dcfce7;
-  --warning: #b45309;
+  --warning: #92400e;
   --warning-soft: #fef3c7;
   --danger: #b91c1c;
   --danger-soft: #fee2e2;
-  --shadow: 0 1px 2px rgba(20, 24, 50, 0.04), 0 4px 16px rgba(20, 24, 50, 0.06);
+  --shadow: 0 1px 2px rgba(60, 40, 20, 0.05), 0 4px 16px rgba(60, 40, 20, 0.06);
+  --logo-ink: #fff4ea;
   --radius: 16px;
   --sidebar-w: 232px;
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --bg: #0f1120;
-  --surface: #181b2e;
-  --surface-2: #212540;
-  --border: #2b2f4c;
-  --text: #e8eaf6;
-  --muted: #9095b3;
-  --primary: #818cf8;
-  --primary-soft: #272a52;
-  --primary-text: #0f1120;
+  --bg: #161412;
+  --surface: #201d1a;
+  --surface-2: #2a2622;
+  --border: #383230;
+  --text: #f3efe9;
+  --muted: #a89b8e;
+  --primary: #f0703c;
+  --primary-soft: #3a2418;
+  --primary-text: #161412;
   --accent: #2dd4bf;
   --water: #38bdf8;
   --water-soft: #12304a;
   --success: #4ade80;
-  --on-success: #0f1120;
+  --on-success: #161412;
   --success-soft: #133524;
   --warning: #fbbf24;
   --warning-soft: #3a2e10;
   --danger: #f87171;
   --danger-soft: #3d1a1d;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  --logo-ink: #1c1410;
   color-scheme: dark;
 }
 
@@ -494,10 +496,10 @@ button.meta-item:hover { color: var(--text); }
 
 .levelup {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 16px; border-radius: var(--radius);
-  background: linear-gradient(90deg, #1e3a8a, #6d28d9); color: #fff; animation: levelup-in 0.5s ease-out;
+  background: linear-gradient(90deg, #7c2d12, #b83a0a); color: #fff; animation: levelup-in 0.5s ease-out;
 }
 .levelup span:nth-child(2) { flex: 1; }
-.levelup .btn { background: #fff; color: #1e3a8a; border-color: #fff; }
+.levelup .btn { background: #fff; color: #7c2d12; border-color: #fff; }
 .levelup-badge { font-weight: 900; letter-spacing: 0.12em; color: #facc15; }
 @keyframes levelup-in { from { transform: scale(0.95); opacity: 0; } }
 
@@ -539,7 +541,7 @@ button.meta-item:hover { color: var(--text); }
 .attr-select.set { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
 .xp-toast {
   position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 50;
-  background: #0b1736; color: #e0f2fe; border: 1px solid #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.45);
+  background: #241a14; color: #fde7d6; border: 1px solid #f0703c; box-shadow: 0 0 20px rgba(240, 112, 60, 0.4);
   padding: 10px 18px; border-radius: 99px; font-weight: 700; animation: xp-toast 2.2s ease forwards; pointer-events: none;
 }
 @keyframes xp-toast { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -14px); } }
@@ -635,7 +637,7 @@ button.meta-item:hover { color: var(--text); }
 /* tela de promoção */
 .rank-change {
   position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
-  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--t-base) 35%, rgba(5,7,20,.85)), rgba(5,7,20,.92));
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--t-base) 35%, rgba(22,16,12,.85)), rgba(22,16,12,.92));
   animation: rc-fade .3s ease-out;
 }
 .rank-change-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; color: #fff; max-width: 360px; }
@@ -674,7 +676,7 @@ button.meta-item:hover { color: var(--text); }
   background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
 }
 .ranked-all-btn:hover { background: rgba(255,255,255,.18); }
-.all-ranks { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.85); animation: rc-fade .2s ease-out; }
+.all-ranks { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(22,16,12,.85); animation: rc-fade .2s ease-out; }
 .all-ranks-box {
   width: min(980px, 100%); max-height: 100%; overflow: auto; padding: 20px; border-radius: 20px; color: #eef1ff;
   background: linear-gradient(160deg, #0d1024, #151a3a 55%, #0b0e1f); border: 1px solid rgba(255,255,255,.12);
@@ -819,7 +821,7 @@ button.meta-item:hover { color: var(--text); }
 }
 
 /* ---------- Confirmar treino (painel de check) ---------- */
-.wcheck-overlay { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.55); animation: rc-fade .15s ease-out; }
+.wcheck-overlay { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(22,16,12,.55); animation: rc-fade .15s ease-out; }
 .wcheck { width: min(680px, 100%); max-height: calc(100vh - 32px); overflow: auto; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
 .wcheck-date { width: auto !important; flex: none; padding: 4px 8px; }
 .wcheck-warn { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--warning-soft); color: var(--warning); font-size: 0.88rem; }
@@ -861,7 +863,7 @@ button.meta-item:hover { color: var(--text); }
 .race-cover-empty.big { font-size: 4rem; }
 .img-loading { display: block; width: 100%; height: 100%; background: var(--surface-2); }
 
-.race-overlay { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; padding: 16px; background: rgba(5,7,20,.6); animation: rc-fade .15s ease-out; }
+.race-overlay { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; padding: 16px; background: rgba(22,16,12,.6); animation: rc-fade .15s ease-out; }
 .race-modal { width: min(820px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 0; gap: 0; box-shadow: 0 24px 70px rgba(0,0,0,.4); }
 .race-hero { position: relative; aspect-ratio: 21 / 8; background: linear-gradient(135deg, #f97316, #db2777); flex: none; overflow: hidden; }
 .race-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1364,3 +1366,9 @@ h2 { letter-spacing: -0.01em; }
   .card { border-color: var(--muted); }
   .wcheck > .card-head, .wcheck-foot { background: var(--surface); backdrop-filter: none; }
 }
+
+/* Marca Parpi Day */
+.brand { gap: 10px; }
+.logo-mark { flex: none; display: block; }
+.brand-word { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
+.brand-word span { margin-left: 4px; font-weight: 500; color: var(--primary); }

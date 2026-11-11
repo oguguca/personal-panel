@@ -1,3 +1,4 @@
+import Logo from './components/Logo';
 import { useEffect, useState } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import type { ComponentType } from 'react';
@@ -86,10 +87,7 @@ export default function App() {
   return (
     <div className="app">
       <nav className="sidebar" aria-label="Navegação principal">
-        <div className="brand">
-          <img src="./icon.png" alt="" width="32" height="32" />
-          <span>Painel Pessoal</span>
-        </div>
+        <Logo />
         {PAGES.filter((p) => !p.hidden).map((p) => (
           <button
             key={p.id}

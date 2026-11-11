@@ -81,7 +81,7 @@ export function parseBackup(text: string): Data {
   }
   const data = obj?.app === 'painel-pessoal' ? obj.data : obj;
   if (!data || typeof data !== 'object' || !data.settings || !data.days) {
-    throw new Error('Este arquivo não parece ser um backup do Painel Pessoal.');
+    throw new Error('Este arquivo não parece ser um backup do Parpi Day.');
   }
   return normalize(data);
 }

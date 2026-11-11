@@ -18,7 +18,7 @@ describe('backup', () => {
 
   it('recusa arquivo que não é JSON ou não é do app', () => {
     expect(() => parseBackup('isso não é json')).toThrow('JSON válido');
-    expect(() => parseBackup('{"foo": 1}')).toThrow('backup do Painel Pessoal');
+    expect(() => parseBackup('{"foo": 1}')).toThrow('backup do Parpi Day');
   });
 
   it('completa campos que faltam em backups antigos', () => {

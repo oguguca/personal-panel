@@ -71,7 +71,7 @@ export default function Configuracoes() {
       p = await requestNotificationPermission();
       setPerm(p);
     }
-    const ok = await notify('Painel Pessoal', 'As notificações estão funcionando! 🎉');
+    const ok = await notify('Parpi Day', 'As notificações estão funcionando! 🎉');
     if (!ok) alert('Não foi possível mostrar a notificação. Verifique as permissões do sistema.');
   };
 
