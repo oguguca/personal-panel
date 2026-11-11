@@ -1379,3 +1379,90 @@ h2 { letter-spacing: -0.01em; }
 
 /* Botão principal: semibold, como os botões preenchidos do sistema */
 .btn.primary, .chip.on { font-weight: 650; }
+
+/* =====================================================================
+   Corrida no estilo Apple (Fitness/Workout): superfícies neutras, números grandes,
+   um destaque só (azul do app). Sem degradês coloridos.
+   ===================================================================== */
+.run-page {
+  --run: var(--primary); --run2: var(--primary); --run-soft: var(--primary-soft);
+  --medal: #b88a00;
+  /* tipos de treino: cores de sistema, usadas só como ponto/faixa (identidade), nunca no texto */
+  --t-leve: #34c759; --t-longo: #0a84ff; --t-tiro: #ff9500; --t-ritmo: #af52de; --t-prova: #ffcc00;
+}
+:root[data-theme='dark'] .run-page { --medal: #ffd60a; }
+
+/* topo: card neutro com o número grande em destaque */
+.run-hero {
+  color: var(--text); background: var(--surface); border: 1px solid var(--border);
+  box-shadow: var(--shadow); border-radius: 22px;
+}
+.run-hero::after { display: none; }
+.run-hero-kicker { color: var(--muted); opacity: 1; letter-spacing: 0.08em; }
+.run-hero-km b { font-weight: 800; letter-spacing: -0.04em; color: var(--text); }
+.run-hero-km span { color: var(--muted); opacity: 1; font-weight: 600; }
+.run-hero-chips span { background: var(--surface-2); color: var(--text); backdrop-filter: none; font-weight: 600; }
+.run-hero-chips .icon { color: var(--primary); }
+
+/* contagem da próxima prova: painel embutido, número no azul */
+.run-countdown {
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border); backdrop-filter: none;
+}
+.run-countdown:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--primary) 7%, var(--surface-2)); }
+.run-countdown-label { color: var(--muted); opacity: 1; letter-spacing: 0.08em; }
+.run-countdown-num { color: var(--primary); font-weight: 800; letter-spacing: -0.04em; }
+.run-countdown-unit { color: var(--muted); opacity: 1; }
+.run-countdown-pred { background: var(--primary-soft); color: var(--primary); }
+
+/* abas: controle segmentado do sistema (fundo cinza, aba ativa "levantada") */
+.run-tabs { background: var(--surface-2); border-color: transparent; padding: 4px; border-radius: 12px; }
+.run-tabs button { padding: 8px 12px; border-radius: 9px; font-weight: 600; }
+.run-tabs button:hover { background: color-mix(in srgb, var(--surface) 55%, transparent); }
+.run-tabs button.on { color: var(--text); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 1px rgba(0,0,0,.06); }
+.run-tabs button.on .icon { color: var(--primary); }
+
+/* blocos de números */
+.run-tile:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+.run-tile b { font-weight: 800; letter-spacing: -0.03em; }
+.run-tile-icon { opacity: 0.18; }
+.run-predict-value { background: var(--primary-soft); color: var(--primary); }
+
+/* medalhas de recorde: dourado só na medalha conquistada */
+.pr-medal.won { border-color: color-mix(in srgb, var(--medal) 45%, transparent); background: var(--surface-2); }
+
+/* mural de provas: sem foto, um fundo grafite neutro (a foto é que dá a cor) */
+.race-poster { background: linear-gradient(160deg, #3a3a3c, #1c1c1e); }
+.race-hero { background: linear-gradient(160deg, #3a3a3c, #1c1c1e); }
+.race-chip { color: var(--text); background: rgba(255,255,255,.92); }
+:root[data-theme='dark'] .race-chip { color: #1c1c1e; }
+.race-chip.warn { color: #fff; background: var(--primary); }
+
+/* formulário e pace */
+.run-form { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
+.run-pace { background: var(--primary-soft); color: var(--primary); }
+.shoe-card.worn .shoe-ring { background: conic-gradient(var(--danger) var(--pct), var(--surface-2) 0); }
+
+/* feed de treinos: tipo = faixa e ponto coloridos; texto e números na cor do texto */
+.run-card { box-shadow: var(--shadow); }
+.run-card.t-leve { --tc: var(--t-leve); }
+.run-card.t-longo { --tc: var(--t-longo); }
+.run-card.t-tiro { --tc: var(--t-tiro); }
+.run-card.t-ritmo { --tc: var(--t-ritmo); }
+.run-card.t-prova { --tc: var(--t-prova); }
+.run-card::before { width: 3px; }
+.run-card-icon { background: var(--surface-2); color: var(--text); }
+.run-card-icon .icon { color: var(--tc); }
+.run-type-chip { display: inline-flex; align-items: center; gap: 5px; color: var(--text); background: var(--surface-2); }
+.run-type-chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--tc, var(--primary)); }
+.run-type-chip.t-leve { --tc: var(--t-leve); }
+.run-type-chip.t-longo { --tc: var(--t-longo); }
+.run-type-chip.t-tiro { --tc: var(--t-tiro); }
+.run-type-chip.t-ritmo { --tc: var(--t-ritmo); }
+.run-type-chip.t-prova { --tc: var(--t-prova); }
+.run-card-stats b { font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.run-card-stats div:last-child b { color: var(--text); }
+
+/* Calendário: a contagem da próxima corrida no mesmo estilo */
+.cal-countdown { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.cal-countdown-num { color: var(--primary); }
+.cal-countdown .muted { color: var(--muted); }

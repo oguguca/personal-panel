@@ -250,15 +250,15 @@ function PaceChart({ points, onOpen }: { points: { ev: CalEvent; pace: number }[
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Evolução do pace nas provas">
         <defs>
           <linearGradient id="pace-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#f97316" stopOpacity="0.35" />
-            <stop offset="1" stopColor="#f97316" stopOpacity="0" />
+            <stop offset="0" stopColor="var(--primary)" stopOpacity="0.28" />
+            <stop offset="1" stopColor="var(--primary)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={`${path} L${x(points.length - 1)},${H} L${x(0)},${H} Z`} fill="url(#pace-fill)" />
-        <path d={path} fill="none" stroke="#f97316" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={path} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {points.map((p, i) => (
           <g key={p.ev.id} className="pace-dot" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => onOpen(p.ev)}>
-            <circle cx={x(i)} cy={y(p.pace)} r={hover === i ? 9 : 6} fill={i === best ? '#facc15' : '#f97316'} stroke="var(--surface)" strokeWidth="3" />
+            <circle cx={x(i)} cy={y(p.pace)} r={hover === i ? 9 : 6} fill={i === best ? 'var(--medal)' : 'var(--primary)'} stroke="var(--surface)" strokeWidth="3" />
             <text x={x(i)} y={H - 4} textAnchor="middle" className="pace-label">{formatShort(p.ev.date)}</text>
           </g>
         ))}
@@ -471,8 +471,8 @@ export default function Corrida({ go }: PageProps) {
             {streak > 1 && <span className="ico-text"><Icon name="flame" size={15} /> {streak} semanas seguidas</span>}
           </div>
           <div className="run-hero-actions">
-            <button className="btn run-btn-light" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
-            <button className="btn run-btn-ghost" onClick={() => setRace('nova')}><Icon name="medal" size={16} /> Adicionar prova</button>
+            <button className="btn primary" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
+            <button className="btn" onClick={() => setRace('nova')}><Icon name="medal" size={16} /> Adicionar prova</button>
           </div>
         </div>
         {nextRace ? (
@@ -565,7 +565,6 @@ export default function Corrida({ go }: PageProps) {
             <BarChart
               items={weeks.map((w) => ({ key: w.start, label: formatShort(w.start), value: Math.round(w.km * 10) / 10, title: `Semana de ${formatShort(w.start)}: ${fmtKm(w.km)}` }))}
               max={Math.max(10, ...weeks.map((w) => Math.ceil(w.km)))}
-              color="#f97316"
               format={(v) => `${v}`}
             />
           </section>
