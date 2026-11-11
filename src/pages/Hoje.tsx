@@ -1,5 +1,6 @@
 import Icon from '../components/Icon';
 import WaterCup from '../components/WaterCup';
+import DeficitCard from '../components/DeficitCard';
 import { Check, Empty, Progress, fmtMl, fmtValue, pct } from '../components/ui';
 import { useStore } from '../store/StoreContext';
 import { formatDuration, formatLong, formatTime, greeting, nowMinutes, toMinutes } from '../store/dates';
@@ -267,6 +268,9 @@ export default function Hoje({ go }: PageProps) {
               })}
           </ul>
         </div>
+
+        {/* Déficit calórico (ao lado das refeições) */}
+        <DeficitCard data={data} today={today} onOpen={() => go('alimentacao')} onProfile={() => go('config')} />
 
         {/* Metas de longo prazo */}
         {data.longGoals.length > 0 && (

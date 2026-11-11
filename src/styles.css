@@ -1170,3 +1170,38 @@ a.btn { text-decoration: none; }
 .hist-set { padding: 3px 9px; border-radius: 8px; background: var(--surface-2); font-weight: 750; font-size: 0.88rem; }
 .hist-set small { font-weight: 500; color: var(--muted); margin: 0 1px; }
 @media (max-width: 700px) { .hist-stats { grid-template-columns: repeat(2, 1fr); } .hist-body { padding-left: 16px; } .hist-xp { display: none; } }
+
+/* Hoje: déficit calórico */
+.deficit { gap: 10px; }
+.deficit-hero { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.deficit-hero b { font-size: 2.2rem; font-weight: 850; line-height: 1; letter-spacing: -0.02em; }
+.deficit-unit { color: var(--muted); font-weight: 700; }
+.deficit-pill { margin-left: auto; padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 800; }
+.deficit-pill.good { background: var(--success-soft); color: var(--success); }
+.deficit-pill.warn { background: var(--warning-soft); color: var(--warning); }
+.deficit-bar { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; background: var(--surface-2); }
+.deficit-bar span { height: 100%; }
+.deficit-eaten { background: var(--primary); border-radius: 4px 0 0 4px; }
+.deficit-gap { border-radius: 0 4px 4px 0; }
+.deficit-gap.good { background: repeating-linear-gradient(45deg, var(--success) 0 6px, color-mix(in srgb, var(--success) 70%, transparent) 6px 9px); }
+.deficit-gap.warn { background: repeating-linear-gradient(135deg, var(--warning) 0 6px, color-mix(in srgb, var(--warning) 70%, transparent) 6px 9px); }
+.deficit-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; }
+.deficit-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.dot.eaten { background: var(--primary); }
+.dot.good { background: var(--success); }
+.dot.warn { background: var(--warning); }
+.deficit-week { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+.deficit-week-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.deficit-cols { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.deficit-col { display: grid; grid-template-rows: 64px 22px auto; cursor: default; }
+.deficit-col-up, .deficit-col-down { display: flex; justify-content: center; }
+.deficit-col-up { align-items: flex-end; border-bottom: 1px solid var(--border); }
+.deficit-col-down { align-items: flex-start; }
+.deficit-col span.good, .deficit-col span.warn { width: 70%; max-width: 22px; min-height: 2px; }
+.deficit-col span.good { background: var(--success); border-radius: 4px 4px 0 0; }
+.deficit-col span.warn { background: var(--warning); border-radius: 0 0 4px 4px; }
+.deficit-col.today span.good, .deficit-col.today span.warn { opacity: .55; }
+.deficit-col:hover span.good, .deficit-col:hover span.warn { filter: brightness(1.15); }
+.deficit-col-day { text-align: center; font-size: 0.72rem; color: var(--muted); text-transform: capitalize; }
+.deficit-col.today .deficit-col-day { color: var(--text); font-weight: 800; }
+.deficit-none { font-style: normal; color: var(--muted); font-size: 0.8rem; }
