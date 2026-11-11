@@ -277,20 +277,33 @@ function PaceChart({ points, onOpen }: { points: { ev: CalEvent; pace: number }[
   );
 }
 
-/** Medalha de recorde (dourada quando conquistada). */
-function RecordMedal({ label, pr, km }: { label: string; pr: (Effort & { time: number }) | null; km: number }) {
+/**
+ * Recorde de uma distância. Conquistado: tempo grande, pace e data.
+ * Ainda não: quanto falta (pela sua maior corrida) e a previsão de tempo.
+ */
+function RecordTile({ label, pr, km, longest, predicted }: { label: string; pr: (Effort & { time: number }) | null; km: number; longest: number; predicted: number | null }) {
+  if (pr) {
+    return (
+      <div className="pr-tile won" title={`${pr.title} em ${formatShort(pr.date)}`}>
+        <span className="pr-tile-head">
+          <span className="pr-tile-dist">{label}</span>
+          <span className="pr-tile-badge"><Icon name="trophy" size={13} /> recorde</span>
+        </span>
+        <b className="pr-tile-time">{formatDurationSec(pr.time)}</b>
+        <span className="pr-tile-meta">{formatPace(pr.time / km)} · {formatShort(pr.date)}{pr.race ? ' · prova' : ''}</span>
+      </div>
+    );
+  }
+  const pct = Math.min(100, (longest / km) * 100);
   return (
-    <div className={`pr-medal ${pr ? 'won' : ''}`} title={pr ? `${pr.title} em ${formatShort(pr.date)}` : 'Ainda sem marca nessa distância'}>
-      <span className="pr-disc">{label}</span>
-      {pr ? (
-        <>
-          <b>{formatDurationSec(pr.time)}</b>
-          <span className="small">{formatPace(pr.time / km)}</span>
-          <span className="muted small">{formatShort(pr.date)}{pr.race ? ' · prova' : ''}</span>
-        </>
-      ) : (
-        <span className="muted small ico-text"><Icon name="lock" size={13} /> bloqueado</span>
-      )}
+    <div className="pr-tile" title="Ainda sem marca nessa distância">
+      <span className="pr-tile-head"><span className="pr-tile-dist">{label}</span></span>
+      <b className="pr-tile-time empty">—</b>
+      <div className="pr-tile-bar" aria-label={`Sua maior corrida: ${fmtKm(longest)} de ${fmtKm(km)}`}><span style={{ width: `${pct}%` }} /></div>
+      <span className="pr-tile-meta">
+        {longest ? <>Sua maior: {fmtKm(longest)}</> : 'Registre uma corrida'}
+        {predicted ? <> · previsão {formatDurationSec(predicted)}</> : null}
+      </span>
     </div>
   );
 }
@@ -455,6 +468,17 @@ export default function Corrida({ go }: PageProps) {
     setNewShoe('');
   };
   const patchShoe = (id: string, fn: (s: Shoe) => void) => update((d) => { const s = d.running.shoes.find((x) => x.id === id); if (s) fn(s); });
+  /** Coloca ou troca a foto do tênis (a antiga é apagada do aparelho). */
+  const setShoePhoto = async (s: Shoe, file: File | undefined) => {
+    if (!file) return;
+    const id = await saveImage(file);
+    if (s.photo) deleteImage(s.photo);
+    patchShoe(s.id, (x) => { x.photo = id; });
+  };
+  const removeShoePhoto = (s: Shoe) => {
+    if (s.photo) deleteImage(s.photo);
+    patchShoe(s.id, (x) => { delete x.photo; });
+  };
   const newRun = () => { setTab('treinos'); setEditing(toDraft(null, today, lastShoe)); };
 
   return (
@@ -524,8 +548,12 @@ export default function Corrida({ go }: PageProps) {
 
           <section className="card">
             <div className="card-head"><h2 className="ico-text"><Icon name="trophy" size={20} /> Recordes pessoais</h2><span className="muted small">treinos + provas</span></div>
-            <div className="pr-row">
-              {DISTANCES.map((d) => <RecordMedal key={d.key} label={d.key.toUpperCase()} pr={prs[d.key]} km={d.km} />)}
+            <div className="pr-grid">
+              {DISTANCES.map((d) => (
+                <RecordTile key={d.key} label={d.label} pr={prs[d.key]} km={d.km}
+                  longest={Math.max(0, ...acts.map((a) => a.km))}
+                  predicted={pred ? predictFor(pred.base, d.km) : null} />
+              ))}
             </div>
           </section>
 
@@ -655,6 +683,12 @@ export default function Corrida({ go }: PageProps) {
               const worn = km >= s.limitKm;
               return (
                 <div key={s.id} className={`card shoe-card ${s.retired ? 'retired' : ''} ${worn ? 'worn' : ''}`}>
+                  <label className={`shoe-photo ${s.photo ? 'has' : ''}`} title={s.photo ? 'Trocar a foto' : 'Colocar uma foto do tênis'}>
+                    {s.photo ? <Photo id={s.photo} alt={`Foto do ${s.name}`} /> : <span className="shoe-photo-empty"><Icon name="camera" size={26} /> Adicionar foto</span>}
+                    {s.photo && <span className="shoe-photo-change"><Icon name="camera" size={14} /> Trocar</span>}
+                    <input type="file" accept="image/*" onChange={(e) => { setShoePhoto(s, e.target.files?.[0]); e.target.value = ''; }} />
+                  </label>
+                  {s.photo && <button className="link small shoe-photo-remove" onClick={() => removeShoePhoto(s)}>Remover foto</button>}
                   <div className="shoe-ring" style={{ '--pct': `${pct}%` } as CSSProperties}>
                     <span><b>{Math.round(km)}</b><small>de {s.limitKm} km</small></span>
                   </div>

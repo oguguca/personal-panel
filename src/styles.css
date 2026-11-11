@@ -1466,3 +1466,31 @@ h2 { letter-spacing: -0.01em; }
 .cal-countdown { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 .cal-countdown-num { color: var(--primary); }
 .cal-countdown .muted { color: var(--muted); }
+
+/* Recordes pessoais: blocos limpos, número grande; dourado só no selo do recorde */
+.pr-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .pr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pr-tile { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); min-width: 0; }
+.pr-tile-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 22px; }
+.pr-tile-dist { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pr-tile-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 700; color: var(--text); background: color-mix(in srgb, var(--medal) 22%, transparent); }
+.pr-tile-badge .icon { color: var(--medal); }
+.pr-tile-time { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pr-tile-time.empty { color: var(--muted); font-weight: 600; }
+.pr-tile-meta { font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pr-tile-bar { height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--muted) 22%, transparent); overflow: hidden; }
+.pr-tile-bar span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width 520ms var(--ease-spring); }
+
+/* Tênis: foto em cima (clique para colocar/trocar) */
+.shoe-card { padding-top: 12px; }
+.shoe-photo { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--surface-2); }
+.shoe-photo input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.shoe-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 400ms var(--ease-spring); }
+.shoe-photo.has:hover img { transform: scale(1.03); }
+.shoe-photo-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--muted); font-size: 0.85rem; font-weight: 600; border: 1.5px dashed var(--border); border-radius: 12px; }
+.shoe-photo:hover .shoe-photo-empty { color: var(--primary); border-color: var(--primary); }
+.shoe-photo-change { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px; font-size: 0.78rem; font-weight: 700; color: #fff; background: rgba(0,0,0,.55); backdrop-filter: blur(8px); opacity: 0; transition: opacity var(--t-state) ease; }
+.shoe-photo:hover .shoe-photo-change, .shoe-photo:focus-within .shoe-photo-change { opacity: 1; }
+.shoe-photo:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+.shoe-photo-remove { margin-top: -4px; }
+.pr-tile { text-align: left; align-items: stretch; }

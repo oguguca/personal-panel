@@ -304,6 +304,8 @@ export interface Shoe {
   limitKm: number; // quando trocar (ex.: 700 km)
   startKm?: number; // km que já tinha antes de usar no app
   retired?: boolean;
+  /** foto do tênis (id da imagem guardada no aparelho) */
+  photo?: string;
 }
 
 export interface Running {
