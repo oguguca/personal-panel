@@ -1,15 +1,16 @@
 // Aba Corrida: pace, km por semana/mês, recordes pessoais, previsão de provas e quilometragem dos tênis.
 // As provas do Calendário (corridas marcadas como feitas, com tempo) também entram nos recordes.
+import type { IconName } from '../components/Icon';
 import { formatPace, parseDuration } from './calendar';
 import { addDays, parseKey } from './dates';
 import type { CalEvent, DayKey, Run, RunType, Shoe } from './types';
 
-export const RUN_TYPES: Record<RunType, { label: string; icon: string }> = {
-  leve: { label: 'Leve', icon: '🙂' },
-  longo: { label: 'Longão', icon: '🛣️' },
-  tiro: { label: 'Tiros', icon: '⚡' },
-  ritmo: { label: 'Ritmo', icon: '🎯' },
-  prova: { label: 'Prova', icon: '🏅' },
+export const RUN_TYPES: Record<RunType, { label: string; icon: IconName }> = {
+  leve: { label: 'Leve', icon: 'smile' },
+  longo: { label: 'Longão', icon: 'route' },
+  tiro: { label: 'Tiros', icon: 'bolt' },
+  ritmo: { label: 'Ritmo', icon: 'target' },
+  prova: { label: 'Prova', icon: 'medal' },
 };
 export const FEELS = ['😫', '😕', '😐', '🙂', '😄'];
 export const QUICK_KM = [3, 5, 8, 10, 15, 21.1];

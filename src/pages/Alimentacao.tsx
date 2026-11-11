@@ -71,7 +71,7 @@ function NewMealForm({ onSave, onCancel }: { onSave: (name: string, time: string
       </div>
       <div className="meal-time">
         <label className="meal-time-field">
-          <span>🕒 Comi às</span>
+          <span className="ico-text"><Icon name="clock" size={15} /> Comi às</span>
           <input className="input" type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Horário em que comeu" />
         </label>
         <div className="chips">

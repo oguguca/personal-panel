@@ -260,7 +260,7 @@ function WorkoutCard({ w, isToday, doneToday, letter, onOpenCycle, onChange, onR
             <button className="btn sm" onClick={onUndo} title="Desmarcar o treino de hoje"><Icon name="undo" size={14} /> Desfazer</button>
           ) : (
             <button className="btn sm primary" onClick={onDone} disabled={!w.items.length} title="Confirma o treino: escolha o dia (hoje, ontem…) e marque os exercícios feitos">
-              ✅ Já fiz
+              <Icon name="check" size={15} /> Já fiz
             </button>
           )}
           <button className="icon-btn" title="Renomear" onClick={() => setRenaming(true)}><Icon name="edit" size={18} /></button>

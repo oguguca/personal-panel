@@ -53,11 +53,11 @@ export function TodayTraining({ compact = false, onOpen }: { compact?: boolean; 
     return (
       <div className="today-train done">
         <div className="today-train-main">
-          <span className="today-train-emoji">{s.logged.type === 'workout' ? '✅' : '😴'}</span>
+          <span className={`today-train-emoji ${s.logged.type === 'workout' ? 'ok' : 'rest'}`}><Icon name={s.logged.type === 'workout' ? 'check' : 'moon'} size={22} /></span>
           <div>
             <div className="today-train-title">{s.logged.type === 'workout' ? `Feito: ${s.logged.name || nameOf(s.logged.workoutId)}${s.logged.planned && (s.logged.items?.length ?? 0) < s.logged.planned ? ` (${s.logged.items?.length} de ${s.logged.planned} exercícios)` : ''}` : 'Descanso registrado'}</div>
             <div className="muted small">
-              {s.logged.swap ? <>🔁 Trocou a ordem: <strong>{nameOf(s.logged.swap)}</strong> fica para o próximo treino.</> : <>Próximo da sequência: <strong>{nameOf(next)}</strong></>}
+              {s.logged.swap ? <><Icon name="repeat" size={13} /> Trocou a ordem: <strong>{nameOf(s.logged.swap)}</strong> fica para o próximo treino.</> : <>Próximo da sequência: <strong>{nameOf(next)}</strong></>}
             </div>
             {s.logged.type === 'workout' && <LoggedSummary items={s.logged.items} />}
           </div>
@@ -75,7 +75,7 @@ export function TodayTraining({ compact = false, onOpen }: { compact?: boolean; 
   return (
     <div className="today-train">
       <div className="today-train-main">
-        <span className="today-train-emoji">{s.rest ? '😴' : '🏋️'}</span>
+        <span className={`today-train-emoji ${s.rest ? 'rest' : ''}`}><Icon name={s.rest ? 'moon' : 'treino'} size={22} /></span>
         <div>
           <div className="today-train-title">{s.rest ? 'Hoje é dia de descanso' : `Hoje: ${nameOf(target)}`}</div>
           <div className="muted small">
@@ -157,7 +157,7 @@ export default function TreinoCiclo({ goTab }: { goTab: (tab: string) => void })
               <span className="week-day-name">{i === 0 ? 'Hoje' : WEEKDAYS_NAME[weekday(d.key)]}</span>
               <span className="week-day-date">{formatShort(d.key)}</span>
               {d.type === 'rest' ? (
-                <span className="week-day-slot rest">😴</span>
+                <span className="week-day-slot rest"><Icon name="moon" size={18} /></span>
               ) : (
                 <span className="week-day-slot">{letterOf(d.workoutId)}</span>
               )}
@@ -226,7 +226,7 @@ export default function TreinoCiclo({ goTab }: { goTab: (tab: string) => void })
                   <li key={k} className="item food-item">
                     <span className="item-title">{k === today ? 'Hoje' : formatMedium(k)}</span>
                     {t.type === 'rest' ? (
-                      <span className="badge">😴 Descanso</span>
+                      <span className="badge"><Icon name="moon" size={12} /> Descanso</span>
                     ) : (
                       <span className="badge primary">{t.name || byId[t.workoutId ?? '']?.name || 'Treino'}</span>
                     )}
@@ -388,7 +388,7 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
     <div className="wcheck-overlay" role="dialog" aria-modal="true" aria-label="Confirmar treino" onClick={onClose}>
       <div className="card wcheck" onClick={(e) => e.stopPropagation()}>
         <div className="card-head">
-          <h2>✅ Confirmar treino</h2>
+          <h2>Confirmar treino</h2>
           <button className="icon-btn" onClick={onClose} title="Fechar"><Icon name="x" size={18} /></button>
         </div>
 
@@ -417,11 +417,11 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
             <span className="wswap-q">Era dia de <b>{dueName}</b>. Você fez <b>{w?.name}</b> no lugar. E agora?</span>
             <div className="wswap-opts">
               <button type="button" className={`wswap-opt ${swap ? 'on' : ''}`} onClick={() => setSwap(true)}>
-                <b>🔁 Trocar a ordem</b>
+                <b className="ico-text"><Icon name="repeat" size={15} /> Trocar a ordem</b>
                 <span>O {dueName} fica para o próximo treino. Depois o ciclo continua normal, sem repetir o {w?.name}.</span>
               </button>
               <button type="button" className={`wswap-opt ${!swap ? 'on' : ''}`} onClick={() => setSwap(false)}>
-                <b>⏭️ Pular o {dueName}</b>
+                <b className="ico-text"><Icon name="next" size={15} /> Pular o {dueName}</b>
                 <span>Segue a sequência a partir do {w?.name}.</span>
               </button>
             </div>
@@ -456,7 +456,7 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
                   <label className={`wcheck-item ${on ? 'on' : ''}`}>
                     <input type="checkbox" checked={on} onChange={() => toggle(it.id)} />
                     <span className="wcheck-box">{on ? '✓' : ''}</span>
-                    {hasPreview(it.exId) ? <ExercisePreview id={it.exId} name={ex?.name} size="wcheck-thumb" /> : <span className="wcheck-thumb-empty">🏋️</span>}
+                    {hasPreview(it.exId) ? <ExercisePreview id={it.exId} name={ex?.name} size="wcheck-thumb" /> : <span className="wcheck-thumb-empty"><Icon name="treino" size={30} /></span>}
                     <span className="wcheck-name">
                       <b>{ex?.name || it.exId}</b>
                       <span className="muted small">
@@ -505,7 +505,7 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
                         <button type="button" className="btn sm" onClick={() => addSet(it.id)}><Icon name="plus" size={14} /> Série</button>
                         <label className={`wsets-forgot ${d.noWeight ? 'on' : ''}`}>
                           <input type="checkbox" checked={d.noWeight} onChange={(e) => edit(it.id, (x) => ({ ...x, noWeight: e.target.checked }))} />
-                          🤷 Não lembro o peso
+                          <Icon name="help" size={14} /> Não lembro o peso
                         </label>
                       </div>
                     </div>
@@ -520,9 +520,9 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
 
         {checked.size > 0 && (
           <div className="wcheck-total">
-            <span>🏋️ <b>{totalSets}</b> séries</span>
-            <span>📦 <b>{Math.round(volume).toLocaleString('pt-BR')}</b> kg de volume</span>
-            {cardioMin > 0 && <span>⏱️ <b>{Math.round(cardioMin)}</b> min de cardio</span>}
+            <span className="ico-text"><Icon name="treino" size={15} /> <b>{totalSets}</b> séries</span>
+            <span className="ico-text"><Icon name="box" size={15} /> <b>{Math.round(volume).toLocaleString('pt-BR')}</b> kg de volume</span>
+            {cardioMin > 0 && <span className="ico-text"><Icon name="clock" size={15} /> <b>{Math.round(cardioMin)}</b> min de cardio</span>}
             <span className="wcheck-xp">+{xpForca} XP Força{xpCardio ? ` · +${xpCardio} XP Resistência` : ''}</span>
           </div>
         )}

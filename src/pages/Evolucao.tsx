@@ -1,4 +1,5 @@
 // Desenvolvimento pessoal em modo jogo: personagem, atributos, rank de academia e atividade.
+import Icon from '../components/Icon';
 import { useEffect, useMemo, useState } from 'react';
 import Hologram from '../components/Hologram';
 import RankEmblem from '../components/RankEmblem';
@@ -55,7 +56,7 @@ export default function Evolucao({ go }: PageProps) {
 
       {levelUp && (
         <div className="levelup" role="status">
-          <span className="levelup-badge">LEVEL UP!</span>
+          <span className="levelup-badge">SUBIU DE NÍVEL!</span>
           <span>Você chegou ao <b>nível {game.total.level}</b> ({game.total.title}). Seu personagem evoluiu.</span>
           <button className="btn" onClick={ackLevel}>Boa!</button>
         </div>
@@ -94,7 +95,7 @@ export default function Evolucao({ go }: PageProps) {
       <div className="grid">
         <section className="card">
           <div className="card-head">
-            <h2>🏋️ Rank da academia</h2>
+            <h2 className="ico-text"><Icon name="treino" size={20} /> Rank da academia</h2>
             <button className="link" onClick={() => go('treino')}>Treino</button>
           </div>
           <div className="gym-rank">
@@ -133,7 +134,7 @@ export default function Evolucao({ go }: PageProps) {
 
         <section className="card">
           <div className="card-head">
-            <h2>{sel ? `${sel.emoji} ${sel.name}` : '⚡ Atividade recente'}</h2>
+            <h2>{sel ? `${sel.emoji} ${sel.name}` : 'Atividade recente'}</h2>
             {sel && <button className="link" onClick={() => setSelected(null)}>Ver tudo</button>}
           </div>
           {events.length ? (

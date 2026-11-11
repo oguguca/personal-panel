@@ -2,7 +2,7 @@
 // recordes em medalhas, previsão interativa, evolução do pace e mural de provas.
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import BarChart from '../components/BarChart';
-import Icon from '../components/Icon';
+import Icon, { type IconName } from '../components/Icon';
 import { Lightbox, Photo } from '../components/Photos';
 import { RaceCard, RaceModal } from '../components/RaceDiary';
 import { deleteImage, saveImage } from '../store/images';
@@ -82,7 +82,7 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
 
   return (
     <form className="card run-form" onSubmit={submit}>
-      <div className="card-head"><h2>{f.id ? 'Editar corrida' : '🏃 Registrar corrida'}</h2></div>
+      <div className="card-head"><h2>{f.id ? 'Editar corrida' : 'Registrar corrida'}</h2></div>
       <div className="field">
         <span>Quando?</span>
         <div className="chips">
@@ -95,7 +95,7 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
         <span>Tipo</span>
         <div className="chips">
           {(Object.keys(RUN_TYPES) as RunType[]).map((t) => (
-            <button type="button" key={t} className={`chip ${f.type === t ? 'on' : ''}`} onClick={() => set('type', t)}>{RUN_TYPES[t].icon} {RUN_TYPES[t].label}</button>
+            <button type="button" key={t} className={`chip ${f.type === t ? 'on' : ''}`} onClick={() => set('type', t)}><Icon name={RUN_TYPES[t].icon} size={15} /> {RUN_TYPES[t].label}</button>
           ))}
         </div>
       </div>
@@ -138,14 +138,14 @@ function RunForm({ initial, shoes, today, onSave, onCancel, onDelete }: {
         </label>
       )}
       <label className="field">
-        <span>📍 Local (opcional)</span>
+        <span className="ico-text"><Icon name="pin" size={15} /> Local (opcional)</span>
         <div className="row">
           <input className="input" placeholder="Ex.: Parque Ibirapuera, São Paulo" value={f.place} onChange={(e) => set('place', e.target.value)} />
-          {mapUrl && <a className="btn sm" href={mapUrl} target="_blank" rel="noreferrer">Ver no mapa ↗</a>}
+          {mapUrl && <a className="btn sm" href={mapUrl} target="_blank" rel="noreferrer">Ver no mapa <Icon name="external" size={14} /></a>}
         </div>
       </label>
       <div className="field">
-        <span>📷 Fotos do treino (opcional)</span>
+        <span className="ico-text"><Icon name="camera" size={15} /> Fotos do treino (opcional)</span>
         <div className="race-gallery edit run-photos">
           {f.photos.map((id) => (
             <span key={id} className="race-photo">
@@ -182,7 +182,7 @@ function RunCard({ r, shoe, onEdit, onPhoto, index }: { r: Run; shoe?: string; o
   return (
     <article className={`run-card t-${r.type}`} style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}>
       <header className="run-card-head">
-        <span className="run-card-icon">{RUN_TYPES[r.type].icon}</span>
+        <span className="run-card-icon"><Icon name={RUN_TYPES[r.type].icon} size={22} /></span>
         <div className="run-card-when">
           <b>{when.charAt(0).toUpperCase() + when.slice(1)}</b>
           <span className="muted small">
@@ -214,8 +214,8 @@ function RunCard({ r, shoe, onEdit, onPhoto, index }: { r: Run; shoe?: string; o
 
       {(r.place || shoe) && (
         <footer className="run-card-foot">
-          {r.place && (map ? <a href={map} target="_blank" rel="noreferrer" title="Abrir no mapa">📍 {r.place}</a> : <span>📍 {r.place}</span>)}
-          {shoe && <span>👟 {shoe}</span>}
+          {r.place && (map ? <a href={map} target="_blank" rel="noreferrer" title="Abrir no mapa" className="ico-text"><Icon name="pin" size={14} /> {r.place}</a> : <span className="ico-text"><Icon name="pin" size={14} /> {r.place}</span>)}
+          {shoe && <span className="ico-text"><Icon name="shoe" size={14} /> {shoe}</span>}
         </footer>
       )}
     </article>
@@ -224,11 +224,11 @@ function RunCard({ r, shoe, onEdit, onPhoto, index }: { r: Run; shoe?: string; o
 
 // ---------------------------------------------------------------------------
 type Tab = 'geral' | 'provas' | 'treinos' | 'tenis';
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'geral', label: 'Visão geral', icon: '📊' },
-  { id: 'provas', label: 'Provas', icon: '🏅' },
-  { id: 'treinos', label: 'Treinos', icon: '👟' },
-  { id: 'tenis', label: 'Tênis', icon: '🥾' },
+const TABS: { id: Tab; label: string; icon: IconName }[] = [
+  { id: 'geral', label: 'Visão geral', icon: 'historico' },
+  { id: 'provas', label: 'Provas', icon: 'medal' },
+  { id: 'treinos', label: 'Treinos', icon: 'corrida' },
+  { id: 'tenis', label: 'Tênis', icon: 'shoe' },
 ];
 const TAB_KEY = 'painel-pessoal:corrida-aba';
 
@@ -270,8 +270,8 @@ function PaceChart({ points, onOpen }: { points: { ev: CalEvent; pace: number }[
         </div>
       )}
       <p className="muted small">
-        {diff > 0 ? <>🚀 Seu pace melhorou <b>{formatDurationSec(diff)} por km</b> desde a primeira prova.</> : diff < 0 ? <>Seu pace ficou {formatDurationSec(-diff)}/km mais lento que na primeira prova — bora treinar!</> : 'Pace estável.'}
-        {' '}⭐ = melhor pace. Clique num ponto para abrir a prova.
+        {diff > 0 ? <>Seu pace melhorou <b>{formatDurationSec(diff)} por km</b> desde a primeira prova.</> : diff < 0 ? <>Seu pace ficou {formatDurationSec(-diff)}/km mais lento que na primeira prova — bora treinar!</> : 'Pace estável.'}
+        {' '}A estrela marca o melhor pace. Clique num ponto para abrir a prova.
       </p>
     </div>
   );
@@ -289,7 +289,7 @@ function RecordMedal({ label, pr, km }: { label: string; pr: (Effort & { time: n
           <span className="muted small">{formatShort(pr.date)}{pr.race ? ' · prova' : ''}</span>
         </>
       ) : (
-        <span className="muted small">bloqueado 🔒</span>
+        <span className="muted small ico-text"><Icon name="lock" size={13} /> bloqueado</span>
       )}
     </div>
   );
@@ -326,7 +326,7 @@ function ShoePicker({ shoe, acts, shoes, onClose }: { shoe: Shoe; acts: Run[]; s
     <div className="wcheck-overlay" role="dialog" aria-modal="true" aria-label={`Corridas com ${shoe.name}`} onClick={onClose}>
       <div className="card wcheck" onClick={(e) => e.stopPropagation()}>
         <div className="card-head">
-          <h2>👟 {shoe.name}</h2>
+          <h2 className="ico-text"><Icon name="shoe" size={20} /> {shoe.name}</h2>
           <button className="icon-btn" onClick={onClose} title="Fechar"><Icon name="x" size={18} /></button>
         </div>
         <p className="muted small" style={{ margin: 0 }}>
@@ -349,7 +349,7 @@ function ShoePicker({ shoe, acts, shoes, onClose }: { shoe: Shoe; acts: Run[]; s
                       <input type="checkbox" checked={on} onChange={() => setShoe(a, !on)} />
                       <span className="wcheck-box">{on ? '✓' : ''}</span>
                       <span className="wcheck-name">
-                        <b>{a.type === 'prova' && a.notes ? `🏅 ${a.notes}` : `${RUN_TYPES[a.type].icon} ${RUN_TYPES[a.type].label}`}</b>
+                        <b className="ico-text"><Icon name={RUN_TYPES[a.type].icon} size={15} /> {a.type === 'prova' && a.notes ? a.notes : RUN_TYPES[a.type].label}</b>
                         <span className="muted small">
                           {formatShort(a.date)} · {fmtKm(a.km)}{a.seconds ? ` · ${formatDurationSec(a.seconds)}` : ''}
                           {other ? ` · com ${other} (marcar troca)` : ''}
@@ -462,17 +462,17 @@ export default function Corrida({ go }: PageProps) {
       {/* ---------- topo ---------- */}
       <section className="run-hero">
         <div className="run-hero-main">
-          <span className="run-hero-kicker">🏃 Corrida</span>
+          <span className="run-hero-kicker ico-text"><Icon name="corrida" size={15} /> Corrida</span>
           <div className="run-hero-km"><b>{totalKm.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}</b><span>km corridos</span></div>
           <div className="run-hero-chips">
-            <span>🏅 {racesDone.length} {racesDone.length === 1 ? 'prova' : 'provas'}</span>
-            <span>👟 {runs.length} {runs.length === 1 ? 'treino' : 'treinos'}</span>
-            {prs['5k'] && <span>⚡ 5K em {formatDurationSec(prs['5k'].time)}</span>}
-            {streak > 1 && <span>🔥 {streak} semanas seguidas</span>}
+            <span className="ico-text"><Icon name="medal" size={15} /> {racesDone.length} {racesDone.length === 1 ? 'prova' : 'provas'}</span>
+            <span className="ico-text"><Icon name="corrida" size={15} /> {runs.length} {runs.length === 1 ? 'treino' : 'treinos'}</span>
+            {prs['5k'] && <span className="ico-text"><Icon name="bolt" size={15} /> 5K em {formatDurationSec(prs['5k'].time)}</span>}
+            {streak > 1 && <span className="ico-text"><Icon name="flame" size={15} /> {streak} semanas seguidas</span>}
           </div>
           <div className="run-hero-actions">
             <button className="btn run-btn-light" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
-            <button className="btn run-btn-ghost" onClick={() => setRace('nova')}>🏅 Adicionar prova</button>
+            <button className="btn run-btn-ghost" onClick={() => setRace('nova')}><Icon name="medal" size={16} /> Adicionar prova</button>
           </div>
         </div>
         {nextRace ? (
@@ -495,7 +495,7 @@ export default function Corrida({ go }: PageProps) {
       <nav className="run-tabs" role="tablist">
         {TABS.map((t) => (
           <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''} onClick={() => setTab(t.id)}>
-            <span>{t.icon}</span> {t.label}
+            <Icon name={t.icon} size={16} /> {t.label}
           </button>
         ))}
       </nav>
@@ -504,9 +504,9 @@ export default function Corrida({ go }: PageProps) {
       {tab === 'geral' && (
         <div className="run-panel" key="geral">
           <section className="run-tiles">
-            <div className="run-tile"><span className="run-tile-icon">📅</span><span className="muted small">Esta semana</span><b>{fmtKm(wk)}</b></div>
+            <div className="run-tile"><span className="run-tile-icon"><Icon name="calendar" size={26} /></span><span className="muted small">Esta semana</span><b>{fmtKm(wk)}</b></div>
             <div className="run-tile">
-              <span className="run-tile-icon">🗓️</span>
+              <span className="run-tile-icon"><Icon name="calendar" size={26} /></span>
               <span className="muted small">Este mês{monthGoalKm ? ` · meta ${fmtKm(monthGoalKm)}` : ''}</span>
               <b>{fmtKm(mk)}</b>
               {monthGoalKm > 0 && <Progress value={mk} max={monthGoalKm} variant={mk >= monthGoalKm ? 'success' : ''} />}
@@ -518,12 +518,12 @@ export default function Corrida({ go }: PageProps) {
                 <button className="link small" onClick={() => setGoalEdit(true)}>{monthGoalKm ? 'mudar meta' : 'definir meta'}</button>
               )}
             </div>
-            <div className="run-tile"><span className="run-tile-icon">⏱️</span><span className="muted small">Pace médio (90 dias)</span><b>{pace ? formatPace(pace) : '—'}</b></div>
-            <div className="run-tile"><span className="run-tile-icon">🏁</span><span className="muted small">Maior distância</span><b>{fmtKm(Math.max(0, ...acts.map((a) => a.km)))}</b></div>
+            <div className="run-tile"><span className="run-tile-icon"><Icon name="clock" size={26} /></span><span className="muted small">Pace médio (90 dias)</span><b>{pace ? formatPace(pace) : '—'}</b></div>
+            <div className="run-tile"><span className="run-tile-icon"><Icon name="flag" size={26} /></span><span className="muted small">Maior distância</span><b>{fmtKm(Math.max(0, ...acts.map((a) => a.km)))}</b></div>
           </section>
 
           <section className="card">
-            <div className="card-head"><h2>🏆 Recordes pessoais</h2><span className="muted small">treinos + provas</span></div>
+            <div className="card-head"><h2 className="ico-text"><Icon name="trophy" size={20} /> Recordes pessoais</h2><span className="muted small">treinos + provas</span></div>
             <div className="pr-row">
               {DISTANCES.map((d) => <RecordMedal key={d.key} label={d.key.toUpperCase()} pr={prs[d.key]} km={d.km} />)}
             </div>
@@ -531,12 +531,12 @@ export default function Corrida({ go }: PageProps) {
 
           <div className="run-two">
             <section className="card">
-              <div className="card-head"><h2>📈 Evolução do pace nas provas</h2></div>
+              <div className="card-head"><h2 className="ico-text"><Icon name="trend" size={20} /> Evolução do pace nas provas</h2></div>
               <PaceChart points={paces} onOpen={(ev) => setRace(ev)} />
             </section>
 
             <section className="card run-predict">
-              <div className="card-head"><h2>🔮 Quanto tempo eu faria?</h2></div>
+              <div className="card-head"><h2 className="ico-text"><Icon name="clock" size={20} /> Quanto tempo eu faria?</h2></div>
               {pred ? (
                 <>
                   <div className="run-predict-value">
@@ -588,7 +588,7 @@ export default function Corrida({ go }: PageProps) {
             </div>
           ) : (
             <section className="card run-empty">
-              <span>🏅</span>
+              <span className="run-empty-icon"><Icon name="medal" size={40} /></span>
               <b>{raceTab === 'feitas' ? 'Seu mural de provas está vazio' : 'Nenhuma prova marcada'}</b>
               <p className="muted">{raceTab === 'feitas' ? 'Adicione as provas que você já correu: tempo, imagem da corrida, suas fotos e como foi.' : 'Adicione a próxima prova e o app avisa antes.'}</p>
               <button className="btn primary" onClick={() => setRace('nova')}>Adicionar prova</button>
@@ -604,7 +604,7 @@ export default function Corrida({ go }: PageProps) {
             <RunForm key={editing.id || 'nova'} initial={editing} shoes={shoes} today={today} onSave={saveRun} onCancel={() => setEditing(null)} onDelete={editing.id ? () => removeRun(editing.id!) : undefined} />
           ) : (
             <div className="run-panel-head">
-              <span className="muted">{runs.length ? `${runs.length} ${runs.length === 1 ? 'treino' : 'treinos'} · ${fmtKm(runs.reduce((t, r) => t + r.km, 0))} · ✏️ para editar` : 'Registre seus treinos de corrida.'}</span>
+              <span className="muted">{runs.length ? `${runs.length} ${runs.length === 1 ? 'treino' : 'treinos'} · ${fmtKm(runs.reduce((t, r) => t + r.km, 0))} · clique para editar` : 'Registre seus treinos de corrida.'}</span>
               <button className="btn primary" onClick={newRun}><Icon name="plus" size={16} /> Registrar treino</button>
             </div>
           )}
@@ -613,7 +613,7 @@ export default function Corrida({ go }: PageProps) {
               <button className={`chip ${typeFilter === 'todos' ? 'on' : ''}`} onClick={() => setTypeFilter('todos')}>Todos · {sortedRuns.length}</button>
               {(Object.keys(RUN_TYPES) as RunType[]).filter((t) => sortedRuns.some((r) => r.type === t)).map((t) => (
                 <button key={t} className={`chip ${typeFilter === t ? 'on' : ''}`} onClick={() => setTypeFilter(t)}>
-                  {RUN_TYPES[t].icon} {RUN_TYPES[t].label} · {sortedRuns.filter((r) => r.type === t).length}
+                  <Icon name={RUN_TYPES[t].icon} size={14} /> {RUN_TYPES[t].label} · {sortedRuns.filter((r) => r.type === t).length}
                 </button>
               ))}
             </div>
@@ -637,7 +637,7 @@ export default function Corrida({ go }: PageProps) {
             </div>
           ) : !editing && (
             <section className="card run-empty">
-              <span>👟</span>
+              <span className="run-empty-icon"><Icon name="corrida" size={40} /></span>
               <b>Nenhum treino ainda</b>
               <p className="muted">Registre distância e tempo; o pace, os recordes e a previsão aparecem sozinhos.</p>
               <button className="btn primary" onClick={newRun}>Registrar treino</button>
@@ -663,14 +663,14 @@ export default function Corrida({ go }: PageProps) {
                   <span className={`badge ${s.retired ? '' : worn || pct >= 85 ? 'warning' : 'success'}`}>{s.retired ? 'aposentado' : worn ? 'hora de trocar' : pct >= 85 ? `quase na hora · ${Math.round(s.limitKm - km)} km` : `${Math.round(s.limitKm - km)} km de vida`}</span>
                   <span className="muted small">{acts.filter((a) => a.shoeId === s.id).length} corrida(s) com ele</span>
                   <div className="row" style={{ justifyContent: 'center' }}>
-                    <button className="btn sm primary" onClick={() => setPicking(s)}>👟 Escolher corridas</button>
+                    <button className="btn sm primary" onClick={() => setPicking(s)}><Icon name="shoe" size={16} /> Escolher corridas</button>
                     <button className="link small" onClick={() => patchShoe(s.id, (x) => { x.retired = !x.retired; })}>{s.retired ? 'Voltar a usar' : 'Aposentar'}</button>
                   </div>
                 </div>
               );
             })}
             <form className="card shoe-card shoe-new" onSubmit={addShoe}>
-              <span className="shoe-new-icon">👟</span>
+              <span className="shoe-new-icon"><Icon name="shoe" size={40} /></span>
               <input className="input" placeholder="Novo tênis (ex.: Nike Pegasus 41)" value={newShoe} onChange={(e) => setNewShoe(e.target.value)} />
               <button className="btn primary" type="submit"><Icon name="plus" size={16} /> Adicionar</button>
               <span className="muted small">Tênis de corrida duram de 500 a 800 km. Escolha o tênis ao registrar cada treino.</span>

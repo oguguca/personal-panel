@@ -1,5 +1,6 @@
 // Painel do rank da temporada: emblema, pontos, sequência, partidas, escada e temporadas passadas.
 import { useEffect, useState, type CSSProperties } from 'react';
+import Icon from './Icon';
 import RankEmblem, { RankArt } from './RankEmblem';
 import { formatShort, parseKey } from '../store/dates';
 import { GYM_TIERS } from '../store/game';
@@ -48,11 +49,11 @@ export default function RankedPanel({ ranked }: { ranked: Ranked }) {
           </span>
           <div className="ranked-chips">
             <span className={`ranked-chip ${streak ? 'fire' : ''}`} title="Dias seguidos ativos">
-              🔥 {streak} dia{streak === 1 ? '' : 's'} · combo x{comboOf(streak).toFixed(2)}
+              <Icon name="flame" size={14} /> {streak} dia{streak === 1 ? '' : 's'} · combo x{comboOf(streak).toFixed(2)}
             </span>
-            <span className="ranked-chip">🏆 Pico: {season.peak.label}</span>
-            <span className="ranked-chip">⚔️ {season.wins}V · {season.losses}D</span>
-            <span className="ranked-chip">⭐ Melhor sequência: {bestStreak}</span>
+            <span className="ranked-chip"><Icon name="trophy" size={14} /> Pico: {season.peak.label}</span>
+            <span className="ranked-chip" title="Vitórias e derrotas"><Icon name="historico" size={14} /> {season.wins} vitórias · {season.losses} derrotas</span>
+            <span className="ranked-chip"><Icon name="star" size={14} /> Melhor sequência: {bestStreak}</span>
           </div>
           <span className="ranked-today">
             {toWin

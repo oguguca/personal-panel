@@ -141,7 +141,7 @@ export default function TreinoHistorico() {
                         {volume > 0 && <span>{fmtVolume(volume)}</span>}
                         {cardio > 0 && <span>{cardio} min de cardio</span>}
                       </span>
-                      {t.swap && <span className="hist-swap">🔁 Trocou: {swapName} ficou para depois</span>}
+                      {t.swap && <span className="hist-swap"><Icon name="repeat" size={13} /> Trocou: {swapName} ficou para depois</span>}
                     </span>
                     <span className="hist-xp">+{xp} XP</span>
                     <span className={`hist-chev ${isOpen ? 'up' : ''}`}><Icon name="down" size={18} /></span>

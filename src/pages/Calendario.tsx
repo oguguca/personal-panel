@@ -96,7 +96,7 @@ function EventForm({ initial, onSave, onCancel, onDelete, onDuplicate, onExport 
       <label className="field"><span>Observações (opcional)</span><textarea className="input" rows={2} placeholder={race ? 'Kit, horário de chegada, pace…' : ''} value={f.notes || ''} onChange={(e) => set('notes', e.target.value)} /></label>
 
       <div className="cal-alert">
-        <Switch label="🔔 Me avisar antes" checked={!!f.alert} onChange={(on) => set('alert', on ? { ...DEFAULT_ALERT } : null)} />
+        <Switch label="Me avisar antes" checked={!!f.alert} onChange={(on) => set('alert', on ? { ...DEFAULT_ALERT } : null)} />
         {f.alert && (
           <>
             <div className="field">
@@ -150,11 +150,11 @@ function EventItem({ ev, today, onEdit, onToggle }: { ev: CalEvent; today: DayKe
         <b>{ev.title}</b>
         <span className="muted small">
           {[ev.time || 'dia inteiro', ev.kind === 'corrida' && ev.distance ? `${ev.distance} km` : '', ev.place].filter(Boolean).join(' · ')}
-          {paceOf(ev) && <> · ⏱ {ev.result} ({formatPace(paceOf(ev)!)})</>}
+          {paceOf(ev) && <> · {ev.result} ({formatPace(paceOf(ev)!)})</>}
         </span>
         {ev.notes && <span className="muted small cal-notes">{ev.notes}</span>}
       </button>
-      {/^https?:\/\//.test(ev.link || '') &&<a className="cal-link" href={ev.link} target="_blank" rel="noreferrer" title={ev.link}>{ev.kind === 'corrida' ? 'Inscrição' : 'Link'} ↗</a>}
+      {/^https?:\/\//.test(ev.link || '') &&<a className="cal-link" href={ev.link} target="_blank" rel="noreferrer" title={ev.link}>{ev.kind === 'corrida' ? 'Inscrição' : 'Link'} <Icon name="external" size={13} /></a>}
       <span className="cal-event-side">
         {!ev.done && !past && <span className="badge primary">{whenText(ev, today)}</span>}
         {!ev.done && past && (
@@ -162,7 +162,7 @@ function EventItem({ ev, today, onEdit, onToggle }: { ev: CalEvent; today: DayKe
             {ev.kind === 'corrida' ? 'Correu? Marque ✓' : 'Feito? Marque ✓'}
           </span>
         )}
-        {ev.alert && !ev.done && !past && <span className="cal-bell" title={describeAlert(ev)}>🔔</span>}
+        {ev.alert && !ev.done && !past && <span className="cal-bell" title={describeAlert(ev)} aria-label={describeAlert(ev)}><Icon name="bell" size={14} /></span>}
       </span>
     </li>
   );
@@ -265,7 +265,7 @@ export default function Calendario() {
               <Icon name="download" size={16} /> Exportar
             </button>
           )}
-          <button className="btn" onClick={() => openNew('corrida')}>🏃 Nova corrida</button>
+          <button className="btn" onClick={() => openNew('corrida')}><Icon name="corrida" size={16} /> Nova corrida</button>
           <button className="btn primary" onClick={() => openNew('compromisso')}><Icon name="plus" size={18} /> Novo compromisso</button>
         </div>
       </header>
@@ -325,7 +325,7 @@ export default function Calendario() {
               <span className="cal-countdown-num">{daysUntil(nextRace.date, today) || 'HOJE'}</span>
               <div>
                 <span className="muted small">{daysUntil(nextRace.date, today) ? (daysUntil(nextRace.date, today) === 1 ? 'dia para a próxima corrida' : 'dias para a próxima corrida') : 'é dia de corrida!'}</span>
-                <b>🏃 {nextRace.title}</b>
+                <b className="ico-text"><Icon name="corrida" size={16} /> {nextRace.title}</b>
                 <span className="muted small">{[formatShort(nextRace.date), nextRace.time, nextRace.distance && `${nextRace.distance} km`].filter(Boolean).join(' · ')}</span>
               </div>
             </section>
@@ -381,7 +381,7 @@ export default function Calendario() {
 
           {races.length > 0 && (
             <section className="card">
-              <div className="card-head"><h2>🏃 Corridas</h2></div>
+              <div className="card-head"><h2 className="ico-text"><Icon name="corrida" size={20} /> Corridas</h2></div>
               <div className="cal-stats">
                 <div><b>{racesDone.length}</b><span className="muted small">feitas</span></div>
                 <div><b>{races.length - racesDone.length}</b><span className="muted small">marcadas</span></div>

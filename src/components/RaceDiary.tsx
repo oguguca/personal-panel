@@ -28,16 +28,16 @@ export function RaceCard({ ev, today, onOpen, index = 0 }: { ev: CalEvent; today
   const km = fmtDist(ev);
   return (
     <button className={`race-poster ${ev.cover ? '' : 'no-cover'}`} onClick={onOpen} style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}>
-      {ev.cover ? <Img id={ev.cover} alt={`Imagem de ${ev.title}`} className="race-poster-img" /> : <span className="race-poster-empty">🏅</span>}
+      {ev.cover ? <Img id={ev.cover} alt={`Imagem de ${ev.title}`} className="race-poster-img" /> : <span className="race-poster-empty"><Icon name="medal" size={64} /></span>}
       <span className="race-poster-top">
-        {future ? <span className="race-chip warn">{whenText(ev, today)}</span> : ev.result ? <span className="race-chip">⏱ {ev.result}</span> : <span />}
-        {!!ev.photos?.length && <span className="race-chip dark">📷 {ev.photos.length}</span>}
+        {future ? <span className="race-chip warn">{whenText(ev, today)}</span> : ev.result ? <span className="race-chip ico-text"><Icon name="clock" size={13} /> {ev.result}</span> : <span />}
+        {!!ev.photos?.length && <span className="race-chip dark ico-text"><Icon name="camera" size={13} /> {ev.photos.length}</span>}
       </span>
       <span className="race-poster-info">
         <b>{ev.title}</b>
         <span className="small">{formatShort(ev.date)}{km ? ` · ${km}` : ''}{pace ? ` · ${pace}` : ''}</span>
-        {ev.place && <span className="small race-poster-place">📍 {ev.place}</span>}
-        <span className="race-poster-story small">{ev.story || (future ? 'Clique para ver os detalhes da prova.' : '✍️ Clique para contar como foi.')}</span>
+        {ev.place && <span className="small race-poster-place ico-text"><Icon name="pin" size={13} /> {ev.place}</span>}
+        <span className="race-poster-story small">{ev.story || (future ? 'Clique para ver os detalhes da prova.' : 'Clique para contar como foi.')}</span>
       </span>
     </button>
   );
@@ -153,7 +153,7 @@ export function RaceModal({ ev, onClose }: { ev: CalEvent | null; onClose: () =>
     <div className="race-overlay" role="dialog" aria-modal="true" aria-label={shown.title || 'Nova prova'} onClick={cancel}>
       <div className="card race-modal" onClick={(e) => e.stopPropagation()}>
         <div className="race-hero">
-          {shown.cover ? <Img id={shown.cover} alt={`Imagem de ${shown.title}`} /> : <span className="race-cover-empty big">🏅</span>}
+          {shown.cover ? <Img id={shown.cover} alt={`Imagem de ${shown.title}`} /> : <span className="race-cover-empty big"><Icon name="medal" size={72} /></span>}
           {editing && (
             <label className="btn sm race-hero-btn">
               <Icon name="upload" size={14} /> {shown.cover ? 'Trocar imagem da corrida' : 'Imagem da corrida'}
@@ -237,14 +237,14 @@ export function RaceModal({ ev, onClose }: { ev: CalEvent | null; onClose: () =>
             {shown.story ? (
               <p className="race-story">{shown.story}</p>
             ) : (
-              <button className="race-story-empty" onClick={() => { setF(current); setEditing(true); }}>✍️ Conte como foi essa corrida…</button>
+              <button className="race-story-empty" onClick={() => { setF(current); setEditing(true); }}><Icon name="pen" size={16} /> Conte como foi essa corrida…</button>
             )}
             {photos.length > 0 && (
               <div className="race-gallery">
                 {photos.map((id, i) => <Img key={id} id={id} alt={`Foto ${i + 1} da corrida`} className="race-photo-img" onClick={() => setView(i)} />)}
               </div>
             )}
-            {shown.link && /^https?:\/\//.test(shown.link) && <a className="cal-link" href={shown.link} target="_blank" rel="noreferrer">Site da prova ↗</a>}
+            {shown.link && /^https?:\/\//.test(shown.link) && <a className="cal-link" href={shown.link} target="_blank" rel="noreferrer">Site da prova <Icon name="external" size={14} /></a>}
           </div>
         )}
       </div>

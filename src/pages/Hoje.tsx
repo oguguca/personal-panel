@@ -107,7 +107,7 @@ export default function Hoje({ go }: PageProps) {
         </button>
       </section>
 
-      <section className="grid">
+      <section className="grid home-grid">
         {/* Tarefas */}
         <div className="card">
           <div className="card-head">
@@ -163,6 +163,46 @@ export default function Hoje({ go }: PageProps) {
             <TodayTraining compact onOpen={() => go('treino')} />
           </div>
         )}
+
+        {/* Refeições */}
+        <div className="card">
+          <div className="card-head">
+            <h2>Refeições</h2>
+            <button className="link" onClick={() => go('alimentacao')}>Abrir</button>
+          </div>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <span><strong>{fmtKcal(kcal)}</strong>{settings.kcalGoal > 0 && <span className="muted"> de {fmtKcal(settings.kcalGoal)}</span>}</span>
+            {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
+          </div>
+          {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
+          {en.tdee && (
+            <div className="muted small">
+              Seu corpo gasta ~{fmtKcal(en.tdee)}/dia · {kcal <= en.tdee ? `faltam ${fmtKcal(en.tdee - kcal)}` : `${fmtKcal(kcal - en.tdee)} acima`}
+            </div>
+          )}
+          {meals.length === 0 && (
+            <Empty>Nada registrado ainda. <button className="link" onClick={() => go('alimentacao')}>Registrar refeição</button></Empty>
+          )}
+          <ul className="list">
+            {meals.map((m) => {
+                const st = m.st;
+                return (
+                  <li key={m.id} className={`item ${st?.done ? 'done' : ''}`}>
+                    <Check on={!!st?.done} onClick={() => (st?.done ? go('alimentacao') : markMeal(m.id))} label="Marcar como feita" />
+                    <span className="item-title">{m.name}</span>
+                    {st?.done && st.doneAt ? (
+                      <span className="badge success" title={`Sugerido: ${m.time}`}>{formatTime(st.doneAt)}</span>
+                    ) : (
+                      <span className="badge" title="Horário sugerido">{m.time}</span>
+                    )}
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+
+        {/* Déficit calórico (ao lado das refeições) */}
+        <DeficitCard data={data} today={today} onOpen={() => go('alimentacao')} onProfile={() => go('config')} />
 
         {/* Calendário: próximos compromissos e corridas */}
         {upcoming(data.events, today, 1).length > 0 && (
@@ -231,46 +271,6 @@ export default function Hoje({ go }: PageProps) {
             <Empty>Sem metas diárias. <button className="link" onClick={() => go('metas')}>Criar meta</button></Empty>
           )}
         </div>
-
-        {/* Refeições */}
-        <div className="card">
-          <div className="card-head">
-            <h2>Refeições</h2>
-            <button className="link" onClick={() => go('alimentacao')}>Abrir</button>
-          </div>
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <span><strong>{fmtKcal(kcal)}</strong>{settings.kcalGoal > 0 && <span className="muted"> de {fmtKcal(settings.kcalGoal)}</span>}</span>
-            {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
-          </div>
-          {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
-          {en.tdee && (
-            <div className="muted small">
-              Seu corpo gasta ~{fmtKcal(en.tdee)}/dia · {kcal <= en.tdee ? `faltam ${fmtKcal(en.tdee - kcal)}` : `${fmtKcal(kcal - en.tdee)} acima`}
-            </div>
-          )}
-          {meals.length === 0 && (
-            <Empty>Nada registrado ainda. <button className="link" onClick={() => go('alimentacao')}>Registrar refeição</button></Empty>
-          )}
-          <ul className="list">
-            {meals.map((m) => {
-                const st = m.st;
-                return (
-                  <li key={m.id} className={`item ${st?.done ? 'done' : ''}`}>
-                    <Check on={!!st?.done} onClick={() => (st?.done ? go('alimentacao') : markMeal(m.id))} label="Marcar como feita" />
-                    <span className="item-title">{m.name}</span>
-                    {st?.done && st.doneAt ? (
-                      <span className="badge success" title={`Sugerido: ${m.time}`}>{formatTime(st.doneAt)}</span>
-                    ) : (
-                      <span className="badge" title="Horário sugerido">{m.time}</span>
-                    )}
-                  </li>
-                );
-              })}
-          </ul>
-        </div>
-
-        {/* Déficit calórico (ao lado das refeições) */}
-        <DeficitCard data={data} today={today} onOpen={() => go('alimentacao')} onProfile={() => go('config')} />
 
         {/* Metas de longo prazo */}
         {data.longGoals.length > 0 && (
