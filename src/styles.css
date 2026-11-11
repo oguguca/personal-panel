@@ -1255,3 +1255,12 @@ a.btn { text-decoration: none; }
   .home-cols, .home-col:nth-child(3) { grid-template-columns: 1fr; }
 }
 .logged-line { margin-top: 2px; }
+
+/* Tela Hoje: grade alinhada. Cada linha tem a mesma altura, então as bordas dos cards batem. */
+.page-home { max-width: 1480px; }
+.home-stats, .home-bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.home-bento { align-items: stretch; }
+.home-bento > .card { min-width: 0; }
+.home-water > :not(.card-head) { margin-block: auto; }
+@media (max-width: 1150px) { .home-stats, .home-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .home-stats, .home-bento { grid-template-columns: 1fr; } }

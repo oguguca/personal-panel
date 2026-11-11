@@ -55,7 +55,7 @@ export default function Hoje({ go }: PageProps) {
     });
 
   return (
-    <div className="page">
+    <div className="page page-home">
       <header className="page-header">
         <div>
           <p className="muted">{formatLong(today)}</p>
@@ -67,7 +67,7 @@ export default function Hoje({ go }: PageProps) {
       </header>
 
       {/* Resumo do dia */}
-      <section className="grid-3">
+      <section className="home-stats">
         <button className="card stat" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => go('tarefas')}>
           <div className="stat-icon"><Icon name="tarefas" /></div>
           <div>
@@ -107,196 +107,190 @@ export default function Hoje({ go }: PageProps) {
         </button>
       </section>
 
-      <section className="home-cols">
-        <div className="home-col">
-          {/* Tarefas */}
-          <div className="card">
-            <div className="card-head">
-              <h2>Tarefas do dia</h2>
-              <button className="link" onClick={() => go('tarefas')}>Ver todas</button>
-            </div>
-            <Progress value={done} max={tasks.length} variant="success" />
-            {tasks.length ? (
-              <ul className="list">
-                {tasks.slice(0, 6).map((t) => (
-                  <li key={t.id} className={`item ${t.done ? 'done' : ''}`}>
-                    <Check on={t.done} onClick={() => toggleTask(t.id)} label="Marcar como feita" />
-                    <span className="item-title">{t.title}</span>
-                    {t.recurringId && <Icon name="repeat" size={14} className="muted" />}
-                  </li>
-                ))}
-                {tasks.length > 6 && <li className="muted small">+ {tasks.length - 6} tarefas</li>}
-              </ul>
-            ) : (
-              <Empty>Nenhuma tarefa para hoje. <button className="link" onClick={() => go('tarefas')}>Adicionar</button></Empty>
-            )}
+      <section className="home-bento">
+        {/* Tarefas */}
+        <div className="card">
+          <div className="card-head">
+            <h2>Tarefas do dia</h2>
+            <button className="link" onClick={() => go('tarefas')}>Ver todas</button>
           </div>
+          <Progress value={done} max={tasks.length} variant="success" />
+          {tasks.length ? (
+            <ul className="list">
+              {tasks.slice(0, 6).map((t) => (
+                <li key={t.id} className={`item ${t.done ? 'done' : ''}`}>
+                  <Check on={t.done} onClick={() => toggleTask(t.id)} label="Marcar como feita" />
+                  <span className="item-title">{t.title}</span>
+                  {t.recurringId && <Icon name="repeat" size={14} className="muted" />}
+                </li>
+              ))}
+              {tasks.length > 6 && <li className="muted small">+ {tasks.length - 6} tarefas</li>}
+            </ul>
+          ) : (
+            <Empty>Nenhuma tarefa para hoje. <button className="link" onClick={() => go('tarefas')}>Adicionar</button></Empty>
+          )}
+        </div>
 
-          {/* Refeições */}
+        {/* Água */}
+        <div className="card home-water">
+          <div className="card-head">
+            <h2>Água</h2>
+            <button className="link" onClick={() => go('agua')}>Detalhes</button>
+          </div>
+          <div className="row" style={{ justifyContent: 'center', gap: 20 }}>
+            <WaterCup value={water} goal={Math.max(settings.waterGoal, settings.waterIdeal || 0)} mark={settings.waterGoal} size={120} />
+            <div className="field" style={{ gap: 8 }}>
+              <div>
+                <strong>{fmtMl(water)}</strong> <span className="muted">· mínimo {fmtMl(settings.waterGoal)}</span>
+                <div className="muted small">ideal {fmtMl(settings.waterIdeal || settings.waterGoal)}</div>
+              </div>
+              <div className="row">
+                {settings.waterQuick.map((ml) => (
+                  <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{fmtMl(ml)}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Treino do dia */}
+        {data.workouts.length > 0 && (
           <div className="card">
             <div className="card-head">
-              <h2>Refeições</h2>
-              <button className="link" onClick={() => go('alimentacao')}>Abrir</button>
+              <h2>Treino de hoje</h2>
+              <button className="link" onClick={() => go('treino')}>Abrir</button>
             </div>
-            <div className="row" style={{ justifyContent: 'space-between' }}>
-              <span><strong>{fmtKcal(kcal)}</strong>{settings.kcalGoal > 0 && <span className="muted"> de {fmtKcal(settings.kcalGoal)}</span>}</span>
-              {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
+            <TodayTraining compact onOpen={() => go('treino')} />
+          </div>
+        )}
+
+        {/* Refeições */}
+        <div className="card">
+          <div className="card-head">
+            <h2>Refeições</h2>
+            <button className="link" onClick={() => go('alimentacao')}>Abrir</button>
+          </div>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <span><strong>{fmtKcal(kcal)}</strong>{settings.kcalGoal > 0 && <span className="muted"> de {fmtKcal(settings.kcalGoal)}</span>}</span>
+            {settings.kcalGoal > 0 && <span className="badge primary">{pct(kcal, settings.kcalGoal)}%</span>}
+          </div>
+          {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
+          {en.tdee && (
+            <div className="muted small">
+              Seu corpo gasta ~{fmtKcal(en.tdee)}/dia · {kcal <= en.tdee ? `faltam ${fmtKcal(en.tdee - kcal)}` : `${fmtKcal(kcal - en.tdee)} acima`}
             </div>
-            {settings.kcalGoal > 0 && <Progress value={kcal} max={settings.kcalGoal} variant={kcal > settings.kcalGoal ? '' : 'success'} />}
-            {en.tdee && (
-              <div className="muted small">
-                Seu corpo gasta ~{fmtKcal(en.tdee)}/dia · {kcal <= en.tdee ? `faltam ${fmtKcal(en.tdee - kcal)}` : `${fmtKcal(kcal - en.tdee)} acima`}
-              </div>
-            )}
-            {meals.length === 0 && (
-              <Empty>Nada registrado ainda. <button className="link" onClick={() => go('alimentacao')}>Registrar refeição</button></Empty>
-            )}
+          )}
+          {meals.length === 0 && (
+            <Empty>Nada registrado ainda. <button className="link" onClick={() => go('alimentacao')}>Registrar refeição</button></Empty>
+          )}
+          <ul className="list">
+            {meals.map((m) => {
+                const st = m.st;
+                return (
+                  <li key={m.id} className={`item ${st?.done ? 'done' : ''}`}>
+                    <Check on={!!st?.done} onClick={() => (st?.done ? go('alimentacao') : markMeal(m.id))} label="Marcar como feita" />
+                    <span className="item-title">{m.name}</span>
+                    {st?.done && st.doneAt ? (
+                      <span className="badge success" title={`Sugerido: ${m.time}`}>{formatTime(st.doneAt)}</span>
+                    ) : (
+                      <span className="badge" title="Horário sugerido">{m.time}</span>
+                    )}
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+
+        {/* Déficit calórico (ao lado das refeições) */}
+        <DeficitCard data={data} today={today} onOpen={() => go('alimentacao')} onProfile={() => go('config')} />
+
+        {/* Calendário: próximos compromissos e corridas */}
+        {upcoming(data.events, today, 1).length > 0 && (
+          <div className="card">
+            <div className="card-head">
+              <h2><Icon name="calendario" size={20} /> Próximo na agenda</h2>
+              <button className="link" onClick={() => go('calendario')}>Abrir</button>
+            </div>
             <ul className="list">
-              {meals.map((m) => {
-                  const st = m.st;
-                  return (
-                    <li key={m.id} className={`item ${st?.done ? 'done' : ''}`}>
-                      <Check on={!!st?.done} onClick={() => (st?.done ? go('alimentacao') : markMeal(m.id))} label="Marcar como feita" />
-                      <span className="item-title">{m.name}</span>
-                      {st?.done && st.doneAt ? (
-                        <span className="badge success" title={`Sugerido: ${m.time}`}>{formatTime(st.doneAt)}</span>
-                      ) : (
-                        <span className="badge" title="Horário sugerido">{m.time}</span>
-                      )}
-                    </li>
-                  );
-                })}
+              {upcoming(data.events, today, 3).map((ev) => (
+                <li key={ev.id} className="item">
+                  <span>{EVENT_KINDS[ev.kind].icon}</span>
+                  <span className="item-title">{ev.title}</span>
+                  <span className={`badge ${ev.date === today ? 'warning' : 'primary'}`}>{whenText(ev, today)}</span>
+                </li>
+              ))}
             </ul>
           </div>
+        )}
 
-          {/* Gravação */}
-          <div className="card">
-            <div className="card-head">
-              <h2><img src="./renda.png" alt="" width="20" height="20" style={{ objectFit: 'contain' }} /> Renda</h2>
-              <button className="link" onClick={() => go('gravacao')}>Abrir</button>
-            </div>
-            <div className="row" style={{ justifyContent: 'space-between' }}>
-              <span><strong>{formatDuration(rec)}</strong> <span className="muted">de {formatDuration(settings.recordGoalMin)}</span></span>
-              <span className={`badge ${rec >= settings.recordGoalMin ? 'success' : 'primary'}`}>{pct(rec, settings.recordGoalMin)}%</span>
-            </div>
-            <Progress value={rec} max={settings.recordGoalMin} variant={rec >= settings.recordGoalMin ? 'success' : ''} />
-            <div className="row">
-              {settings.recordQuick.map((m) => (
-                <button key={m} className="btn sm" onClick={() => addRec(m)}>+{m} min</button>
-              ))}
-            </div>
+        {/* Gravação */}
+        <div className="card">
+          <div className="card-head">
+            <h2><img src="./renda.png" alt="" width="20" height="20" style={{ objectFit: 'contain' }} /> Renda</h2>
+            <button className="link" onClick={() => go('gravacao')}>Abrir</button>
           </div>
-
-          {/* Metas de longo prazo */}
-          {data.longGoals.length > 0 && (
-            <div className="card">
-              <div className="card-head">
-                <h2>Longo prazo</h2>
-                <button className="link" onClick={() => go('metas')}>Ver</button>
-              </div>
-              {data.longGoals.slice(0, 4).map((g) => (
-                <div key={g.id} className="field">
-                  <div className="row" style={{ justifyContent: 'space-between' }}>
-                    <span>{g.title}</span>
-                    <span className="muted small">{pct(g.current, g.target)}%</span>
-                  </div>
-                  <Progress value={g.current} max={g.target} />
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <span><strong>{formatDuration(rec)}</strong> <span className="muted">de {formatDuration(settings.recordGoalMin)}</span></span>
+            <span className={`badge ${rec >= settings.recordGoalMin ? 'success' : 'primary'}`}>{pct(rec, settings.recordGoalMin)}%</span>
+          </div>
+          <Progress value={rec} max={settings.recordGoalMin} variant={rec >= settings.recordGoalMin ? 'success' : ''} />
+          <div className="row">
+            {settings.recordQuick.map((m) => (
+              <button key={m} className="btn sm" onClick={() => addRec(m)}>+{m} min</button>
+            ))}
+          </div>
         </div>
-        <div className="home-col">
-          {/* Água */}
-          <div className="card">
-            <div className="card-head">
-              <h2>Água</h2>
-              <button className="link" onClick={() => go('agua')}>Detalhes</button>
-            </div>
-            <div className="row" style={{ justifyContent: 'center', gap: 20 }}>
-              <WaterCup value={water} goal={Math.max(settings.waterGoal, settings.waterIdeal || 0)} mark={settings.waterGoal} size={120} />
-              <div className="field" style={{ gap: 8 }}>
-                <div>
-                  <strong>{fmtMl(water)}</strong> <span className="muted">· mínimo {fmtMl(settings.waterGoal)}</span>
-                  <div className="muted small">ideal {fmtMl(settings.waterIdeal || settings.waterGoal)}</div>
-                </div>
-                <div className="row">
-                  {settings.waterQuick.map((ml) => (
-                    <button key={ml} className="btn water sm" onClick={() => addWater(ml)}>+{fmtMl(ml)}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
+
+        {/* Metas do dia */}
+        <div className="card">
+          <div className="card-head">
+            <h2>Metas do dia</h2>
+            <button className="link" onClick={() => go('metas')}>Gerenciar</button>
           </div>
-
-          {/* Déficit calórico (ao lado das refeições) */}
-          <DeficitCard data={data} today={today} onOpen={() => go('alimentacao')} onProfile={() => go('config')} />
-
-          {/* Metas do dia */}
-          <div className="card">
-            <div className="card-head">
-              <h2>Metas do dia</h2>
-              <button className="link" onClick={() => go('metas')}>Gerenciar</button>
-            </div>
-            {data.dailyGoals.length ? (
-              <ul className="list">
-                {data.dailyGoals.map((g) => {
-                  const v = day.goals[g.id] || 0;
-                  const ok = goalDone(g, v);
-                  return (
-                    <li key={g.id} className={`item ${ok ? 'done' : ''}`}>
-                      {g.type === 'check' ? (
-                        <Check on={ok} onClick={() => bumpGoal(g)} label="Cumprida" />
-                      ) : (
-                        <button className="icon-btn" onClick={() => bumpGoal(g)} title={`+${g.step || 1}`}><Icon name="plus" /></button>
-                      )}
-                      <span className="item-title">{g.title}</span>
-                      {g.type === 'count' && (
-                        <span className={`badge ${ok ? 'success' : ''}`}>{fmtValue(v)}/{fmtValue(g.target, g.unit)}</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <Empty>Sem metas diárias. <button className="link" onClick={() => go('metas')}>Criar meta</button></Empty>
-            )}
-          </div>
-
-        </div>
-        <div className="home-col">
-          {/* Treino do dia */}
-          {data.workouts.length > 0 && (
-            <div className="card">
-              <div className="card-head">
-                <h2>Treino de hoje</h2>
-                <button className="link" onClick={() => go('treino')}>Abrir</button>
-              </div>
-              <TodayTraining compact onOpen={() => go('treino')} />
-            </div>
-          )}
-
-          {/* Calendário: próximos compromissos e corridas */}
-          {upcoming(data.events, today, 1).length > 0 && (
-            <div className="card">
-              <div className="card-head">
-                <h2><Icon name="calendario" size={20} /> Próximo na agenda</h2>
-                <button className="link" onClick={() => go('calendario')}>Abrir</button>
-              </div>
-              <ul className="list">
-                {upcoming(data.events, today, 3).map((ev) => (
-                  <li key={ev.id} className="item">
-                    <span>{EVENT_KINDS[ev.kind].icon}</span>
-                    <span className="item-title">{ev.title}</span>
-                    <span className={`badge ${ev.date === today ? 'warning' : 'primary'}`}>{whenText(ev, today)}</span>
+          {data.dailyGoals.length ? (
+            <ul className="list">
+              {data.dailyGoals.map((g) => {
+                const v = day.goals[g.id] || 0;
+                const ok = goalDone(g, v);
+                return (
+                  <li key={g.id} className={`item ${ok ? 'done' : ''}`}>
+                    {g.type === 'check' ? (
+                      <Check on={ok} onClick={() => bumpGoal(g)} label="Cumprida" />
+                    ) : (
+                      <button className="icon-btn" onClick={() => bumpGoal(g)} title={`+${g.step || 1}`}><Icon name="plus" /></button>
+                    )}
+                    <span className="item-title">{g.title}</span>
+                    {g.type === 'count' && (
+                      <span className={`badge ${ok ? 'success' : ''}`}>{fmtValue(v)}/{fmtValue(g.target, g.unit)}</span>
+                    )}
                   </li>
-                ))}
-              </ul>
-            </div>
+                );
+              })}
+            </ul>
+          ) : (
+            <Empty>Sem metas diárias. <button className="link" onClick={() => go('metas')}>Criar meta</button></Empty>
           )}
-
         </div>
-            </section>
+
+        {/* Metas de longo prazo */}
+        {data.longGoals.length > 0 && (
+          <div className="card">
+            <div className="card-head">
+              <h2>Longo prazo</h2>
+              <button className="link" onClick={() => go('metas')}>Ver</button>
+            </div>
+            {data.longGoals.slice(0, 4).map((g) => (
+              <div key={g.id} className="field">
+                <div className="row" style={{ justifyContent: 'space-between' }}>
+                  <span>{g.title}</span>
+                  <span className="muted small">{pct(g.current, g.target)}%</span>
+                </div>
+                <Progress value={g.current} max={g.target} />
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
