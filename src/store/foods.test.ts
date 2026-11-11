@@ -69,3 +69,15 @@ describe('porções e totais', () => {
     expect(dayNutrition(undefined).kcal).toBe(0);
   });
 });
+
+describe('suplementos de marca', () => {
+  it('acha whey das marcas famosas e já vem com a medida (scoop/dose)', async () => {
+    const { allFoods, searchFoods, defaultUnit } = await import('./foods');
+    const hits = searchFoods('whe', allFoods());
+    const names = hits.map((f) => f.name);
+    expect(names).toEqual(expect.arrayContaining(['Whey protein, Max Titanium 100% Whey', 'Whey protein, Growth Concentrado 80%', 'Whey protein, Black Skull 100% HD']));
+    const bs = hits.find((f) => f.name.includes('Black Skull'))!;
+    expect(defaultUnit(bs)).toMatchObject({ g: 30 });
+    expect(Math.round((bs.p * 30) / 100)).toBe(21);
+  });
+});

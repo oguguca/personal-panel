@@ -22,6 +22,25 @@ const TACO_FOODS: Food[] = (taco.foods as TacoRow[]).map(([id, name, kcal, p, c,
   n: norm(name),
 }));
 
+// Suplementos de marca (valores por 100 g, calculados da porção do rótulo; variam um pouco por sabor).
+// [chave, nome, kcal, proteína, carboidrato, gordura, unidade, plural, gramas da unidade]
+const BRAND_ROWS: [string, string, number, number, number, number, string, string, number][] = [
+  // Max Titanium 100% Whey: porção 40 g = 155 kcal, 20 g proteína, 12 g carbo, 3 g gordura
+  ['max-100-whey', 'Whey protein, Max Titanium 100% Whey', 388, 50, 30, 7.5, 'dose (40 g)', 'doses (40 g)', 40],
+  // Growth Whey Protein Concentrado 80%: porção 30 g = 122 kcal, 23 g proteína, 4 g carbo, 1,6 g gordura
+  ['growth-whey-80', 'Whey protein, Growth Concentrado 80%', 407, 76.7, 13.3, 5.3, 'scoop (30 g)', 'scoops (30 g)', 30],
+  // Black Skull Whey 100% HD: porção 30 g = 125 kcal, 21 g proteína, 5,9 g carbo, 1,9 g gordura
+  ['blackskull-100-hd', 'Whey protein, Black Skull 100% HD', 417, 70, 19.7, 6.3, 'scoop (30 g)', 'scoops (30 g)', 30],
+];
+const BRAND_FOODS: Food[] = BRAND_ROWS.map(([key, name, kcal, p, c, g, label, plural, grams]) => ({
+  key: `b-${key}`,
+  name,
+  kcal, p, c, g,
+  cat: 'Suplementos',
+  n: norm(name),
+  unit: { label, plural, g: grams },
+}));
+
 /** Lista completa: TACO + alimentos próprios ({ id, name, kcal por 100 g }). */
 export function allFoods(customFoods: CustomFood[] = []): Food[] {
   const mine = customFoods.map((f): Food => ({
@@ -34,7 +53,7 @@ export function allFoods(customFoods: CustomFood[] = []): Food[] {
     custom: true,
     unit: f.unit || null, // { label, plural, g } quando cadastrado por unidade
   }));
-  return [...mine, ...TACO_FOODS];
+  return [...mine, ...BRAND_FOODS, ...TACO_FOODS];
 }
 
 /** Busca por palavras (sem acento, em qualquer ordem). Prioriza o que você mais usa. */
