@@ -87,7 +87,7 @@ export default function DeficitCard({ data, today, onOpen, onProfile }: { data: 
         </div>
         <span className="muted small">
           {logged.length
-            ? <>Média {avg >= 0 ? 'de déficit' : 'acima'}: <b>{fmt(Math.abs(avg))} kcal/dia</b> · {weekSum >= 0 ? '≈ −' : '≈ +'}{(Math.abs(weekSum) / KCAL_PER_KG).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kg no período</>
+            ? <>Média {avg >= 0 ? 'de déficit' : 'acima'}: <b>{fmt(Math.abs(avg))} kcal/dia</b> ({logged.length} {logged.length === 1 ? 'dia registrado' : 'dias registrados'}) ·{weekSum >= 0 ? '≈ −' : '≈ +'}{(Math.abs(weekSum) / KCAL_PER_KG).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kg no período</>
             : 'Registre as refeições dos dias para ver a semana.'}
         </span>
       </div>
