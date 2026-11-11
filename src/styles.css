@@ -1232,7 +1232,7 @@ a.btn { text-decoration: none; }
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     animation-delay: 0ms !important;
-    transition-duration: 1ms !important;
+    transition-property: color, background-color, border-color, opacity, box-shadow, fill, stroke !important;
     scroll-behavior: auto !important;
   }
   /* o aviso de XP continua visível o mesmo tempo, só sem subir */
@@ -1264,3 +1264,103 @@ a.btn { text-decoration: none; }
 .home-water > :not(.card-head) { margin-block: auto; }
 @media (max-width: 1150px) { .home-stats, .home-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .home-stats, .home-bento { grid-template-columns: 1fr; } }
+
+/* =====================================================================
+   Movimento e acabamento (apple-design)
+   - resposta no clique (pointer-down), não no soltar
+   - transições (não keyframes) em tudo que muda de estado: dá para interromper no meio
+   - curva "mola amortecida" (sem quicar) como padrão; quique só onde há impulso
+   ===================================================================== */
+:root {
+  --ease-spring: cubic-bezier(.22, 1, .36, 1);   /* ~ mola criticamente amortecida, response ~0.35s */
+  --ease-out-quick: cubic-bezier(.2, .8, .2, 1);
+  --t-press: 110ms;
+  --t-state: 180ms;
+  --t-move: 380ms;
+}
+
+/* Tema claro/escuro troca suave, sem flash de brilho */
+body, .card, .sidebar { transition: background-color 250ms ease, border-color 250ms ease, color 250ms ease; }
+
+/* ---------- Resposta no clique ---------- */
+.btn, .icon-btn, .chip, .check, .nav-item, .segmented button, .link, .wswap-opt, .hist-top, .run-tabs button,
+.card.stat, .ranked-all-btn, .race-poster, .run-tile, .shoe-card, .wsets-forgot, .wcheck-item {
+  transition: background-color var(--t-state) ease, border-color var(--t-state) ease, color var(--t-state) ease,
+    box-shadow var(--t-state) ease, opacity var(--t-state) ease, transform var(--t-move) var(--ease-spring);
+}
+.btn:active, .chip:active, .segmented button:active, .ranked-all-btn:active, .wsets-forgot:active { transform: scale(.96); transition-duration: var(--t-press); }
+.icon-btn:active, .check:active { transform: scale(.88); transition-duration: var(--t-press); }
+.nav-item:active, .card.stat:active, .wswap-opt:active, .hist-top:active, .wcheck-item:active { transform: scale(.985); transition-duration: var(--t-press); }
+.btn:disabled:active, .icon-btn:disabled:active { transform: none; }
+.card.stat:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); }
+.chip:hover:not(.on) { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); color: var(--text); }
+
+/* Marcar como feito: o check "acende" (conclusão), sem quicar */
+.check.on { animation: check-on 260ms var(--ease-spring); }
+@keyframes check-on { from { transform: scale(.7); } to { transform: scale(1); } }
+.wcheck-item.on .wcheck-box { animation: check-on 260ms var(--ease-spring); }
+
+/* Interruptor desliza com mola */
+.switch input, .switch input::after { transition: background-color var(--t-state) ease, transform var(--t-move) var(--ease-spring); }
+
+/* Barras de progresso crescem com mola (e dá para mudar no meio) */
+.progress > div, .ranked-bar span, .deficit-bar span { transition: width 520ms var(--ease-spring); }
+
+/* Seta de abrir/fechar */
+.hist-chev { transition: transform var(--t-move) var(--ease-spring); }
+
+/* ---------- Entrada de telas e painéis ---------- */
+.page { animation: page-in 320ms var(--ease-spring) backwards; }
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Painéis (modais): o fundo escurece e desfoca para dar foco; a caixa "chega" (escala + opacidade) */
+.wcheck-overlay, .race-overlay, .all-ranks { backdrop-filter: blur(6px) saturate(120%); }
+.wcheck, .race-modal, .all-ranks-box { animation: sheet-in 340ms var(--ease-spring) backwards; transform-origin: 50% 40%; }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+
+/* Conteúdo que aparece ao marcar (séries do exercício, detalhes do histórico) desce do item que o abriu */
+.wsets, .hist-body { animation: reveal 260ms var(--ease-spring) backwards; transform-origin: top; }
+@keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Painel de confirmar treino ---------- */
+/* topo e rodapé ficam presos com material translúcido; a lista rola por baixo */
+.wcheck { padding-top: 0; padding-bottom: 0; }
+.wcheck > .card-head {
+  position: sticky; top: 0; z-index: 2; margin: 0 -18px; padding: 16px 18px 12px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.wcheck-foot {
+  position: sticky; bottom: 0; z-index: 2; margin: 0 -18px; padding: 12px 18px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(14px) saturate(160%);
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.wcheck-foot .row .btn.primary { min-width: 160px; }
+.wcheck-item:hover { border-color: color-mix(in srgb, var(--success) 50%, var(--border)); }
+.wcheck-item.on { opacity: 1; }
+.wsets-grid .input { transition: border-color var(--t-state) ease, box-shadow var(--t-state) ease, background-color var(--t-state) ease; }
+.wsets-grid .input:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent); }
+.wswap-opt { transition: border-color var(--t-state) ease, box-shadow var(--t-state) ease, transform var(--t-move) var(--ease-spring); }
+
+/* ---------- Tipografia: espaçamento das letras muda com o tamanho ---------- */
+h1 { letter-spacing: -0.02em; }
+h2 { letter-spacing: -0.01em; }
+.stat-value, .deficit-hero b, .hist-stat b, .ranked-name, .run-hero b, .cal-countdown-num { letter-spacing: -0.02em; }
+/* números que mudam não "pulam" de largura */
+.stat-value, .deficit-hero b, .hist-stat b, .hist-xp, .wsets-grid .input, .wcheck-total b, .badge, .progress-label, .deficit-legend b { font-variant-numeric: tabular-nums; }
+
+/* ---------- Acessibilidade de movimento e transparência ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .page, .wcheck, .race-modal, .all-ranks-box, .wsets, .hist-body { animation: fade-only 180ms ease backwards !important; }
+  .btn:active, .chip:active, .icon-btn:active, .check:active, .nav-item:active, .card.stat:active, .wswap-opt:active, .hist-top:active, .wcheck-item:active { transform: none; }
+}
+@keyframes fade-only { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-transparency: reduce) {
+  .wcheck-overlay, .race-overlay, .all-ranks { backdrop-filter: none; }
+  .wcheck > .card-head, .wcheck-foot { background: var(--surface); backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .card { border-color: var(--muted); }
+  .wcheck > .card-head, .wcheck-foot { background: var(--surface); backdrop-filter: none; }
+}

@@ -532,21 +532,24 @@ export function WorkoutCheck({ workoutId, date: initialDate, onClose }: { workou
           <Empty>Esse treino não tem exercícios.</Empty>
         )}
 
-        {checked.size > 0 && (
-          <div className="wcheck-total">
-            <span className="ico-text"><Icon name="treino" size={15} /> <b>{totalSets}</b> séries</span>
-            <span className="ico-text"><Icon name="box" size={15} /> <b>{Math.round(volume).toLocaleString('pt-BR')}</b> kg de volume</span>
-            {cardioMin > 0 && <span className="ico-text"><Icon name="clock" size={15} /> <b>{Math.round(cardioMin)}</b> min de cardio</span>}
-            <span className="wcheck-xp">+{xpForca} XP Força{xpCardio ? ` · +${xpCardio} XP Resistência` : ''}</span>
-          </div>
-        )}
+        {/* rodapé fixo: o total e o Confirmar ficam sempre à vista, mesmo com a lista longa */}
+        <div className="wcheck-foot">
+          {checked.size > 0 && (
+            <div className="wcheck-total">
+              <span className="ico-text"><Icon name="treino" size={15} /> <b>{totalSets}</b> séries</span>
+              <span className="ico-text"><Icon name="box" size={15} /> <b>{Math.round(volume).toLocaleString('pt-BR')}</b> kg de volume</span>
+              {cardioMin > 0 && <span className="ico-text"><Icon name="clock" size={15} /> <b>{Math.round(cardioMin)}</b> min de cardio</span>}
+              <span className="wcheck-xp">+{xpForca} XP Força{xpCardio ? ` · +${xpCardio} XP Resistência` : ''}</span>
+            </div>
+          )}
 
-        <div className="row">
-          <button className="btn primary" onClick={confirm} disabled={!checked.size}>
-            <Icon name="check" size={16} /> Confirmar {checked.size < all && checked.size ? `(${checked.size} de ${all})` : ''}
-          </button>
-          <button className="btn" onClick={onClose}>Cancelar</button>
-          {!checked.size && <span className="muted small">Não fez nenhum? Use "Descansei".</span>}
+          <div className="row">
+            <button className="btn primary" onClick={confirm} disabled={!checked.size}>
+              <Icon name="check" size={16} /> Confirmar {checked.size < all && checked.size ? `(${checked.size} de ${all})` : ''}
+            </button>
+            <button className="btn" onClick={onClose}>Cancelar</button>
+            {!checked.size && <span className="muted small">Não fez nenhum? Use "Descansei".</span>}
+          </div>
         </div>
       </div>
     </div>
