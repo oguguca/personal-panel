@@ -166,13 +166,24 @@ export interface Workout {
   days?: number[];
 }
 
+/** Uma série feita: repetições e peso (null = não lembra o peso). */
+export interface SetLog {
+  reps: number;
+  kg: number | null;
+}
+
+/** Exercício como foi feito no dia (cópia do plano + séries reais). */
+export type LoggedItem = Omit<WorkoutItem, 'id'> & { done?: SetLog[]; noWeight?: boolean };
+
 export interface TrainingLog {
   type: 'workout' | 'rest';
   workoutId?: string;
   name?: string;
   at: number;
   /** Cópia das cargas no dia (mede a evolução de força). */
-  items?: Omit<WorkoutItem, 'id'>[];
+  items?: LoggedItem[];
+  /** Treino que era do dia e ficou para o próximo (trocou a ordem: ex. academia lotada). */
+  swap?: string;
   /** Quantos exercícios o treino tinha (para mostrar "5 de 6 feitos"). */
   planned?: number;
 }

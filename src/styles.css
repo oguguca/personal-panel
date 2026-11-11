@@ -1109,3 +1109,33 @@ a.btn { text-decoration: none; }
 .run-panel-feed { max-width: 760px; width: 100%; margin: 0 auto; }
 .run-panel-feed .run-feed { max-width: none; }
 .all-rank-divs { font-size: 0.72rem; font-weight: 700; color: var(--t-light); opacity: 0.9; }
+
+/* Painel de check: séries, peso e troca de treino */
+.wcheck-row { display: flex; flex-direction: column; gap: 0; }
+.wcheck-row.on .wcheck-item { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.wsets { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border: 1px solid var(--success); border-top: none; border-radius: 0 0 12px 12px; background: var(--surface); }
+.wsets-grid { display: grid; grid-template-columns: 52px minmax(70px, 120px) minmax(90px, 150px) 32px; gap: 6px 10px; align-items: center; }
+.wsets-h { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.wsets-n { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--surface-2); font-weight: 800; font-size: 0.9rem; }
+.wsets-grid .input { padding: 6px 10px; text-align: center; font-weight: 700; font-size: 1rem; }
+.wsets-kg { display: flex; align-items: center; gap: 6px; }
+.wsets-kg .input:disabled { opacity: .5; }
+.wsets-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wsets-forgot { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.85rem; cursor: pointer; user-select: none; }
+.wsets-forgot input { margin: 0; }
+.wsets-forgot.on { border-color: var(--warning); background: var(--warning-soft); color: var(--warning); font-weight: 700; }
+.wsets.cardio { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 14px; }
+.wsets-field { display: flex; align-items: center; gap: 8px; font-weight: 650; }
+.wsets-field .input { width: 90px; padding: 6px 10px; text-align: center; font-weight: 700; font-size: 1rem; }
+.wsets-warn { color: var(--warning); font-size: 0.85rem; }
+.wcheck-total { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: 0.92rem; }
+.wcheck-xp { margin-left: auto; padding: 4px 12px; border-radius: 999px; background: var(--primary); color: #fff; font-weight: 800; }
+.wswap { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--primary-soft, var(--surface-2)); border: 1px solid var(--primary); }
+.wswap-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.wswap-opt { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--border); background: var(--surface); color: inherit; cursor: pointer; font: inherit; }
+.wswap-opt span { font-size: 0.82rem; color: var(--muted); }
+.wswap-opt.on { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); }
+.logged-sum { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+@media (max-width: 560px) { .wswap-opts { grid-template-columns: 1fr; } .wsets-grid { grid-template-columns: 40px 1fr 1fr 28px; } }
+.logged-sum .badge { white-space: normal; max-width: 100%; text-align: left; line-height: 1.3; }
+.today-train-main > div { min-width: 0; }

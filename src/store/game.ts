@@ -5,7 +5,7 @@ import { EXERCISE_BY_ID } from '../data/exercises';
 import { norm } from './foods';
 import { TIERS } from './tiers';
 import { goalDone, mealList, recordTotal, waterTotal } from './model';
-import type { AttrId, Data, DayKey, TrainingLog, WorkoutItem } from './types';
+import type { AttrId, Data, DayKey, LoggedItem, TrainingLog } from './types';
 
 export interface Attr {
   id: AttrId;
@@ -115,8 +115,26 @@ export const repsOf = (r: unknown) => {
 const isCardio = (exId: string) => EXERCISE_BY_ID[exId]?.cat === 'Cardio';
 const LEG = new Set(['quads', 'hamstrings', 'calves', 'glutes', 'adductors', 'abductors']);
 
+/** Séries de um exercício feito (as reais, se marcou; senão as do plano). */
+export const setsOf = (it: LoggedItem) => it.done?.length || num(it.sets) || 3;
+
+/**
+ * Volume (repetições × kg) de um exercício. Com as séries reais, soma série por série.
+ * "Não lembro o peso": usa a carga do plano (`fallbackKg`) para não perder o XP.
+ */
+export function itemVolume(it: LoggedItem, fallbackKg = 0): number {
+  if (it.done?.length) return it.done.reduce((s, x) => s + x.reps * (x.kg ?? fallbackKg), 0);
+  return setsOf(it) * (repsOf(it.reps) || 10) * (num(it.weight) || (it.noWeight ? fallbackKg : 0));
+}
+
+/** Carga do plano atual para um exercício (usada quando não lembra o peso). */
+const planKg = (data: Data, exId: string) => {
+  for (const w of data.workouts) for (const i of w.items) if (i.exId === exId && num(i.weight)) return num(i.weight);
+  return 0;
+};
+
 /** Itens do treino feito no dia (cópia salva; dias antigos usam o treino atual). */
-export function trainingItems(data: Data, t: TrainingLog): Omit<WorkoutItem, 'id'>[] {
+export function trainingItems(data: Data, t: TrainingLog): LoggedItem[] {
   if (t.items) return t.items;
   return data.workouts.find((w) => w.id === t.workoutId)?.items || [];
 }
@@ -176,8 +194,8 @@ export function dayGains(data: Data, key: DayKey): { gains: Gain[]; muscles: Rec
         cardioMin += num(it.minutes);
         continue;
       }
-      const sets = num(it.sets) || 3;
-      volume += sets * (repsOf(it.reps) || 10) * num(it.weight);
+      const sets = setsOf(it);
+      volume += itemVolume(it, it.noWeight ? planKg(data, it.exId) : 0);
       for (const m of ex.m || []) {
         muscles[m] = (muscles[m] || 0) + sets;
         if (LEG.has(m)) legSets += sets;
@@ -252,7 +270,7 @@ export function computeGame(data: Data, today: DayKey): Game {
       for (const it of trainingItems(data, tr)) {
         const w = num(it.weight);
         if (!w || isCardio(it.exId)) continue;
-        volume += (num(it.sets) || 3) * (repsOf(it.reps) || 10) * w;
+        volume += itemVolume(it);
         (loads[it.exId] ||= []).push({ key, w });
       }
     }
